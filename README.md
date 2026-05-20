@@ -25,6 +25,13 @@ A rebuilt website for **Alex Movie Theatre** in Alexandria, Indiana. Two-screen 
 - Deployed via FTP to parityrfp.com
 - No database required
 
+## Design
+
+- **Theme:** Boutique cinema — dark warm background, deep burgundy/crimson accents, warm cream text
+- **Typography:** Playfair Display (headings) + Lato (body)
+- **Inspired by:** Independent/boutique cinema aesthetics, not big chain templates
+- **Built with:** Aslan Skills (`project-scaffolding`, `professional-frontend-design`, `seo-sao-optimization`, `ftp-deploy-parity`)
+
 ## Project Structure
 
 ```
