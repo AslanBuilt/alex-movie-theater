@@ -15,8 +15,9 @@ require TEMPLATES_PATH . '/header.php';
         <p class="hero-eyebrow">Alexandria, Indiana &bull; Est. Independent Cinema</p>
         <h1>The <span>Alex</span> Theatre</h1>
         <p class="hero-tagline">Your community's two-screen independent movie house &mdash; affordable tickets, real movies.</p>
+        <div class="hero-rule"></div>
         <div class="hero-actions">
-            <a href="<?= SQUARE_URL ?>" class="btn btn-gold" target="_blank" rel="noopener">Buy Tickets Online</a>
+            <a href="<?= SQUARE_URL ?>" class="btn btn-crimson" target="_blank" rel="noopener">Buy Tickets Online</a>
             <a href="<?= url('location.php') ?>" class="btn btn-outline">Location &amp; Parking</a>
         </div>
     </div>
@@ -30,7 +31,7 @@ require TEMPLATES_PATH . '/header.php';
             <span class="sep">|</span>
             <span>Children &mdash; <strong>$3</strong></span>
             <span class="sep">|</span>
-            <span>&#x260E; <a href="tel:<?= SITE_PHONE ?>" style="color:#0f0f0f"><?= e(SITE_PHONE) ?></a></span>
+            <span>&#x260E; <a href="tel:<?= SITE_PHONE ?>" style="color:inherit"><?= e(SITE_PHONE) ?></a></span>
             <span class="sep">|</span>
             <span>407 N. Harrison St, Alexandria IN</span>
         </div>
@@ -51,7 +52,10 @@ require TEMPLATES_PATH . '/header.php';
             <div class="movie-card">
                 <div class="movie-poster">
                     <span class="screen-badge">Large Screen</span>
-                    &#x1F3AC;
+                    <div class="movie-poster-inner">
+                        <div class="movie-poster-icon">&#x1F3AC;</div>
+                        <div class="movie-poster-label">Now Playing</div>
+                    </div>
                 </div>
                 <div class="movie-card-body">
                     <span class="movie-rating">PG-13</span>
@@ -73,7 +77,7 @@ require TEMPLATES_PATH . '/header.php';
                     </div>
 
                     <div class="movie-cta">
-                        <a href="<?= SQUARE_URL ?>" class="btn btn-gold" target="_blank" rel="noopener">Buy Tickets</a>
+                        <a href="<?= SQUARE_URL ?>" class="btn btn-crimson" target="_blank" rel="noopener">Buy Tickets</a>
                     </div>
                 </div>
             </div>
@@ -82,7 +86,10 @@ require TEMPLATES_PATH . '/header.php';
             <div class="movie-card">
                 <div class="movie-poster">
                     <span class="screen-badge">Small Screen</span>
-                    &#x1F3AC;
+                    <div class="movie-poster-inner">
+                        <div class="movie-poster-icon">&#x1F3AC;</div>
+                        <div class="movie-poster-label">Now Playing</div>
+                    </div>
                 </div>
                 <div class="movie-card-body">
                     <span class="movie-rating">PG</span>
@@ -104,7 +111,7 @@ require TEMPLATES_PATH . '/header.php';
                     </div>
 
                     <div class="movie-cta">
-                        <a href="<?= SQUARE_URL ?>" class="btn btn-gold" target="_blank" rel="noopener">Buy Tickets</a>
+                        <a href="<?= SQUARE_URL ?>" class="btn btn-crimson" target="_blank" rel="noopener">Buy Tickets</a>
                         <span class="online-required">&#x26A0; Small screen tickets must be purchased online</span>
                     </div>
                 </div>

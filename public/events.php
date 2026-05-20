@@ -67,7 +67,7 @@ require TEMPLATES_PATH . '/header.php';
 
         <div style="text-align:center; margin-top:3rem;">
             <p class="text-secondary mb-2">Want to be the first to know about new events?</p>
-            <a href="<?= FACEBOOK_URL ?>" class="btn btn-gold" target="_blank" rel="noopener">Follow Us on Facebook</a>
+            <a href="<?= FACEBOOK_URL ?>" class="btn btn-crimson" target="_blank" rel="noopener">Follow Us on Facebook</a>
         </div>
     </div>
 </section>

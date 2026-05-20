@@ -71,7 +71,7 @@ require TEMPLATES_PATH . '/header.php';
 
         <div style="text-align:center; margin-top:3rem;">
             <p class="text-secondary mb-2">Ready to catch a show?</p>
-            <a href="<?= SQUARE_URL ?>" class="btn btn-gold" target="_blank" rel="noopener">Buy Tickets Online</a>
+            <a href="<?= SQUARE_URL ?>" class="btn btn-crimson" target="_blank" rel="noopener">Buy Tickets Online</a>
             <a href="<?= url() ?>" class="btn btn-outline" style="margin-left:1rem;">View Showtimes</a>
         </div>
     </div>

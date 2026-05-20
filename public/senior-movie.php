@@ -30,7 +30,7 @@ require TEMPLATES_PATH . '/header.php';
                 </div>
 
                 <p style="color:var(--text-secondary); margin-bottom:1.5rem; line-height:1.8;">
-                    The Alex Theatre is proud to partner with <strong class="text-gold">Senior Essential Connections</strong> to bring free movie screenings to the community. Every eligible senior 55 years of age or older is welcome at no charge.
+                    The Alex Theatre is proud to partner with <strong class="text-crimson">Senior Essential Connections</strong> to bring free movie screenings to the community. Every eligible senior 55 years of age or older is welcome at no charge.
                 </p>
 
                 <p style="color:var(--text-secondary); margin-bottom:2rem; line-height:1.8;">

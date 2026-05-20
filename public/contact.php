@@ -79,7 +79,7 @@ require TEMPLATES_PATH . '/header.php';
                     <p class="text-secondary" style="margin-bottom:1.5rem; font-size:0.9rem; line-height:1.7;">
                         Have a question about showtimes, events, or the theatre? Fill out our contact form and we'll get back to you as soon as possible.
                     </p>
-                    <a href="<?= FORM_PRIVATE_RENTAL ?>" class="btn btn-gold" target="_blank" rel="noopener" style="width:100%; text-align:center; display:block; margin-bottom:1rem;">Send a Message</a>
+                    <a href="<?= FORM_PRIVATE_RENTAL ?>" class="btn btn-crimson" target="_blank" rel="noopener" style="width:100%; text-align:center; display:block; margin-bottom:1rem;">Send a Message</a>
                     <p style="font-size:0.75rem; color:var(--text-muted); text-align:center;">Opens our Google Form &mdash; no account required</p>
                 </div>
 

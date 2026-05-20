@@ -40,7 +40,7 @@ require TEMPLATES_PATH . '/header.php';
                     <li>Full concession stand available</li>
                     <li>Entire group must meet the minimum</li>
                 </ul>
-                <a href="<?= FORM_PRIVATE_RENTAL ?>" class="btn btn-gold" target="_blank" rel="noopener">Request This Package</a>
+                <a href="<?= FORM_PRIVATE_RENTAL ?>" class="btn btn-crimson" target="_blank" rel="noopener">Request This Package</a>
             </div>
 
             <div class="rental-card">
@@ -67,11 +67,11 @@ require TEMPLATES_PATH . '/header.php';
         <div class="info-grid">
             <div class="info-card">
                 <h3>&#x1F4B0; Group Spend Minimum</h3>
-                <p>Your entire group must collectively spend at least <strong class="text-gold">$100</strong> to qualify for a private rental booking.</p>
+                <p>Your entire group must collectively spend at least <strong class="text-crimson">$100</strong> to qualify for a private rental booking.</p>
             </div>
             <div class="info-card">
                 <h3>&#x1F354; Food &amp; Beverages</h3>
-                <p>No outside food or beverages are permitted. Exception: <strong class="text-gold">birthday cakes are welcome</strong> for birthday rental events. Our full concession stand will be open.</p>
+                <p>No outside food or beverages are permitted. Exception: <strong class="text-crimson">birthday cakes are welcome</strong> for birthday rental events. Our full concession stand will be open.</p>
             </div>
             <div class="info-card">
                 <h3>&#x1F4B3; Payment Options</h3>
@@ -90,7 +90,7 @@ require TEMPLATES_PATH . '/header.php';
             <p class="text-secondary" style="margin-bottom:2rem; max-width:500px; margin-left:auto; margin-right:auto;">
                 Fill out our quick inquiry form and we'll get back to you to confirm your date and details.
             </p>
-            <a href="<?= FORM_PRIVATE_RENTAL ?>" class="btn btn-gold" target="_blank" rel="noopener" style="font-size:1rem; padding:1rem 2.5rem;">Submit Rental Inquiry</a>
+            <a href="<?= FORM_PRIVATE_RENTAL ?>" class="btn btn-crimson" target="_blank" rel="noopener" style="font-size:1rem; padding:1rem 2.5rem;">Submit Rental Inquiry</a>
             <p style="margin-top:1rem; font-size:0.8rem; color:var(--text-muted);">Or call us directly at <a href="tel:<?= SITE_PHONE ?>"><?= e(SITE_PHONE) ?></a></p>
         </div>
     </div>
