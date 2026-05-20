@@ -1,0 +1,35 @@
+# Alex Movie Theatre — Alexandria, Indiana
+
+## About
+Alex Movie Theatre is an independent two-screen cinema located in Alexandria, Indiana,
+approximately 50 miles northeast of Indianapolis. It serves the local community with
+affordable ticket prices and a variety of programming.
+
+## Key Facts
+- Address: 407 N. Harrison Street, Alexandria, IN 46001
+- Phone: 765-620-9093
+- Screens: Two (Large Screen and Small Screen)
+- Ticket Prices: $5 adults / $3 children
+
+## Services
+- Current movie screenings (large and small screen)
+- Online ticket purchasing via Square (required for small screen)
+- Free senior movie program (ages 55+, sponsored by Senior Essential Connections)
+- Concession stand
+- Private screenings and birthday rentals
+- Special events
+
+## Rental Information
+- Group minimum spend: $100
+- New release rental: $5 adult / $3 child (minimum $75)
+- Alternative film rental: $75 flat fee
+- No outside food except birthday cakes
+
+## Key Pages
+- Now Showing: /cs/alex-movie-theater/
+- Senior Movie: /cs/alex-movie-theater/senior-movie.php
+- Concessions: /cs/alex-movie-theater/concessions.php
+- Events: /cs/alex-movie-theater/events.php
+- Private Screenings: /cs/alex-movie-theater/private-screenings.php
+- Location: /cs/alex-movie-theater/location.php
+- Contact: /cs/alex-movie-theater/contact.php
