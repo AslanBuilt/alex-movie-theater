@@ -2,21 +2,21 @@
 
 A rebuilt website for **Alex Movie Theatre** in Alexandria, Indiana. Two-screen independent cinema serving the local community with affordable tickets.
 
-## Live Site
+## Live Preview
 
-**https://parityrfp.com/cs/alex-movie-theater/index.php**
+**https://2ktay.github.io/alex-movie-theater/**
 
 ## Pages
 
 | Page | URL |
 |------|-----|
-| Now Showing | [/index.php](https://parityrfp.com/cs/alex-movie-theater/index.php) |
-| Senior Movie | [/senior-movie.php](https://parityrfp.com/cs/alex-movie-theater/senior-movie.php) |
-| Concessions | [/concessions.php](https://parityrfp.com/cs/alex-movie-theater/concessions.php) |
-| Events | [/events.php](https://parityrfp.com/cs/alex-movie-theater/events.php) |
-| Private Screenings | [/private-screenings.php](https://parityrfp.com/cs/alex-movie-theater/private-screenings.php) |
-| Location & Parking | [/location.php](https://parityrfp.com/cs/alex-movie-theater/location.php) |
-| Contact | [/contact.php](https://parityrfp.com/cs/alex-movie-theater/contact.php) |
+| Now Showing | [/](https://2ktay.github.io/alex-movie-theater/) |
+| Senior Movie | [/senior-movie.html](https://2ktay.github.io/alex-movie-theater/senior-movie.html) |
+| Concessions | [/concessions.html](https://2ktay.github.io/alex-movie-theater/concessions.html) |
+| Events | [/events.html](https://2ktay.github.io/alex-movie-theater/events.html) |
+| Private Screenings | [/private-screenings.html](https://2ktay.github.io/alex-movie-theater/private-screenings.html) |
+| Location & Parking | [/location.html](https://2ktay.github.io/alex-movie-theater/location.html) |
+| Contact | [/contact.html](https://2ktay.github.io/alex-movie-theater/contact.html) |
 
 ## Tech Stack
 
