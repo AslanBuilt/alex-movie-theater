@@ -29,7 +29,7 @@ require TEMPLATES_PATH . '/header.php';
         <!-- Featured Coming Event -->
         <div class="movie-card" style="max-width:600px; margin-bottom:3rem;">
             <div class="movie-poster" style="background: linear-gradient(135deg, #1a0a0a, #2a0a0a, #0a0a1a);">
-                <span class="screen-badge" style="background:var(--red);">Coming Soon</span>
+                <span class="screen-badge" style="background:var(--crimson-dark);">Coming Soon</span>
                 &#x1F512;
             </div>
             <div class="movie-card-body">

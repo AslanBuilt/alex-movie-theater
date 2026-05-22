@@ -59,12 +59,12 @@ require TEMPLATES_PATH . '/header.php';
                 </div>
 
                 <div class="next-showing-card">
-                    <div class="film-name">The Devil Wears Prada 2</div>
+                    <div class="film-name">TBA — Check Back Soon</div>
                     <div class="film-meta">
-                        <p style="margin-top:0.5rem;">Friday, May 1st &bull; 1:00 PM</p>
-                        <p style="margin-top:0.5rem;">Hosted by Essential Senior Connections</p>
+                        <p style="margin-top:0.5rem;">Date &amp; film to be announced</p>
+                        <p style="margin-top:0.5rem;">Hosted by Senior Essential Connections</p>
                     </div>
-                    <p style="margin-top:1rem; font-size:0.8rem; color:var(--text-muted);">Showtimes subject to change. Contact Senior Essential Connections for current schedule.</p>
+                    <p style="margin-top:1rem; font-size:0.8rem; color:var(--text-muted);">Contact Senior Essential Connections or call us at <a href="tel:765-620-9093">765-620-9093</a> for the current schedule.</p>
                 </div>
 
                 <div class="info-card">

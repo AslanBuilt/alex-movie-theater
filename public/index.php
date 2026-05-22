@@ -52,10 +52,7 @@ require TEMPLATES_PATH . '/header.php';
             <div class="movie-card">
                 <div class="movie-poster">
                     <span class="screen-badge">Large Screen</span>
-                    <div class="movie-poster-inner">
-                        <div class="movie-poster-icon">&#x1F3AC;</div>
-                        <div class="movie-poster-label">Now Playing</div>
-                    </div>
+                    <img src="<?= asset('images/starwars.jpg') ?>" alt="Star Wars: The Mandalorian &amp; Grogu movie poster" loading="eager">
                 </div>
                 <div class="movie-card-body">
                     <span class="movie-rating">PG-13</span>
@@ -86,10 +83,7 @@ require TEMPLATES_PATH . '/header.php';
             <div class="movie-card">
                 <div class="movie-poster">
                     <span class="screen-badge">Small Screen</span>
-                    <div class="movie-poster-inner">
-                        <div class="movie-poster-icon">&#x1F3AC;</div>
-                        <div class="movie-poster-label">Now Playing</div>
-                    </div>
+                    <img src="<?= asset('images/sheep.jpg') ?>" alt="The Sheep Detectives movie poster" loading="eager">
                 </div>
                 <div class="movie-card-body">
                     <span class="movie-rating">PG</span>

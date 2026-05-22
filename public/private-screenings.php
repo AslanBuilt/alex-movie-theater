@@ -84,7 +84,7 @@ require TEMPLATES_PATH . '/header.php';
         </div>
 
         <!-- CTA -->
-        <div style="text-align:center; margin-top:3rem; padding:3rem; background:var(--bg-card); border:1px solid var(--border); border-radius:6px; border-top:3px solid var(--gold);">
+        <div style="text-align:center; margin-top:3rem; padding:3rem; background:var(--bg-card); border:1px solid var(--border); border-radius:6px; border-top:3px solid var(--crimson);">
             <p class="section-label">Ready to Book?</p>
             <h2 class="section-title" style="margin-bottom:1rem;">Request a Private Screening</h2>
             <p class="text-secondary" style="margin-bottom:2rem; max-width:500px; margin-left:auto; margin-right:auto;">

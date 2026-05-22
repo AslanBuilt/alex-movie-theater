@@ -326,17 +326,32 @@ section { padding: 4rem 0; }
 }
 
 .movie-poster {
-    background: linear-gradient(160deg, #1A0A0E 0%, #120A0C 100%);
-    height: 180px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    background: #0a0508;
+    height: 340px;
     border-bottom: 1px solid var(--border);
     position: relative;
+    overflow: hidden;
+}
+
+.movie-poster img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center top;
+    display: block;
+    transition: transform 0.4s ease;
+}
+
+.movie-card:hover .movie-poster img {
+    transform: scale(1.03);
 }
 
 .movie-poster-inner {
     text-align: center;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
 }
 
 .movie-poster-icon {
