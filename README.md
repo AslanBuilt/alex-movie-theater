@@ -30,7 +30,7 @@ A rebuilt website for **Alex Movie Theatre** in Alexandria, Indiana. Two-screen 
 - **Theme:** Boutique cinema — dark warm background, deep burgundy/crimson accents, warm cream text
 - **Typography:** Playfair Display (headings) + Lato (body)
 - **Inspired by:** Independent/boutique cinema aesthetics, not big chain templates
-- **Built with:** Aslan Skills (`project-scaffolding`, `professional-frontend-design`, `seo-sao-optimization`, `ftp-deploy-parity`)
+- **Built with:** Aslan Skills (`project-scaffolding`, `professional-frontend-design`, `seo-sao-optimization`, `ftp-deploy-parity`, `formspree-integration`, `htaccess-management`, `production-readiness-audit`)
 
 ## Project Structure
 
@@ -50,7 +50,8 @@ alex-movie-theater/
 │   ├── llms.txt
 │   └── assets/
 │       ├── css/main.css
-│       └── js/main.js
+│       ├── js/main.js
+│       └── images/          # Movie poster images
 ├── config/
 │   └── config.php       # Site constants (URL, phone, form links)
 ├── includes/
@@ -65,4 +66,5 @@ alex-movie-theater/
 - **Theatre:** Alex Movie Theatre
 - **Address:** 407 N. Harrison Street, Alexandria, IN 46001
 - **Phone:** 765-620-9093
-- **Tickets:** [Square Online Store](https://the-alexandria-theatre.square.site/)
+- **Tickets:** Square Online Store (being replaced with on-site Stripe checkout)
+- **Contact Form:** Formspree (`xaqkjakn`)

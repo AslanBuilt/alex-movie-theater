@@ -104,9 +104,6 @@ a:hover { color: var(--cream); }
 
 .nav-link.active {
     color: var(--cream);
-    border-bottom: 2px solid var(--crimson);
-    padding-bottom: 0.25rem;
-    background: none;
 }
 
 .nav-cta {
@@ -1039,7 +1036,7 @@ section { padding: 4rem 0; }
 
     .nav-menu.open { display: flex; }
     .nav-link { padding: 0.75rem 1rem; }
-    .nav-link.active { border-bottom: none; border-left: 2px solid var(--crimson); border-radius: 0; }
+    .nav-link.active { color: var(--cream); }
     .nav-toggle { display: flex; }
     .navbar { position: relative; }
 
