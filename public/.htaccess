@@ -1,6 +1,6 @@
 AddType application/x-httpd-php .php
 
-Options -Indexes
+Options -Indexes +FollowSymLinks
 
 RewriteEngine On
 RewriteBase /cs/alex-movie-theater/
@@ -12,12 +12,24 @@ RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
 RewriteRule ^([^\.]+)$ $1.php [NC,L]
 
+# Block dotfiles
+<FilesMatch "^\.">
+    Require all denied
+</FilesMatch>
+
+# Block sensitive files
+<Files "config.php">
+    Require all denied
+</Files>
 <Files "*.log">
     Require all denied
 </Files>
 <Files "*.sql">
     Require all denied
 </Files>
+
+# Block direct access to includes
+RewriteRule ^includes/ - [F,L]
 
 <IfModule mod_headers.c>
     Header always set X-Frame-Options "SAMEORIGIN"
@@ -30,12 +42,16 @@ RewriteRule ^([^\.]+)$ $1.php [NC,L]
     ExpiresActive On
     ExpiresByType image/jpeg "access plus 1 month"
     ExpiresByType image/png "access plus 1 month"
+    ExpiresByType image/gif "access plus 1 month"
     ExpiresByType image/webp "access plus 1 month"
     ExpiresByType image/svg+xml "access plus 1 month"
+    ExpiresByType image/x-icon "access plus 1 year"
     ExpiresByType text/css "access plus 1 month"
     ExpiresByType application/javascript "access plus 1 month"
+    ExpiresByType font/woff2 "access plus 1 year"
+    ExpiresByType font/woff "access plus 1 year"
 </IfModule>
 
 <IfModule mod_deflate.c>
-    AddOutputFilterByType DEFLATE text/html text/css application/javascript
+    AddOutputFilterByType DEFLATE text/html text/css application/javascript application/json image/svg+xml
 </IfModule>

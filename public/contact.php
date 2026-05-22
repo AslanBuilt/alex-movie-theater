@@ -75,12 +75,57 @@ require TEMPLATES_PATH . '/header.php';
                     <div class="section-divider"></div>
                 </div>
 
-                <div style="background:var(--bg-card); border:1px solid var(--border); border-radius:6px; padding:2rem; border-top:3px solid var(--gold);">
-                    <p class="text-secondary" style="margin-bottom:1.5rem; font-size:0.9rem; line-height:1.7;">
-                        Have a question about showtimes, events, or the theatre? Fill out our contact form and we'll get back to you as soon as possible.
-                    </p>
-                    <a href="<?= FORM_PRIVATE_RENTAL ?>" class="btn btn-crimson" target="_blank" rel="noopener" style="width:100%; text-align:center; display:block; margin-bottom:1rem;">Send a Message</a>
-                    <p style="font-size:0.75rem; color:var(--text-muted); text-align:center;">Opens our Google Form &mdash; no account required</p>
+                <div class="contact-form-wrap">
+                    <form id="contact-form" action="https://formspree.io/f/xaqkjakn" method="POST" novalidate>
+                        <input type="text" name="_gotcha" style="display:none" tabindex="-1" autocomplete="off">
+                        <input type="hidden" name="_subject" value="New Message — Alex Movie Theatre">
+
+                        <div class="form-group">
+                            <label for="cf-name">Name <span style="color:var(--crimson-light)">*</span></label>
+                            <input type="text" id="cf-name" name="name" required autocomplete="name" placeholder="Your name">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="cf-email">Email Address <span style="color:var(--crimson-light)">*</span></label>
+                            <input type="email" id="cf-email" name="email" required autocomplete="email" placeholder="you@example.com">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="cf-phone">Phone <span style="color:var(--text-muted); font-weight:400; text-transform:none; letter-spacing:0;">(optional)</span></label>
+                            <input type="tel" id="cf-phone" name="phone" autocomplete="tel" placeholder="765-555-0000">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="cf-subject">Subject <span style="color:var(--crimson-light)">*</span></label>
+                            <select id="cf-subject" name="subject" required>
+                                <option value="">Select a topic&hellip;</option>
+                                <option value="General Inquiry">General Inquiry</option>
+                                <option value="Showtimes & Tickets">Showtimes &amp; Tickets</option>
+                                <option value="Private Screening / Rental">Private Screening / Rental</option>
+                                <option value="Events">Events</option>
+                                <option value="Feedback">Feedback</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="cf-message">Message <span style="color:var(--crimson-light)">*</span></label>
+                            <textarea id="cf-message" name="message" rows="5" required placeholder="How can we help?"></textarea>
+                        </div>
+
+                        <button type="submit" class="btn btn-crimson" id="cf-submit" style="width:100%;">
+                            <span class="btn-text">Send Message</span>
+                            <span class="btn-loading" style="display:none">Sending&hellip;</span>
+                        </button>
+                    </form>
+
+                    <div id="cf-success" style="display:none" class="form-feedback form-success">
+                        <p>Thank you &mdash; your message has been sent. We&rsquo;ll get back to you soon.</p>
+                    </div>
+
+                    <div id="cf-error" style="display:none" class="form-feedback form-error">
+                        <p>Something went wrong. Please try again or call us at <a href="tel:<?= SITE_PHONE ?>"><?= e(SITE_PHONE) ?></a>.</p>
+                    </div>
                 </div>
 
                 <div class="info-card mt-3">
