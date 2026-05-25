@@ -31,7 +31,8 @@
                     <li><a href="<?= url('location.php') ?>">Location &amp; Parking</a></li>
                     <li><a href="<?= url('contact.php') ?>">Contact Us</a></li>
                     <li><a href="<?= FORM_EMPLOYMENT ?>" target="_blank" rel="noopener">Employment</a></li>
-                    <li><a href="<?= SQUARE_URL ?>" target="_blank" rel="noopener">Buy Tickets Online</a></li>
+                    <li><a href="<?= e(TICKETS_URL) ?>">Buy Tickets</a></li>
+                    <li><a href="<?= url('privacy') ?>">Privacy Policy</a></li>
                 </ul>
             </div>
         </div>

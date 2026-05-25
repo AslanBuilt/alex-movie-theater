@@ -59,7 +59,7 @@
             <li><a href="<?= url('private-screenings.php') ?>" class="<?= navClass('private-screenings') ?>">Private Screenings</a></li>
             <li><a href="<?= url('location.php') ?>" class="<?= navClass('location') ?>">Location</a></li>
             <li><a href="<?= url('contact.php') ?>" class="<?= navClass('contact') ?>">Contact</a></li>
-            <li><a href="<?= SQUARE_URL ?>" class="nav-link nav-cta" target="_blank" rel="noopener">Buy Tickets</a></li>
+            <li><a href="<?= e(TICKETS_URL) ?>" class="nav-link nav-cta">Buy Tickets</a></li>
         </ul>
     </div>
 </header>
