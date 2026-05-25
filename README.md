@@ -2,21 +2,26 @@
 
 A rebuilt website for **Alex Movie Theatre** in Alexandria, Indiana. Two-screen independent cinema serving the local community with affordable tickets. The site is now database-backed with an admin panel for managing movies, showtimes, events, and senior showings.
 
-## Live Preview
+## Live Site
 
-**https://2ktay.github.io/alex-movie-theater/** (static mirror — may be out of sync; see the live site at https://parityrfp.com/cs/alex-movie-theater/)
+**https://parityrfp.com/cs/alex-movie-theater/**
+
+Admin panel: **https://parityrfp.com/cs/alex-movie-theater/admin/**
+
+> A static GitHub Pages mirror previously lived at https://2ktay.github.io/alex-movie-theater/ but is no longer maintained — the live PHP site above is the source of truth.
 
 ## Pages
 
 | Page | URL |
 |------|-----|
-| Now Showing | [/](https://2ktay.github.io/alex-movie-theater/) |
-| Senior Movie | [/senior-movie.html](https://2ktay.github.io/alex-movie-theater/senior-movie.html) |
-| Concessions | [/concessions.html](https://2ktay.github.io/alex-movie-theater/concessions.html) |
-| Events | [/events.html](https://2ktay.github.io/alex-movie-theater/events.html) |
-| Private Screenings | [/private-screenings.html](https://2ktay.github.io/alex-movie-theater/private-screenings.html) |
-| Location & Parking | [/location.html](https://2ktay.github.io/alex-movie-theater/location.html) |
-| Contact | [/contact.html](https://2ktay.github.io/alex-movie-theater/contact.html) |
+| Now Showing | [/](https://parityrfp.com/cs/alex-movie-theater/) |
+| Senior Movie | [/senior-movie](https://parityrfp.com/cs/alex-movie-theater/senior-movie) |
+| Concessions | [/concessions](https://parityrfp.com/cs/alex-movie-theater/concessions) |
+| Events | [/events](https://parityrfp.com/cs/alex-movie-theater/events) |
+| Private Screenings | [/private-screenings](https://parityrfp.com/cs/alex-movie-theater/private-screenings) |
+| Location & Parking | [/location](https://parityrfp.com/cs/alex-movie-theater/location) |
+| Contact | [/contact](https://parityrfp.com/cs/alex-movie-theater/contact) |
+| Admin | [/admin](https://parityrfp.com/cs/alex-movie-theater/admin/) |
 
 ## Tech Stack
 
