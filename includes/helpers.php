@@ -26,3 +26,25 @@ function navClass(string $page): string
 {
     return isCurrentPage($page) ? 'nav-link active' : 'nav-link';
 }
+
+/**
+ * Runs $fn and returns its result, or $fallback on any Throwable.
+ *
+ * Used to invoke DB-backed repositories from page templates without
+ * having to scatter try/catch — pages can just call:
+ *   $rows = tryDb(fn() => MovieRepo::getNowShowing());
+ * and branch on emptiness for the static-fallback path.
+ *
+ * @param callable $fn
+ * @param mixed $fallback
+ * @return mixed
+ */
+function tryDb(callable $fn, $fallback = [])
+{
+    try {
+        return $fn();
+    } catch (\Throwable $e) {
+        error_log('[tryDb] ' . $e->getMessage());
+        return $fallback;
+    }
+}

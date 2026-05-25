@@ -1,10 +1,15 @@
 <?php
 require_once __DIR__ . '/config/config.php';
+require_once INCLUDES_PATH . '/Database.php';
+require_once INCLUDES_PATH . '/MovieRepo.php';
 
 $pageTitle = 'Now Showing | Alex Movie Theatre — Alexandria, Indiana';
 $pageDescription = 'See what\'s playing at Alex Movie Theatre in Alexandria, Indiana. Two-screen independent theatre. Adults $5, Children $3. Buy tickets online.';
 $pageKeywords = 'now showing Alexandria Indiana, movies playing Alexandria IN, Alex Movie Theatre showtimes, cheap movies Indiana';
 $canonical = SITE_URL;
+
+$nowShowing = tryDb(fn() => MovieRepo::getNowShowing());
+$comingSoon = tryDb(fn() => MovieRepo::getComingSoon());
 
 require TEMPLATES_PATH . '/header.php';
 ?>
@@ -47,6 +52,58 @@ require TEMPLATES_PATH . '/header.php';
             <div class="section-divider"></div>
         </div>
 
+        <?php if (!empty($nowShowing)): ?>
+        <div class="movies-grid">
+            <?php foreach ($nowShowing as $movie): ?>
+                <?php
+                    $screen = (string) ($movie['screen'] ?? 'either');
+                    $screenLabel = $screen === 'large'
+                        ? 'Large Screen'
+                        : ($screen === 'small' ? 'Small Screen' : '');
+                    $posterPath = (string) ($movie['poster_path'] ?? '');
+                    $title = (string) ($movie['title'] ?? '');
+                    $rating = (string) ($movie['rating'] ?? '');
+                    $onlineOnly = !empty($movie['online_only']);
+                    $showtimes = $movie['showtimes'] ?? [];
+                ?>
+            <div class="movie-card">
+                <div class="movie-poster">
+                    <?php if ($screenLabel !== ''): ?>
+                        <span class="screen-badge"><?= e($screenLabel) ?></span>
+                    <?php endif; ?>
+                    <?php if ($posterPath !== ''): ?>
+                        <img src="<?= e(asset($posterPath)) ?>" alt="<?= e($title) ?> movie poster" loading="eager">
+                    <?php else: ?>
+                        <div class="movie-poster-placeholder"><?= e($title) ?></div>
+                    <?php endif; ?>
+                </div>
+                <div class="movie-card-body">
+                    <?php if ($rating !== ''): ?>
+                        <span class="movie-rating"><?= e($rating) ?></span>
+                    <?php endif; ?>
+                    <h2 class="movie-title"><?= e($title) ?></h2>
+
+                    <?php if (!empty($showtimes)): ?>
+                        <p class="showtimes-label">Showtimes</p>
+                        <?php foreach ($showtimes as $st): ?>
+                            <div class="showtime-row">
+                                <span class="showtime-day"><?= e((string) ($st['label'] ?? '')) ?></span>
+                                <span class="showtime-times"><?= e((string) ($st['times'] ?? '')) ?></span>
+                            </div>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
+
+                    <div class="movie-cta">
+                        <a href="<?= SQUARE_URL ?>" class="btn btn-crimson" target="_blank" rel="noopener">Buy Tickets</a>
+                        <?php if ($onlineOnly): ?>
+                            <span class="online-required">&#x26A0; Small screen tickets must be purchased online</span>
+                        <?php endif; ?>
+                    </div>
+                </div>
+            </div>
+            <?php endforeach; ?>
+        </div>
+        <?php else: ?>
         <div class="movies-grid">
             <!-- Movie 1: Large Screen -->
             <div class="movie-card">
@@ -111,6 +168,7 @@ require TEMPLATES_PATH . '/header.php';
                 </div>
             </div>
         </div>
+        <?php endif; ?>
 
         <div class="policy-box mt-3">
             <h3>Showtime Policy</h3>
@@ -128,6 +186,16 @@ require TEMPLATES_PATH . '/header.php';
             <div class="section-divider centered"></div>
         </div>
 
+        <?php if (!empty($comingSoon)): ?>
+        <div class="coming-soon-grid">
+            <?php foreach ($comingSoon as $movie): ?>
+                <div class="coming-soon-card">
+                    <div class="film-title"><?= e((string) ($movie['title'] ?? '')) ?></div>
+                    <div class="film-status">Coming Soon</div>
+                </div>
+            <?php endforeach; ?>
+        </div>
+        <?php else: ?>
         <div class="coming-soon-grid">
             <div class="coming-soon-card">
                 <div class="film-title">The Mummy</div>
@@ -138,6 +206,7 @@ require TEMPLATES_PATH . '/header.php';
                 <div class="film-status">Coming Soon</div>
             </div>
         </div>
+        <?php endif; ?>
     </div>
 </section>
 

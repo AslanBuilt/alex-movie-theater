@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= e($pageTitle ?? SITE_NAME) ?></title>
+    <link rel="icon" type="image/svg+xml" href="<?= asset('images/favicon.svg') ?>">
     <meta name="description" content="<?= e($pageDescription ?? 'Alex Movie Theatre in Alexandria, Indiana. Two-screen independent theatre with affordable tickets. $5 adults, $3 children.') ?>">
     <meta name="keywords" content="<?= e($pageKeywords ?? 'movie theater Alexandria Indiana, movies Alexandria IN, Alex Theatre, affordable movies Indiana') ?>">
     <link rel="canonical" href="<?= e($canonical ?? SITE_URL) ?>">

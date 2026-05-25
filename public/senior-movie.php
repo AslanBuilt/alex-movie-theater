@@ -1,10 +1,14 @@
 <?php
 require_once __DIR__ . '/config/config.php';
+require_once INCLUDES_PATH . '/Database.php';
+require_once INCLUDES_PATH . '/EventRepo.php';
 
 $pageTitle = 'Free Senior Movie | Alex Movie Theatre — Alexandria, Indiana';
 $pageDescription = 'Free movie screenings for seniors 55 and up at Alex Movie Theatre in Alexandria, Indiana. Sponsored by Senior Essential Connections.';
 $pageKeywords = 'free senior movie Alexandria Indiana, senior cinema Indiana, free movies for seniors, Senior Essential Connections';
 $canonical = SITE_URL . 'senior-movie.php';
+
+$next = tryDb(fn() => EventRepo::getNextSeniorShowing(), null);
 
 require TEMPLATES_PATH . '/header.php';
 ?>
@@ -58,14 +62,37 @@ require TEMPLATES_PATH . '/header.php';
                     <div class="section-divider"></div>
                 </div>
 
-                <div class="next-showing-card">
-                    <div class="film-name">TBA — Check Back Soon</div>
-                    <div class="film-meta">
-                        <p style="margin-top:0.5rem;">Date &amp; film to be announced</p>
-                        <p style="margin-top:0.5rem;">Hosted by Senior Essential Connections</p>
+                <?php if ($next !== null && (string) ($next['status'] ?? '') === 'upcoming'): ?>
+                    <?php
+                        $title = (string) ($next['movie_title'] ?? '');
+                        $rawDate = $next['showing_date'] ?? null;
+                        $ts = $rawDate ? strtotime((string) $rawDate) : false;
+                        $dateLine = $ts ? date('l, F j, Y', $ts) : 'Date to be announced';
+                        $time = (string) ($next['showing_time'] ?? '');
+                        $notes = (string) ($next['notes'] ?? '');
+                    ?>
+                    <div class="next-showing-card">
+                        <div class="film-name"><?= e($title !== '' ? $title : 'TBA — Check Back Soon') ?></div>
+                        <div class="film-meta">
+                            <p style="margin-top:0.5rem;"><?= e($dateLine) ?><?php if ($time !== ''): ?> &mdash; <?= e($time) ?><?php endif; ?></p>
+                            <?php if ($notes !== ''): ?>
+                                <p style="margin-top:0.5rem;"><?= e($notes) ?></p>
+                            <?php else: ?>
+                                <p style="margin-top:0.5rem;">Hosted by Senior Essential Connections</p>
+                            <?php endif; ?>
+                        </div>
+                        <p style="margin-top:1rem; font-size:0.8rem; color:var(--text-muted);">Contact Senior Essential Connections or call us at <a href="tel:765-620-9093">765-620-9093</a> for the current schedule.</p>
                     </div>
-                    <p style="margin-top:1rem; font-size:0.8rem; color:var(--text-muted);">Contact Senior Essential Connections or call us at <a href="tel:765-620-9093">765-620-9093</a> for the current schedule.</p>
-                </div>
+                <?php else: ?>
+                    <div class="next-showing-card">
+                        <div class="film-name">TBA — Check Back Soon</div>
+                        <div class="film-meta">
+                            <p style="margin-top:0.5rem;">Date &amp; film to be announced</p>
+                            <p style="margin-top:0.5rem;">Hosted by Senior Essential Connections</p>
+                        </div>
+                        <p style="margin-top:1rem; font-size:0.8rem; color:var(--text-muted);">Contact Senior Essential Connections or call us at <a href="tel:765-620-9093">765-620-9093</a> for the current schedule.</p>
+                    </div>
+                <?php endif; ?>
 
                 <div class="info-card">
                     <h3>&#x1F3AA; About Senior Essential Connections</h3>

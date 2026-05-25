@@ -29,6 +29,7 @@ define('ROOT_PATH', dirname(__DIR__));
 define('PUBLIC_PATH', ROOT_PATH . '/public');
 define('INCLUDES_PATH', ROOT_PATH . '/includes');
 define('TEMPLATES_PATH', ROOT_PATH . '/templates');
+define('DB_CONFIG_PATH', ROOT_PATH . '/config/database.php');
 
 date_default_timezone_set('America/Indiana/Indianapolis');
 

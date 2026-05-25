@@ -1,10 +1,14 @@
 <?php
 require_once __DIR__ . '/config/config.php';
+require_once INCLUDES_PATH . '/Database.php';
+require_once INCLUDES_PATH . '/EventRepo.php';
 
 $pageTitle = 'Events | Alex Movie Theatre — Alexandria, Indiana';
 $pageDescription = 'Special events at Alex Movie Theatre in Alexandria, Indiana. Escape room experiences, special screenings, and more.';
 $pageKeywords = 'movie theatre events Alexandria Indiana, special screenings, escape room theatre Indiana';
 $canonical = SITE_URL . 'events.php';
+
+$events = tryDb(fn() => EventRepo::getUpcoming());
 
 require TEMPLATES_PATH . '/header.php';
 ?>
@@ -26,6 +30,49 @@ require TEMPLATES_PATH . '/header.php';
             <div class="section-divider"></div>
         </div>
 
+        <?php if (!empty($events)): ?>
+            <?php foreach ($events as $event): ?>
+                <?php
+                    $eTitle = (string) ($event['title'] ?? '');
+                    $eDesc = (string) ($event['description'] ?? '');
+                    $eBadge = (string) ($event['badge'] ?? 'Upcoming');
+                    $eStatus = (string) ($event['status'] ?? 'upcoming');
+                    $eDate = $event['event_date'] ?? null;
+                    $eImage = (string) ($event['image_path'] ?? '');
+
+                    if ($eStatus === 'tba' || empty($eDate)) {
+                        $dateLine = 'Date &amp; details to be announced';
+                    } else {
+                        $ts = strtotime((string) $eDate);
+                        $dateLine = $ts ? e(date('l, F j, Y', $ts)) : 'Date to be announced';
+                    }
+                ?>
+                <!-- Featured Coming Event -->
+                <div class="movie-card" style="max-width:600px; margin-bottom:3rem;">
+                    <div class="movie-poster" style="background: linear-gradient(135deg, #1a0a0a, #2a0a0a, #0a0a1a);">
+                        <span class="screen-badge" style="background:var(--crimson-dark);"><?= e($eBadge) ?></span>
+                        <?php if ($eImage !== ''): ?>
+                            <img src="<?= e(asset($eImage)) ?>" alt="<?= e($eTitle) ?>" loading="lazy">
+                        <?php else: ?>
+                            &#x1F512;
+                        <?php endif; ?>
+                    </div>
+                    <div class="movie-card-body">
+                        <h2 class="movie-title"><?= e($eTitle) ?></h2>
+                        <?php if ($eDesc !== ''): ?>
+                            <p style="color:var(--text-secondary); font-size:0.9rem; margin-bottom:1rem; line-height:1.7;">
+                                <?= e($eDesc) ?>
+                            </p>
+                        <?php endif; ?>
+                        <p style="color:var(--text-muted); font-size:0.8rem; margin-bottom:1.25rem;"><?= $dateLine ?></p>
+                        <div class="social-links">
+                            <a href="<?= FACEBOOK_URL ?>" target="_blank" rel="noopener">&#x1F4D8; Follow on Facebook</a>
+                            <a href="<?= INSTAGRAM_URL ?>" target="_blank" rel="noopener">&#x1F4F7; Follow on Instagram</a>
+                        </div>
+                    </div>
+                </div>
+            <?php endforeach; ?>
+        <?php else: ?>
         <!-- Featured Coming Event -->
         <div class="movie-card" style="max-width:600px; margin-bottom:3rem;">
             <div class="movie-poster" style="background: linear-gradient(135deg, #1a0a0a, #2a0a0a, #0a0a1a);">
@@ -44,6 +91,7 @@ require TEMPLATES_PATH . '/header.php';
                 </div>
             </div>
         </div>
+        <?php endif; ?>
 
         <!-- Recurring Events -->
         <div class="section-header">

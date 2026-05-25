@@ -6,3 +6,7 @@ Thumbs.db
 *.sublime-*
 *.tmp
 *.bak
+
+# Local DB config & generated seeds (never commit credentials)
+config/database.php
+database/seed-with-passwords.sql

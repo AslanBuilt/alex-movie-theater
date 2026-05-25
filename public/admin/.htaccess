@@ -1,0 +1,33 @@
+# Alex Theatre — Admin Panel Hardening
+# Lives at /cs/alex-movie-theater/admin/
+
+Options -Indexes -MultiViews
+ServerSignature Off
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteBase /cs/alex-movie-theater/admin/
+</IfModule>
+
+# Block dotfiles (e.g. .env, .git, .htaccess itself).
+<FilesMatch "^\.">
+    Require all denied
+</FilesMatch>
+
+# Block direct access to PHP includes if anyone tries.
+<FilesMatch "(^#.*#|\.(bak|config|dist|fla|in[ci]|log|orig|psd|sh|sql|sw[op])|~)$">
+    Require all denied
+</FilesMatch>
+
+# No caching for admin pages — always fresh.
+<IfModule mod_headers.c>
+    Header set Cache-Control "no-store, no-cache, must-revalidate, max-age=0"
+    Header set Pragma "no-cache"
+    Header set Expires "0"
+    Header set X-Frame-Options "SAMEORIGIN"
+    Header set X-Content-Type-Options "nosniff"
+    Header set Referrer-Policy "strict-origin-when-cross-origin"
+</IfModule>
+
+# Default document.
+DirectoryIndex index.php
