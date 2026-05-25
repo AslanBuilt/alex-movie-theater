@@ -15,36 +15,46 @@ require TEMPLATES_PATH . '/header.php';
 ?>
 
 <!-- Hero -->
-<section class="hero">
-    <div class="container">
-        <p class="hero-eyebrow">Alexandria, Indiana &bull; Est. Independent Cinema</p>
-        <h1>The <span>Alex</span> Theatre</h1>
-        <p class="hero-tagline">Your community's two-screen independent movie house &mdash; affordable tickets, real movies.</p>
-        <div class="hero-rule"></div>
+<div class="hero-split">
+    <div class="hero-text">
+        <p class="hero-eyebrow-split">Alexandria, Indiana &bull; Independent Cinema</p>
+        <h1 class="hero-headline">Real Movies.<br>Five Dollar<br>Tickets.</h1>
+        <p class="hero-sub">Your neighborhood two-screen theater &mdash; real films, affordable prices, for everyone.</p>
         <div class="hero-actions">
-            <a href="<?= SQUARE_URL ?>" class="btn btn-crimson" target="_blank" rel="noopener">Buy Tickets Online</a>
-            <a href="<?= url('location.php') ?>" class="btn btn-outline">Location &amp; Parking</a>
+            <a href="#now-showing" class="btn btn-crimson">See This Week's Showtimes</a>
+            <a href="<?= url('private-screenings.php') ?>" class="btn btn-outline">Book the Theatre</a>
         </div>
     </div>
-</section>
+    <div class="hero-image">
+        <?php $heroImgPath = __DIR__ . '/assets/images/hero-theater.jpg'; ?>
+        <?php if (file_exists($heroImgPath)): ?>
+            <img src="<?= asset('images/hero-theater.jpg') ?>" alt="Alex Theatre exterior, Alexandria Indiana">
+        <?php else: ?>
+            <div class="hero-placeholder">
+                <div class="hero-placeholder-inner">
+                    <div class="hero-placeholder-title">Alex<br>Theatre</div>
+                    <div class="hero-placeholder-sub">407 N. Harrison St &bull; Alexandria, IN</div>
+                </div>
+            </div>
+        <?php endif; ?>
+    </div>
+</div>
 
-<!-- Pricing Strip -->
-<div class="info-strip">
-    <div class="container">
-        <div class="strip-items">
-            <span>Adults &mdash; <strong>$5</strong></span>
-            <span class="sep">|</span>
-            <span>Children &mdash; <strong>$3</strong></span>
-            <span class="sep">|</span>
-            <span>&#x260E; <a href="tel:<?= SITE_PHONE ?>" style="color:inherit"><?= e(SITE_PHONE) ?></a></span>
-            <span class="sep">|</span>
-            <span>407 N. Harrison St, Alexandria IN</span>
-        </div>
+<!-- Info Bar -->
+<div class="info-bar">
+    <div class="info-bar-items">
+        <span>Adults &mdash; $5</span>
+        <span class="info-bar-sep">&bull;</span>
+        <span>Kids 12 &amp; Under &mdash; $3</span>
+        <span class="info-bar-sep">&bull;</span>
+        <span>407 N. Harrison St, Alexandria IN</span>
+        <span class="info-bar-sep">&bull;</span>
+        <span><a href="tel:<?= SITE_PHONE ?>"><?= e(SITE_PHONE) ?></a></span>
     </div>
 </div>
 
 <!-- Now Showing -->
-<section>
+<section id="now-showing">
     <div class="container">
         <div class="section-header">
             <p class="section-label">On the Screen This Week</p>
@@ -94,7 +104,7 @@ require TEMPLATES_PATH . '/header.php';
                     <?php endif; ?>
 
                     <div class="movie-cta">
-                        <a href="<?= SQUARE_URL ?>" class="btn btn-crimson" target="_blank" rel="noopener">Buy Tickets</a>
+                        <a href="<?= e(TICKETS_URL) ?>" class="btn btn-crimson" target="_blank" rel="noopener">Buy Tickets</a>
                         <?php if ($onlineOnly): ?>
                             <span class="online-required">&#x26A0; Small screen tickets must be purchased online</span>
                         <?php endif; ?>
@@ -131,7 +141,7 @@ require TEMPLATES_PATH . '/header.php';
                     </div>
 
                     <div class="movie-cta">
-                        <a href="<?= SQUARE_URL ?>" class="btn btn-crimson" target="_blank" rel="noopener">Buy Tickets</a>
+                        <a href="<?= e(TICKETS_URL) ?>" class="btn btn-crimson" target="_blank" rel="noopener">Buy Tickets</a>
                     </div>
                 </div>
             </div>
@@ -162,7 +172,7 @@ require TEMPLATES_PATH . '/header.php';
                     </div>
 
                     <div class="movie-cta">
-                        <a href="<?= SQUARE_URL ?>" class="btn btn-crimson" target="_blank" rel="noopener">Buy Tickets</a>
+                        <a href="<?= e(TICKETS_URL) ?>" class="btn btn-crimson" target="_blank" rel="noopener">Buy Tickets</a>
                         <span class="online-required">&#x26A0; Small screen tickets must be purchased online</span>
                     </div>
                 </div>
@@ -247,11 +257,11 @@ require TEMPLATES_PATH . '/header.php';
 
         <div class="info-grid">
             <div class="info-card">
-                <h3>&#x1F4CD; Location</h3>
+                <h3>Location</h3>
                 <p>407 N. Harrison Street<br>Alexandria, IN 46001<br><br>5 blocks north of W. Washington St, 6 blocks west of State Rd 9.</p>
             </div>
             <div class="info-card">
-                <h3>&#x1F3AA; What We Offer</h3>
+                <h3>What We Offer</h3>
                 <ul>
                     <li>Two-screen independent theatre</li>
                     <li>Free senior movies (55+)</li>
@@ -261,7 +271,7 @@ require TEMPLATES_PATH . '/header.php';
                 </ul>
             </div>
             <div class="info-card">
-                <h3>&#x1F4DE; Contact</h3>
+                <h3>Contact</h3>
                 <p>Phone: <a href="tel:<?= SITE_PHONE ?>"><?= e(SITE_PHONE) ?></a><br><br>
                 Follow us on Facebook and Instagram for the latest updates and announcements.</p>
             </div>

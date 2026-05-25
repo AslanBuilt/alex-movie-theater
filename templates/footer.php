@@ -9,8 +9,8 @@
                 <p><?= e(SITE_ADDRESS) ?><br>
                 Phone: <a href="tel:<?= e(SITE_PHONE) ?>"><?= e(SITE_PHONE) ?></a></p>
                 <div class="social-links">
-                    <a href="<?= FACEBOOK_URL ?>" target="_blank" rel="noopener">&#x1F4D8; Facebook</a>
-                    <a href="<?= INSTAGRAM_URL ?>" target="_blank" rel="noopener">&#x1F4F7; Instagram</a>
+                    <a href="<?= FACEBOOK_URL ?>" target="_blank" rel="noopener">Facebook</a>
+                    <a href="<?= INSTAGRAM_URL ?>" target="_blank" rel="noopener">Instagram</a>
                 </div>
             </div>
 
