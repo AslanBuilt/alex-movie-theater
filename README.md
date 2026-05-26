@@ -52,13 +52,18 @@ See [`docs/HANDOFF.md`](docs/HANDOFF.md) for the full cPanel walkthrough: creati
 
 Deployment is automated via GitHub Actions (`.github/workflows/deploy.yml`). Every push to `master` triggers an FTP deploy to `/cs/alex-movie-theater/` on parityrfp.com.
 
-Required repository secrets:
+### REQUIRED: Add GitHub Secrets (site won't deploy without these)
 
-| Secret | Value |
-|--------|-------|
+1. Go to **https://github.com/2KTay/alex-movie-theater/settings/secrets/actions**
+2. Click **New repository secret** for each of the following:
+
+| Secret name | Value |
+|-------------|-------|
 | `FTP_HOST` | `72.167.208.71` |
 | `FTP_USERNAME` | `DW@parityrfp.com` |
-| `FTP_PASSWORD` | (private) |
+| `FTP_PASSWORD` | *(FTP password from cPanel → FTP Accounts on parityrfp.com)* |
+
+3. After adding all three, push any commit to `master` (or go to **Actions → Run workflow**) to trigger a deploy.
 
 The workflow uploads `public/` to the web root and `includes/`, `templates/`, `config/` (without `database.php`), and `database/` (without `seed.sql`) to sibling directories.
 
