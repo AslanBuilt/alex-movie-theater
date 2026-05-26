@@ -19,16 +19,24 @@ require TEMPLATES_PATH . '/header.php';
     <div class="hero-text">
         <p class="hero-eyebrow-split">Alexandria, Indiana &bull; Independent Cinema</p>
         <h1 class="hero-headline">Real Movies.<br>Five Dollar<br>Tickets.</h1>
-        <p class="hero-sub">Your neighborhood two-screen theater &mdash; real films, affordable prices, for everyone.</p>
+        <p class="hero-sub">Your neighborhood two-screen theater since the marquee was new.</p>
         <div class="hero-actions">
             <a href="#now-showing" class="btn btn-crimson">See This Week's Showtimes</a>
             <a href="<?= url('private-screenings.php') ?>" class="btn btn-outline">Book the Theatre</a>
         </div>
     </div>
     <div class="hero-image">
-        <?php $heroImgPath = __DIR__ . '/assets/images/hero-theater.jpg'; ?>
-        <?php if (file_exists($heroImgPath)): ?>
-            <img src="<?= asset('images/hero-theater.jpg') ?>" alt="Alex Theatre exterior, Alexandria Indiana">
+        <?php
+            $heroImgPath = '';
+            foreach (['hero-theater.jpg', 'hero-theater.png', 'hero-theater.webp'] as $heroFile) {
+                if (file_exists(__DIR__ . '/assets/images/' . $heroFile)) {
+                    $heroImgPath = $heroFile;
+                    break;
+                }
+            }
+        ?>
+        <?php if ($heroImgPath !== ''): ?>
+            <img src="<?= asset('images/' . e($heroImgPath)) ?>" alt="Alex Theatre exterior, Alexandria Indiana">
         <?php else: ?>
             <div class="hero-placeholder">
                 <div class="hero-placeholder-inner">
@@ -106,7 +114,7 @@ require TEMPLATES_PATH . '/header.php';
                     <div class="movie-cta">
                         <a href="<?= e(TICKETS_URL) ?>" class="btn btn-crimson" target="_blank" rel="noopener">Buy Tickets</a>
                         <?php if ($onlineOnly): ?>
-                            <span class="online-required">&#x26A0; Small screen tickets must be purchased online</span>
+                            <span class="online-required">Small screen tickets must be purchased online</span>
                         <?php endif; ?>
                     </div>
                 </div>
@@ -173,7 +181,7 @@ require TEMPLATES_PATH . '/header.php';
 
                     <div class="movie-cta">
                         <a href="<?= e(TICKETS_URL) ?>" class="btn btn-crimson" target="_blank" rel="noopener">Buy Tickets</a>
-                        <span class="online-required">&#x26A0; Small screen tickets must be purchased online</span>
+                        <span class="online-required">Small screen tickets must be purchased online</span>
                     </div>
                 </div>
             </div>

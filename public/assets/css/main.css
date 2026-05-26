@@ -27,7 +27,7 @@ body {
     background-color: var(--bg-primary);
     color: var(--text-primary);
     line-height: 1.65;
-    font-size: 17px;
+    font-size: 18px;
 }
 
 img { max-width: 100%; display: block; }
@@ -210,7 +210,10 @@ a:hover { color: var(--crimson-dark); }
 
 /* ── Buttons ── */
 .btn {
-    display: inline-block;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 48px;
     padding: 0.8rem 1.75rem;
     font-family: var(--font-body);
     font-size: 0.85rem;
@@ -237,13 +240,13 @@ a:hover { color: var(--crimson-dark); }
 
 .btn-outline {
     background: transparent;
-    color: var(--text-secondary);
-    border: 1.5px solid var(--border);
+    color: var(--crimson);
+    border: 2px solid var(--crimson);
 }
 
 .btn-outline:hover {
-    border-color: var(--crimson);
-    color: var(--crimson);
+    background: var(--crimson);
+    color: #FFFFFF;
 }
 
 /* ── Info Strip ── */
@@ -934,11 +937,11 @@ section { padding: 4rem 0; }
 
 .form-group label {
     display: block;
-    font-size: 0.8rem;
-    letter-spacing: 0.15em;
+    font-size: 0.85rem;
+    letter-spacing: 0.1em;
     text-transform: uppercase;
-    color: var(--text-secondary);
-    margin-bottom: 0.4rem;
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
     font-family: var(--font-body);
     font-weight: 700;
 }
@@ -947,8 +950,8 @@ section { padding: 4rem 0; }
 .form-group select,
 .form-group textarea {
     width: 100%;
-    padding: 0.8rem 1rem;
-    font-size: 1rem;
+    padding: 0.9rem 1rem;
+    font-size: 1.05rem;
     font-family: var(--font-body);
     background: #FFFFFF;
     color: var(--text-primary);
@@ -956,6 +959,7 @@ section { padding: 4rem 0; }
     border-radius: 3px;
     outline: none;
     transition: border-color 0.2s, box-shadow 0.2s;
+    min-height: 48px;
 }
 
 .form-group input::placeholder,
@@ -1090,7 +1094,7 @@ section { padding: 4rem 0; }
     width: 100%;
     height: 100%;
     object-fit: cover;
-    object-position: center top;
+    object-position: left top;
     display: block;
 }
 
