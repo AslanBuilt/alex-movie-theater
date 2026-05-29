@@ -37,19 +37,41 @@
 
 <main>
 
-<!-- Split Hero -->
-<div class="hero-split">
-  <div class="hero-text">
+<!-- Cinematic Hero Slideshow -->
+<div class="hero-cinematic">
+  <div class="photo-slideshow hero-slideshow">
+    <div class="slideshow-track">
+      <div class="slideshow-slide">
+        <img src="assets/images/hero-1.png" alt="Alex Theatre exterior, daytime" loading="eager">
+      </div>
+      <div class="slideshow-slide">
+        <img src="assets/images/hero-2.png" alt="Alex Theatre at night with neon sign" loading="eager">
+      </div>
+      <div class="slideshow-slide">
+        <img src="assets/images/hero-3.png" alt="Alex Theatre auditorium interior" loading="lazy">
+      </div>
+      <div class="slideshow-slide">
+        <img src="assets/images/hero-4.png" alt="Alex Theatre exterior with classic car" loading="lazy">
+      </div>
+    </div>
+    <button class="slideshow-btn slideshow-btn-prev" aria-label="Previous photo">&#8249;</button>
+    <button class="slideshow-btn slideshow-btn-next" aria-label="Next photo">&#8250;</button>
+    <div class="slideshow-dots">
+      <button class="slideshow-dot active" aria-label="Photo 1"></button>
+      <button class="slideshow-dot" aria-label="Photo 2"></button>
+      <button class="slideshow-dot" aria-label="Photo 3"></button>
+      <button class="slideshow-dot" aria-label="Photo 4"></button>
+    </div>
+  </div>
+  <div class="hero-overlay"></div>
+  <div class="hero-content">
     <p class="hero-eyebrow-split">Alexandria, Indiana &bull; Independent Cinema</p>
     <h1 class="hero-headline">Real Movies.<br>Five Dollar<br>Tickets.</h1>
     <p class="hero-sub">Your neighborhood two-screen theater since the marquee was new.</p>
     <div class="hero-actions">
       <a href="#now-showing" class="btn btn-crimson">See This Week's Showtimes</a>
-      <a href="private-screenings.html" class="btn btn-outline">Book the Theatre</a>
+      <a href="private-screenings.html" class="btn btn-outline-hero">Book the Theatre</a>
     </div>
-  </div>
-  <div class="hero-image">
-    <img src="assets/images/hero-theater.png" alt="Alex Theatre exterior, Alexandria Indiana">
   </div>
 </div>
 
@@ -156,45 +178,6 @@
         <div class="film-title">Toy Story 5</div>
         <div class="film-status">Coming Soon</div>
       </div>
-    </div>
-  </div>
-</section>
-
-<!-- Photo Gallery -->
-<section class="gallery-section">
-  <div class="container">
-    <div class="section-header centered">
-      <p class="section-label">Life at the Alex</p>
-      <h2 class="section-title">Inside the Theatre</h2>
-      <div class="section-divider centered"></div>
-    </div>
-  </div>
-  <div class="photo-slideshow">
-    <div class="slideshow-track">
-      <div class="slideshow-slide">
-        <img src="assets/images/gallery/gallery-1.png" alt="Alex Theatre exterior, daytime">
-        <div class="slideshow-caption">407 N. Harrison St · Alexandria, Indiana</div>
-      </div>
-      <div class="slideshow-slide">
-        <img src="assets/images/gallery/gallery-2.png" alt="Alex Theatre exterior with classic car">
-        <div class="slideshow-caption">The Alex · A Neighborhood Landmark</div>
-      </div>
-      <div class="slideshow-slide">
-        <img src="assets/images/gallery/gallery-3.png" alt="Alex Theatre auditorium interior">
-        <div class="slideshow-caption">Two Screens · Classic Movie Experience</div>
-      </div>
-      <div class="slideshow-slide">
-        <img src="assets/images/gallery/gallery-4.png" alt="Alex Theatre at night with neon sign">
-        <div class="slideshow-caption">Open Every Weekend · Come See a Show</div>
-      </div>
-    </div>
-    <button class="slideshow-btn slideshow-btn-prev" aria-label="Previous photo">&#8249;</button>
-    <button class="slideshow-btn slideshow-btn-next" aria-label="Next photo">&#8250;</button>
-    <div class="slideshow-dots">
-      <button class="slideshow-dot active" aria-label="Photo 1"></button>
-      <button class="slideshow-dot" aria-label="Photo 2"></button>
-      <button class="slideshow-dot" aria-label="Photo 3"></button>
-      <button class="slideshow-dot" aria-label="Photo 4"></button>
     </div>
   </div>
 </section>
