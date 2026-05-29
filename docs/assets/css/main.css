@@ -369,7 +369,8 @@ section { padding: 4rem 0; }
 
 .movie-poster {
     background: #1A1210;
-    height: 400px;
+    width: 100%;
+    aspect-ratio: 16 / 9;
     border-bottom: 1px solid var(--border);
     position: relative;
     overflow: hidden;
@@ -379,9 +380,14 @@ section { padding: 4rem 0; }
     width: 100%;
     height: 100%;
     object-fit: cover;
-    object-position: center 15%;
+    object-position: center center;
     display: block;
     transition: transform 0.4s ease;
+}
+
+.movie-poster img[src*="mandalorian"],
+.movie-poster img[src*="starwars"] {
+    object-position: center 45%;
 }
 
 .movie-card:hover .movie-poster img {
@@ -1136,7 +1142,6 @@ section { padding: 4rem 0; }
     .movies-grid { grid-template-columns: 1fr; }
     section { padding: 2.75rem 0; }
     .two-col { grid-template-columns: 1fr; }
-    .movie-poster { height: 340px; }
     .senior-banner { height: 200px; }
 }
 
