@@ -379,15 +379,10 @@ section { padding: 4rem 0; }
 .movie-poster img {
     width: 100%;
     height: 100%;
-    object-fit: cover;
+    object-fit: contain;
     object-position: center center;
     display: block;
     transition: transform 0.4s ease;
-}
-
-.movie-poster img[src*="mandalorian"],
-.movie-poster img[src*="starwars"] {
-    object-position: center 45%;
 }
 
 .movie-card:hover .movie-poster img {
@@ -1530,4 +1525,74 @@ section { padding: 4rem 0; }
     object-fit: cover;
     object-position: center center;
     display: block;
+}
+
+/* ── Google Reviews ── */
+.reviews-section {
+    margin-top: 2rem;
+    border-top: 2px solid var(--crimson);
+    padding-top: 1.5rem;
+}
+
+.reviews-header {
+    display: flex;
+    align-items: baseline;
+    gap: 0.6rem;
+    margin-bottom: 1.25rem;
+}
+
+.reviews-label {
+    font-family: var(--font-body);
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+}
+
+.reviews-google-badge {
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    opacity: 0.7;
+}
+
+.review-item {
+    padding: 0.8rem 0;
+    border-bottom: 1px solid var(--border);
+}
+
+.review-item:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+.review-meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0.3rem;
+}
+
+.review-name {
+    font-family: var(--font-body);
+    font-weight: 700;
+    font-size: 0.88rem;
+    color: var(--text-primary);
+}
+
+.review-stars {
+    color: #F5A623;
+    font-size: 0.72rem;
+    letter-spacing: 0.04em;
+}
+
+.review-time {
+    font-size: 0.72rem;
+    color: var(--text-muted);
+}
+
+.review-text {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    line-height: 1.65;
 }

@@ -53,6 +53,103 @@ require TEMPLATES_PATH . '/header.php';
                     <h3>Questions?</h3>
                     <p>Contact Senior Essential Connections or call the theatre at <a href="tel:<?= SITE_PHONE ?>"><?= e(SITE_PHONE) ?></a>.</p>
                 </div>
+
+                <div class="reviews-section">
+                    <div class="reviews-header">
+                        <span class="reviews-label">Google Reviews</span>
+                        <span class="reviews-google-badge">via Google</span>
+                    </div>
+
+                    <div class="review-item">
+                        <div class="review-meta">
+                            <span class="review-name">Jackie</span>
+                            <span class="review-time">2 months ago</span>
+                        </div>
+                        <div class="review-stars">★★★★★</div>
+                        <p class="review-text">What a great budget friendly place to take the family to see a movie! Even the concessions are budget friendly.</p>
+                    </div>
+
+                    <div class="review-item">
+                        <div class="review-meta">
+                            <span class="review-name">Robin</span>
+                            <span class="review-time">3 months ago</span>
+                        </div>
+                        <div class="review-stars">★★★★★</div>
+                        <p class="review-text">We love this historical movie theater. Staff and owners are super nice. Great hospitality.</p>
+                    </div>
+
+                    <div class="review-item">
+                        <div class="review-meta">
+                            <span class="review-name">Tony</span>
+                            <span class="review-time">5 months ago</span>
+                        </div>
+                        <div class="review-stars">★★★★★</div>
+                        <p class="review-text">Clean vintage type theatre with more of today's amenities. Off street parking, clean and nice. Level low ground facility and no stairs.</p>
+                    </div>
+
+                    <div class="review-item">
+                        <div class="review-meta">
+                            <span class="review-name">Devan</span>
+                            <span class="review-time">8 months ago</span>
+                        </div>
+                        <div class="review-stars">★★★★★</div>
+                        <p class="review-text">I just love it here — we bring the kids and have a wonderful time. It's affordable to go more than once every few months with 2 adults and 3 kids.</p>
+                    </div>
+
+                    <div class="review-item">
+                        <div class="review-meta">
+                            <span class="review-name">Lil Miracles</span>
+                            <span class="review-time">10 months ago</span>
+                        </div>
+                        <div class="review-stars">★★★★★</div>
+                        <p class="review-text">We had such a great time! A bunch of our volunteers went to see a movie and will be going back. You just can't beat the price.</p>
+                    </div>
+
+                    <div class="review-item">
+                        <div class="review-meta">
+                            <span class="review-name">Kaitlyn</span>
+                            <span class="review-time">6 months ago</span>
+                        </div>
+                        <div class="review-stars">★★★★★</div>
+                        <p class="review-text">I was pleasantly surprised. I really like this little theater and the staff are amazing!</p>
+                    </div>
+
+                    <div class="review-item">
+                        <div class="review-meta">
+                            <span class="review-name">Melissa</span>
+                            <span class="review-time">4 months ago</span>
+                        </div>
+                        <div class="review-stars">★★★★★</div>
+                        <p class="review-text">Always a good time but definitely bring a blanket because it is freezing in the theater.</p>
+                    </div>
+
+                    <div class="review-item">
+                        <div class="review-meta">
+                            <span class="review-name">Brian</span>
+                            <span class="review-time">7 months ago</span>
+                        </div>
+                        <div class="review-stars">★★★★★</div>
+                        <p class="review-text">I love the vintage feel of this place. The prices are amazing and it's never too busy.</p>
+                    </div>
+
+                    <div class="review-item">
+                        <div class="review-meta">
+                            <span class="review-name">Stephanie</span>
+                            <span class="review-time">11 months ago</span>
+                        </div>
+                        <div class="review-stars">★★★★★</div>
+                        <p class="review-text">It's the most nostalgic adorable theater!! Really feels like a comfy cozy living room.</p>
+                    </div>
+
+                    <div class="review-item">
+                        <div class="review-meta">
+                            <span class="review-name">Jim</span>
+                            <span class="review-time">a year ago</span>
+                        </div>
+                        <div class="review-stars">★★★★★</div>
+                        <p class="review-text">Really neat small town mom and pop operation. Prices are super reasonable. First run movies at second run pricing — worth making the trip from surrounding counties.</p>
+                    </div>
+                </div>
             </div>
 
             <div>
