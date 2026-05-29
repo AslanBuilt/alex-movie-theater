@@ -379,7 +379,7 @@ section { padding: 4rem 0; }
     width: 100%;
     height: 100%;
     object-fit: cover;
-    object-position: center center;
+    object-position: center 15%;
     display: block;
     transition: transform 0.4s ease;
 }
@@ -1136,6 +1136,8 @@ section { padding: 4rem 0; }
     .movies-grid { grid-template-columns: 1fr; }
     section { padding: 2.75rem 0; }
     .two-col { grid-template-columns: 1fr; }
+    .movie-poster { height: 340px; }
+    .senior-banner { height: 200px; }
 }
 
 @media (max-width: 480px) {
@@ -1383,6 +1385,23 @@ section { padding: 4rem 0; }
     color: rgba(247,243,238,0.4);
     text-align: center;
     padding: 1.5rem;
+}
+
+/* ── Senior Movie Banner ── */
+.senior-banner {
+    border-radius: 5px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    margin-bottom: 2.5rem;
+    height: 260px;
+    position: relative;
+}
+.senior-banner img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center 40%;
+    display: block;
 }
 
 /* ── Gallery Section ── */

@@ -74,18 +74,19 @@ require TEMPLATES_PATH . '/header.php';
         <?php else: ?>
         <!-- Featured Coming Event -->
         <div class="movie-card" style="max-width:600px; margin-bottom:3rem;">
-            <div class="movie-poster" style="background: linear-gradient(135deg, #1a0a0a, #2a0a0a, #0a0a1a);">
+            <div class="movie-poster">
                 <span class="screen-badge" style="background:var(--crimson-dark);">Coming Soon</span>
+                <img src="<?= asset('images/escape-room.png') ?>" alt="Escape From The Lockdown Theatre" loading="lazy">
             </div>
             <div class="movie-card-body">
-                <h2 class="movie-title">Escape From The "Lockdown Theatre"</h2>
+                <h2 class="movie-title">Escape From The &ldquo;Lockdown Theatre&rdquo;</h2>
                 <p style="color:var(--text-secondary); font-size:0.9rem; margin-bottom:1rem; line-height:1.7;">
-                    An immersive escape room experience set inside the Alex Theatre itself. Details coming soon · follow our social media for the announcement.
+                    An immersive escape room experience set inside the Alex Theatre itself. Details coming soon &middot; follow our social media for the announcement.
                 </p>
-                <p style="color:var(--text-muted); font-size:0.8rem; margin-bottom:1.25rem;">Date &amp; details to be announced</p>
+                <p style="color:var(--text-muted); font-size:0.85rem; margin-bottom:1.25rem;">Date &amp; details to be announced</p>
                 <div class="social-links">
-                    <a href="<?= FACEBOOK_URL ?>" target="_blank" rel="noopener">&#x1F4D8; Follow on Facebook</a>
-                    <a href="<?= INSTAGRAM_URL ?>" target="_blank" rel="noopener">&#x1F4F7; Follow on Instagram</a>
+                    <a href="<?= FACEBOOK_URL ?>" target="_blank" rel="noopener">Follow on Facebook</a>
+                    <a href="<?= INSTAGRAM_URL ?>" target="_blank" rel="noopener">Follow on Instagram</a>
                 </div>
             </div>
         </div>
