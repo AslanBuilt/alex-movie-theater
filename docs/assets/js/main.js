@@ -59,10 +59,17 @@ document.addEventListener('DOMContentLoaded', function () {
         var current = 0;
         var total   = slides.length;
         var timer;
+        var isFade  = show.classList.contains('hero-slideshow');
 
         function goTo(idx) {
             current = (idx + total) % total;
-            track.style.transform = 'translateX(-' + (current * 100) + '%)';
+            if (isFade) {
+                slides.forEach(function (s, i) {
+                    s.classList.toggle('active', i === current);
+                });
+            } else {
+                track.style.transform = 'translateX(-' + (current * 100) + '%)';
+            }
             dots.forEach(function (d, i) {
                 d.classList.toggle('active', i === current);
             });
@@ -70,7 +77,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         function startTimer() {
             clearInterval(timer);
-            timer = setInterval(function () { goTo(current + 1); }, 5000);
+            timer = setInterval(function () { goTo(current + 1); }, 4500);
         }
 
         if (prev) prev.addEventListener('click', function () { goTo(current - 1); startTimer(); });
