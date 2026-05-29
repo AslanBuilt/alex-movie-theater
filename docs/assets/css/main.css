@@ -110,7 +110,7 @@ a:hover { color: var(--crimson-dark); }
 .nav-menu {
     display: flex;
     align-items: center;
-    gap: 0.1rem;
+    gap: 0;
     list-style: none;
     margin: 0;
     padding: 0;
@@ -118,11 +118,11 @@ a:hover { color: var(--crimson-dark); }
 
 .nav-link {
     color: var(--text-secondary);
-    font-size: 0.88rem;
+    font-size: 0.93rem;
     font-weight: 700;
-    letter-spacing: 0.06em;
+    letter-spacing: 0.05em;
     text-transform: uppercase;
-    padding: 0.5rem 0.65rem;
+    padding: 0.5rem 0.55rem;
     border-radius: 3px;
     transition: color 0.3s ease, transform 0.2s ease;
     text-decoration: none;
@@ -247,12 +247,12 @@ a:hover { color: var(--crimson-dark); }
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    min-height: 48px;
-    padding: 0.8rem 1.75rem;
+    min-height: 50px;
+    padding: 0.85rem 1.85rem;
     font-family: var(--font-body);
-    font-size: 0.85rem;
+    font-size: 0.92rem;
     font-weight: 700;
-    letter-spacing: 0.1em;
+    letter-spacing: 0.09em;
     text-transform: uppercase;
     border-radius: 3px;
     transition: all 0.3s ease;
@@ -316,8 +316,8 @@ a:hover { color: var(--crimson-dark); }
 section { padding: 4rem 0; }
 
 .section-label {
-    font-size: 0.875rem;
-    letter-spacing: 0.2em;
+    font-size: 0.92rem;
+    letter-spacing: 0.18em;
     text-transform: uppercase;
     color: var(--crimson);
     margin-bottom: 0.5rem;
@@ -441,7 +441,7 @@ section { padding: 4rem 0; }
 
 .movie-title {
     font-family: var(--font-display);
-    font-size: 1.3rem;
+    font-size: 1.4rem;
     font-weight: 700;
     font-style: italic;
     color: var(--text-primary);
@@ -450,8 +450,8 @@ section { padding: 4rem 0; }
 }
 
 .showtimes-label {
-    font-size: 0.85rem;
-    letter-spacing: 0.18em;
+    font-size: 0.92rem;
+    letter-spacing: 0.15em;
     text-transform: uppercase;
     color: var(--crimson);
     margin-bottom: 0.6rem;
@@ -463,10 +463,11 @@ section { padding: 4rem 0; }
     display: flex;
     justify-content: space-between;
     align-items: baseline;
-    padding: 0.55rem 0;
+    padding: 0.65rem 0;
     border-bottom: 1px solid var(--border-light);
-    font-size: 1rem;
-    gap: 1rem;
+    font-size: 1.05rem;
+    gap: 0.75rem;
+    flex-wrap: wrap;
 }
 
 .showtime-row:last-of-type { border-bottom: none; }
@@ -476,14 +477,14 @@ section { padding: 4rem 0; }
 .showtime-times {
     color: var(--text-primary);
     font-weight: 700;
-    font-size: 0.95rem;
+    font-size: 1.05rem;
     letter-spacing: 0.02em;
 }
 
 .movie-cta { margin-top: 1.25rem; }
 
 .online-required {
-    font-size: 0.8rem;
+    font-size: 0.9rem;
     color: var(--text-muted);
     margin-top: 0.6rem;
     display: block;
@@ -538,8 +539,8 @@ section { padding: 4rem 0; }
 }
 
 .coming-soon-card .film-status {
-    font-size: 0.72rem;
-    letter-spacing: 0.22em;
+    font-size: 0.82rem;
+    letter-spacing: 0.18em;
     text-transform: uppercase;
     color: rgba(247,243,238,0.4);
     font-family: var(--font-body);
@@ -595,9 +596,9 @@ section { padding: 4rem 0; }
 
 .info-card h3 {
     font-family: 'Oswald', var(--font-body);
-    font-size: 1rem;
+    font-size: 1.05rem;
     text-transform: uppercase;
-    letter-spacing: 0.14em;
+    letter-spacing: 0.12em;
     color: var(--text-primary);
     margin-bottom: 1rem;
     font-weight: 700;
@@ -637,7 +638,7 @@ section { padding: 4rem 0; }
 }
 
 .breadcrumb {
-    font-size: 0.85rem;
+    font-size: 0.92rem;
     color: var(--text-secondary);
     margin-bottom: 0.75rem;
     letter-spacing: 0.05em;
@@ -691,8 +692,8 @@ section { padding: 4rem 0; }
 
 .contact-detail { flex: 1; }
 .contact-detail .label {
-    font-size: 0.75rem;
-    letter-spacing: 0.18em;
+    font-size: 0.82rem;
+    letter-spacing: 0.14em;
     text-transform: uppercase;
     color: var(--text-muted);
     margin-bottom: 0.25rem;
@@ -700,7 +701,7 @@ section { padding: 4rem 0; }
     font-weight: 700;
 }
 .contact-detail .value {
-    font-size: 1rem;
+    font-size: 1.1rem;
     color: var(--text-primary);
 }
 
@@ -744,9 +745,9 @@ section { padding: 4rem 0; }
 
 .policy-box h3 {
     font-family: 'Oswald', var(--font-body);
-    font-size: 0.85rem;
+    font-size: 0.92rem;
     text-transform: uppercase;
-    letter-spacing: 0.16em;
+    letter-spacing: 0.14em;
     color: var(--crimson);
     margin-bottom: 0.6rem;
     font-weight: 700;
@@ -844,6 +845,21 @@ section { padding: 4rem 0; }
 .next-showing-card .film-meta {
     font-size: 0.95rem;
     color: var(--text-secondary);
+}
+
+/* ── Location Photo ── */
+.location-photo {
+    border-radius: 5px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    margin-bottom: 1.5rem;
+}
+.location-photo img {
+    width: 100%;
+    height: 260px;
+    object-fit: cover;
+    object-position: center center;
+    display: block;
 }
 
 /* ── Map ── */
@@ -953,8 +969,8 @@ section { padding: 4rem 0; }
 
 .footer-col h4 {
     font-family: var(--font-body);
-    font-size: 0.78rem;
-    letter-spacing: 0.2em;
+    font-size: 0.88rem;
+    letter-spacing: 0.18em;
     text-transform: uppercase;
     color: #FFFFFF;
     margin-bottom: 1rem;
@@ -1083,7 +1099,7 @@ section { padding: 4rem 0; }
 .mb-3 { margin-bottom: 1.5rem; }
 
 /* ── Responsive ── */
-@media (max-width: 960px) {
+@media (max-width: 1080px) {
     .nav-menu {
         display: none;
         position: absolute;
@@ -1097,10 +1113,11 @@ section { padding: 4rem 0; }
         align-items: stretch;
         gap: 0;
         padding: 0.5rem;
+        z-index: 999;
     }
 
     .nav-menu.open { display: flex; }
-    .nav-link { padding: 0.85rem 1rem; font-size: 0.9rem; }
+    .nav-link { padding: 0.9rem 1rem; font-size: 1rem; }
     .nav-cta { margin-left: 0; margin-top: 0.25rem; text-align: center; }
     .nav-toggle { display: flex; }
     .navbar { position: relative; }
@@ -1338,14 +1355,15 @@ section { padding: 4rem 0; }
 }
 
 @media (max-width: 600px) {
-    .info-bar-items { gap: 0.25rem; }
-    .info-bar-sep { margin: 0 0.5rem; }
-    .info-bar-items { font-size: 0.75rem; }
+    .info-bar-sep { margin: 0 0.55rem; }
+    .info-bar-items { font-size: 0.82rem; }
+    .info-bar-address,
+    .info-bar-address-sep { display: none; }
 }
 
-/* ── Info Bar — bigger text ── */
+/* ── Info Bar — desktop text size ── */
 .info-bar-items {
-    font-size: 0.92rem;
+    font-size: 0.95rem;
 }
 
 /* ── Movie poster placeholder — fix height ── */
