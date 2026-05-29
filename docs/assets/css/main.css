@@ -494,7 +494,7 @@ section { padding: 4rem 0; }
 
 /* ── Coming Soon ── */
 .coming-soon-section {
-    background: #111111;
+    background: #1A1210;
     border-top: 3px solid var(--crimson);
     border-bottom: none;
 }
@@ -1525,6 +1525,75 @@ section { padding: 4rem 0; }
     object-fit: cover;
     object-position: center center;
     display: block;
+}
+
+/* ── Concession Cards ── */
+.concession-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+    margin-bottom: 2.5rem;
+}
+
+.concession-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    overflow: hidden;
+    transition: transform 0.25s, box-shadow 0.25s;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.concession-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+}
+
+.concession-visual {
+    background: #FAF8F5;
+    padding: 2.25rem 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-bottom: 1px solid var(--border);
+    min-height: 170px;
+}
+
+.concession-info {
+    padding: 1.4rem 1.5rem;
+}
+
+.concession-info h3 {
+    font-family: 'Oswald', var(--font-body);
+    font-size: 1rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--text-primary);
+    margin-bottom: 0.85rem;
+    padding-bottom: 0.6rem;
+    border-bottom: 2px solid var(--crimson);
+    display: inline-block;
+}
+
+.concession-info ul {
+    list-style: none;
+    margin: 0.75rem 0 0;
+    padding: 0;
+}
+
+.concession-info li {
+    padding: 0.42rem 0;
+    border-bottom: 1px solid var(--border-light);
+    font-size: 1rem;
+    color: var(--text-secondary);
+    line-height: 1.5;
+}
+
+.concession-info li:last-child { border-bottom: none; }
+
+@media (max-width: 640px) {
+    .concession-grid { grid-template-columns: 1fr; }
 }
 
 /* ── Google Reviews ── */
