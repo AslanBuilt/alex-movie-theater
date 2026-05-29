@@ -13,14 +13,14 @@ require TEMPLATES_PATH . '/header.php';
     <div class="container">
         <p class="breadcrumb"><a href="<?= url() ?>">Home</a><span class="sep">/</span>Concessions</p>
         <h1>Concession Stand</h1>
-        <p class="subtitle">Cheaper than other theaters &mdash; classic movie snacks done right.</p>
+        <p class="subtitle">Cheaper than other theaters · classic movie snacks done right.</p>
     </div>
 </section>
 
 <section>
     <div class="container">
         <div class="highlight-box">
-            <p><strong>Our prices are cheaper than other theaters</strong> &mdash; but not as cheap as fast food! Enjoy your favorites without breaking the bank. Prices are consistent with what you'd expect from a quality local cinema.</p>
+            <p><strong>Our prices are cheaper than other theaters</strong> · but not as cheap as fast food! Enjoy your favorites without breaking the bank. Prices are consistent with what you'd expect from a quality local cinema.</p>
         </div>
 
         <div class="section-header">
@@ -66,7 +66,7 @@ require TEMPLATES_PATH . '/header.php';
 
         <div class="policy-box mt-3">
             <h3>Concession Policies</h3>
-            <p>No outside food or beverages are permitted inside the theatre &mdash; this helps us keep ticket prices low for everyone. Exception: birthday cakes are allowed for private rental events. For current menu items and pricing, please call us at <a href="tel:<?= SITE_PHONE ?>"><?= e(SITE_PHONE) ?></a> or check with staff at the stand.</p>
+            <p>No outside food or beverages are permitted inside the theatre · this helps us keep ticket prices low for everyone. Exception: birthday cakes are allowed for private rental events. For current menu items and pricing, please call us at <a href="tel:<?= SITE_PHONE ?>"><?= e(SITE_PHONE) ?></a> or check with staff at the stand.</p>
         </div>
 
         <div style="text-align:center; margin-top:3rem;">

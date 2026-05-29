@@ -20,7 +20,7 @@ require TEMPLATES_PATH . '/header.php';
 <section>
     <div class="container">
         <div class="highlight-box">
-            <p><strong>Make it memorable.</strong> Rent out the Alex Theatre for a private experience your group will never forget &mdash; whether it's a birthday, a reunion, a corporate outing, or just a fun night out with friends.</p>
+            <p><strong>Make it memorable.</strong> Rent out the Alex Theatre for a private experience your group will never forget · whether it's a birthday, a reunion, a corporate outing, or just a fun night out with friends.</p>
         </div>
 
         <div class="section-header">

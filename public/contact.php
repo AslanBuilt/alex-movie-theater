@@ -13,7 +13,7 @@ require TEMPLATES_PATH . '/header.php';
     <div class="container">
         <p class="breadcrumb"><a href="<?= url() ?>">Home</a><span class="sep">/</span>Contact</p>
         <h1>Contact Us</h1>
-        <p class="subtitle">We'd love to hear from you &mdash; reach out anytime.</p>
+        <p class="subtitle">We'd love to hear from you · reach out anytime.</p>
     </div>
 </section>
 
@@ -120,7 +120,7 @@ require TEMPLATES_PATH . '/header.php';
                     </form>
 
                     <div id="cf-success" style="display:none" class="form-feedback form-success">
-                        <p>Thank you &mdash; your message has been sent. We&rsquo;ll get back to you soon.</p>
+                        <p>Thank you · your message has been sent. We&rsquo;ll get back to you soon.</p>
                     </div>
 
                     <div id="cf-error" style="display:none" class="form-feedback form-error">

@@ -21,8 +21,8 @@ document.addEventListener('DOMContentLoaded', function () {
     var mainEl = document.querySelector('main');
     if (mainEl) mainEl.classList.add('page-main');
 
-    // ── Stagger reveal on scroll (Intersection Observer) ──
-    var revealEls = document.querySelectorAll('.movie-card, .info-card, .coming-soon-card, .price-card, .rental-card, .next-showing-card, .highlight-box, .policy-box, section, .photo-slideshow');
+    // ── Stagger reveal on scroll (cards and components only — NOT sections) ──
+    var revealEls = document.querySelectorAll('.movie-card, .info-card, .coming-soon-card, .price-card, .rental-card, .next-showing-card, .highlight-box, .policy-box');
 
     if ('IntersectionObserver' in window) {
         var delay = 0;

@@ -13,7 +13,7 @@ require TEMPLATES_PATH . '/header.php';
     <div class="container">
         <p class="breadcrumb"><a href="<?= url() ?>">Home</a><span class="sep">/</span>Tickets</p>
         <h1>Buy Tickets</h1>
-        <p class="subtitle">Affordable seats for everyone &mdash; $5 adults, $3 children.</p>
+        <p class="subtitle">Affordable seats for everyone · $5 adults, $3 children.</p>
     </div>
 </section>
 

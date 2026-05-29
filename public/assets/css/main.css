@@ -492,113 +492,126 @@ section { padding: 4rem 0; }
 
 /* ── Coming Soon ── */
 .coming-soon-section {
-    background: var(--bg-secondary);
-    border-top: 1px solid var(--border);
-    border-bottom: 1px solid var(--border);
+    background: #111111;
+    border-top: 3px solid var(--crimson);
+    border-bottom: none;
 }
+
+.coming-soon-section .section-label { color: rgba(247,243,238,0.55); }
+.coming-soon-section .section-title { color: #FFFFFF; }
+.coming-soon-section .section-divider { background: var(--crimson); }
 
 .coming-soon-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-    gap: 1.5rem;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 0;
+    border: 1px solid rgba(255,255,255,0.08);
 }
 
 .coming-soon-card {
-    background: var(--bg-card);
-    border: 1px solid var(--border);
-    border-radius: 5px;
-    padding: 1.5rem;
-    text-align: center;
-    border-top: 3px solid var(--crimson);
-    box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+    padding: 2.5rem 2rem;
+    text-align: left;
+    border-right: 1px solid rgba(255,255,255,0.08);
+    border-bottom: none;
+    position: relative;
+}
+
+.coming-soon-card:last-child { border-right: none; }
+
+.coming-soon-card::before {
+    content: '';
+    display: block;
+    width: 24px;
+    height: 2px;
+    background: var(--crimson);
+    margin-bottom: 1.25rem;
 }
 
 .coming-soon-card .film-title {
     font-family: var(--font-display);
-    font-size: 1.05rem;
+    font-size: 1.25rem;
     font-style: italic;
-    color: var(--text-primary);
-    margin-bottom: 0.4rem;
+    font-weight: 700;
+    color: #FFFFFF;
+    margin-bottom: 0.65rem;
+    line-height: 1.2;
 }
 
 .coming-soon-card .film-status {
-    font-size: 0.75rem;
-    letter-spacing: 0.18em;
+    font-size: 0.72rem;
+    letter-spacing: 0.22em;
     text-transform: uppercase;
-    color: var(--text-muted);
+    color: rgba(247,243,238,0.4);
     font-family: var(--font-body);
+    font-weight: 700;
 }
 
 /* ── Pricing ── */
 .pricing-section { text-align: center; }
 
 .pricing-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-    gap: 1.5rem;
-    max-width: 420px;
+    display: flex;
+    justify-content: center;
+    gap: 5rem;
     margin: 0 auto 2rem;
 }
 
 .price-card {
-    background: var(--bg-secondary);
-    border: 1px solid var(--border);
-    border-radius: 5px;
-    padding: 2rem 1.5rem;
-    border-top: 3px solid var(--crimson);
+    padding: 0;
+    text-align: center;
 }
 
 .price-amount {
     font-family: var(--font-display);
-    font-size: 3rem;
+    font-size: clamp(4rem, 8vw, 6rem);
     color: var(--crimson);
     line-height: 1;
-    margin-bottom: 0.3rem;
+    margin-bottom: 0.5rem;
     font-style: italic;
+    font-weight: 700;
 }
 
 .price-label {
-    font-size: 0.8rem;
-    letter-spacing: 0.18em;
+    font-family: 'Oswald', var(--font-body);
+    font-size: 0.85rem;
+    letter-spacing: 0.2em;
     text-transform: uppercase;
-    color: var(--text-muted);
-    font-family: var(--font-body);
+    color: var(--text-secondary);
+    font-weight: 700;
 }
 
 /* ── Info Cards ── */
 .info-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-    gap: 1.5rem;
+    gap: 2.5rem;
 }
 
 .info-card {
-    background: var(--bg-secondary);
-    border: 1px solid var(--border);
-    border-radius: 5px;
-    padding: 1.75rem;
-    border-left: 3px solid var(--crimson);
+    padding: 0;
+    border-top: 2px solid var(--crimson);
+    padding-top: 1.5rem;
 }
 
 .info-card h3 {
-    font-family: var(--font-body);
-    font-size: 0.95rem;
+    font-family: 'Oswald', var(--font-body);
+    font-size: 1rem;
     text-transform: uppercase;
-    letter-spacing: 0.1em;
+    letter-spacing: 0.14em;
     color: var(--text-primary);
-    margin-bottom: 0.85rem;
+    margin-bottom: 1rem;
     font-weight: 700;
 }
 
 .info-card p, .info-card li {
     font-size: 1.05rem;
     color: var(--text-primary);
-    line-height: 1.75;
+    line-height: 1.8;
 }
 
 .info-card ul { list-style: none; }
-.info-card ul li { padding: 0.15rem 0; }
-.info-card ul li::before { content: '– '; color: var(--crimson); }
+.info-card ul li { padding: 0.2rem 0; }
+.info-card ul li::before { content: ''; }
 
 /* ── Page Hero ── */
 .page-hero {
@@ -638,16 +651,13 @@ section { padding: 4rem 0; }
 
 /* ── Highlight Box ── */
 .highlight-box {
-    background: rgba(139, 29, 51, 0.04);
-    border: 1px solid rgba(139, 29, 51, 0.18);
     border-left: 3px solid var(--crimson);
-    border-radius: 3px;
-    padding: 1.25rem 1.5rem;
-    margin-bottom: 2rem;
+    padding: 0 0 0 1.5rem;
+    margin-bottom: 2.5rem;
 }
 
-.highlight-box p { color: var(--text-secondary); font-size: 1rem; line-height: 1.7; }
-.highlight-box strong { color: var(--text-primary); }
+.highlight-box p { color: var(--text-primary); font-size: 1.1rem; line-height: 1.75; }
+.highlight-box strong { color: var(--crimson); }
 
 /* ── Contact ── */
 .contact-grid {
@@ -695,26 +705,27 @@ section { padding: 4rem 0; }
 }
 
 /* ── Parking ── */
-.parking-list { list-style: none; display: grid; gap: 0.65rem; }
+.parking-list { list-style: none; display: grid; gap: 0.85rem; }
 
 .parking-list li {
-    background: var(--bg-secondary);
-    border: 1px solid var(--border);
-    border-radius: 3px;
-    padding: 0.85rem 1rem;
-    font-size: 0.95rem;
-    color: var(--text-secondary);
+    padding: 0.65rem 0;
+    font-size: 1rem;
+    color: var(--text-primary);
     display: flex;
     align-items: center;
-    gap: 0.75rem;
+    gap: 0.85rem;
+    border-bottom: 1px solid var(--border-light);
 }
+
+.parking-list li:last-child { border-bottom: none; }
 
 .parking-list li::before {
     content: 'P';
     background: var(--crimson);
     color: #FFFFFF;
+    font-family: 'Oswald', var(--font-body);
     font-weight: 700;
-    font-size: 0.7rem;
+    font-size: 0.72rem;
     width: 22px;
     height: 22px;
     border-radius: 50%;
@@ -726,39 +737,35 @@ section { padding: 4rem 0; }
 
 /* ── Policy Box ── */
 .policy-box {
-    background: var(--bg-secondary);
-    border: 1px solid var(--border);
-    border-radius: 5px;
-    padding: 1.5rem;
+    border-left: 3px solid var(--crimson);
+    padding: 0 0 0 1.5rem;
     margin-top: 2rem;
 }
 
 .policy-box h3 {
-    font-family: var(--font-body);
-    font-size: 0.8rem;
+    font-family: 'Oswald', var(--font-body);
+    font-size: 0.85rem;
     text-transform: uppercase;
-    letter-spacing: 0.12em;
-    color: var(--text-muted);
-    margin-bottom: 0.75rem;
+    letter-spacing: 0.16em;
+    color: var(--crimson);
+    margin-bottom: 0.6rem;
     font-weight: 700;
 }
 
-.policy-box p { font-size: 0.95rem; color: var(--text-secondary); line-height: 1.7; }
+.policy-box p { font-size: 1rem; color: var(--text-secondary); line-height: 1.75; }
 
 /* ── Rental Cards ── */
 .rental-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-    gap: 1.5rem;
+    gap: 3rem;
     margin-bottom: 2rem;
 }
 
 .rental-card {
-    background: var(--bg-secondary);
-    border: 1px solid var(--border);
-    border-radius: 5px;
-    padding: 2rem;
-    border-top: 3px solid var(--border);
+    padding: 0;
+    border-top: 2px solid var(--border);
+    padding-top: 1.5rem;
 }
 
 .rental-card.featured { border-top-color: var(--crimson); }
@@ -821,11 +828,8 @@ section { padding: 4rem 0; }
 }
 
 .next-showing-card {
-    background: var(--bg-secondary);
-    border: 1px solid var(--border);
-    border-radius: 5px;
-    padding: 2rem;
     border-left: 3px solid var(--crimson);
+    padding: 0 0 0 1.5rem;
     margin-bottom: 2rem;
 }
 
@@ -1295,6 +1299,17 @@ section { padding: 4rem 0; }
     padding: 1.5rem;
 }
 
+/* ── Gallery Section ── */
+.gallery-section {
+    padding: 4rem 0 0;
+}
+
+/* ── Visit Info Section ── */
+.visit-section {
+    background: var(--cream);
+    border-top: 1px solid var(--border);
+}
+
 /* ── Photo Slideshow ── */
 .photo-slideshow {
     position: relative;
@@ -1394,16 +1409,14 @@ section { padding: 4rem 0; }
 
 /* ── Location gallery photo ── */
 .location-photo {
-    border-radius: 5px;
     overflow: hidden;
-    border: 1px solid var(--border);
     margin-bottom: 1.5rem;
     line-height: 0;
 }
 
 .location-photo img {
     width: 100%;
-    height: 280px;
+    height: 300px;
     object-fit: cover;
     object-position: center center;
     display: block;

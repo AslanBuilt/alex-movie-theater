@@ -17,7 +17,7 @@ require TEMPLATES_PATH . '/header.php';
     <div class="container">
         <p class="breadcrumb"><a href="<?= url() ?>">Home</a><span class="sep">/</span>Senior Movie</p>
         <h1>Free Senior Movie</h1>
-        <p class="subtitle">A community gift for seniors 55 and up &mdash; no ticket required.</p>
+        <p class="subtitle">A community gift for seniors 55 and up · no ticket required.</p>
     </div>
 </section>
 
@@ -42,7 +42,7 @@ require TEMPLATES_PATH . '/header.php';
                 </p>
 
                 <div class="highlight-box">
-                    <p><strong>Who qualifies?</strong> Any senior citizen 55 years of age or older. No ID check required &mdash; just arrive and take your seat.</p>
+                    <p><strong>Who qualifies?</strong> Any senior citizen 55 years of age or older. No ID check required · just arrive and take your seat.</p>
                 </div>
 
                 <div class="highlight-box">
@@ -74,7 +74,7 @@ require TEMPLATES_PATH . '/header.php';
                     <div class="next-showing-card">
                         <div class="film-name"><?= e($title !== '' ? $title : 'TBA — Check Back Soon') ?></div>
                         <div class="film-meta">
-                            <p style="margin-top:0.5rem;"><?= e($dateLine) ?><?php if ($time !== ''): ?> &mdash; <?= e($time) ?><?php endif; ?></p>
+                            <p style="margin-top:0.5rem;"><?= e($dateLine) ?><?php if ($time !== ''): ?> · <?= e($time) ?><?php endif; ?></p>
                             <?php if ($notes !== ''): ?>
                                 <p style="margin-top:0.5rem;"><?= e($notes) ?></p>
                             <?php else: ?>

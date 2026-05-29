@@ -38,7 +38,7 @@
         </div>
 
         <div class="footer-bottom">
-            <span>&copy; <?= date('Y') ?> Alex Movie Theatre &mdash; Alexandria, Indiana</span>
+            <span>&copy; <?= date('Y') ?> Alex Movie Theatre · Alexandria, Indiana</span>
             <span>$5 Adults &bull; $3 Children</span>
         </div>
     </div>

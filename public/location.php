@@ -85,7 +85,7 @@ require TEMPLATES_PATH . '/header.php';
 
                 <div class="info-card mt-3">
                     <h3>About Alexandria</h3>
-                    <p>Alexandria is a small, friendly town in east-central Indiana, approximately 50 miles northeast of Indianapolis. The Alex Theatre has been part of this community for years &mdash; bringing affordable, quality entertainment to families, seniors, and film fans of all ages.</p>
+                    <p>Alexandria is a small, friendly town in east-central Indiana, approximately 50 miles northeast of Indianapolis. The Alex Theatre has been part of this community for years · bringing affordable, quality entertainment to families, seniors, and film fans of all ages.</p>
                 </div>
             </div>
         </div>

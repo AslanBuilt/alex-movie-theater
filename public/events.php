@@ -80,7 +80,7 @@ require TEMPLATES_PATH . '/header.php';
             <div class="movie-card-body">
                 <h2 class="movie-title">Escape From The "Lockdown Theatre"</h2>
                 <p style="color:var(--text-secondary); font-size:0.9rem; margin-bottom:1rem; line-height:1.7;">
-                    An immersive escape room experience set inside the Alex Theatre itself. Details coming soon &mdash; follow our social media for the announcement.
+                    An immersive escape room experience set inside the Alex Theatre itself. Details coming soon · follow our social media for the announcement.
                 </p>
                 <p style="color:var(--text-muted); font-size:0.8rem; margin-bottom:1.25rem;">Date &amp; details to be announced</p>
                 <div class="social-links">
@@ -101,7 +101,7 @@ require TEMPLATES_PATH . '/header.php';
         <div class="info-grid">
             <div class="info-card">
                 <h3>Free Senior Movie</h3>
-                <p>Monthly free screenings for seniors 55 and up, sponsored by Senior Essential Connections. No ticket purchase required &mdash; just show up.</p>
+                <p>Monthly free screenings for seniors 55 and up, sponsored by Senior Essential Connections. No ticket purchase required · just show up.</p>
                 <a href="<?= url('senior-movie.php') ?>" class="btn btn-outline mt-2" style="display:inline-block; margin-top:1rem; font-size:0.8rem; padding:0.5rem 1rem;">Learn More</a>
             </div>
             <div class="info-card">
