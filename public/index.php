@@ -28,7 +28,7 @@ require TEMPLATES_PATH . '/header.php';
     <div class="hero-image">
         <?php
             $heroImgPath = '';
-            foreach (['hero-theater.jpg', 'hero-theater.png', 'hero-theater.webp'] as $heroFile) {
+            foreach (['hero-theater.png', 'hero-theater.jpg', 'hero-theater.webp'] as $heroFile) {
                 if (file_exists(__DIR__ . '/assets/images/' . $heroFile)) {
                     $heroImgPath = $heroFile;
                     break;
@@ -225,6 +225,46 @@ require TEMPLATES_PATH . '/header.php';
             </div>
         </div>
         <?php endif; ?>
+    </div>
+</section>
+
+<!-- Photo Gallery -->
+<section style="padding:0; overflow:hidden;">
+    <div class="section-header centered" style="padding:3rem 0 1.5rem;">
+        <p class="section-label">Life at the Alex</p>
+        <h2 class="section-title">Inside the Theatre</h2>
+        <div class="section-divider centered"></div>
+    </div>
+
+    <div class="photo-slideshow">
+        <div class="slideshow-track">
+            <div class="slideshow-slide">
+                <img src="<?= asset('images/gallery/gallery-1.png') ?>" alt="Alex Theatre exterior, daytime">
+                <div class="slideshow-caption">407 N. Harrison St &mdash; Alexandria, Indiana</div>
+            </div>
+            <div class="slideshow-slide">
+                <img src="<?= asset('images/gallery/gallery-2.png') ?>" alt="Alex Theatre exterior with classic car">
+                <div class="slideshow-caption">The Alex &mdash; A Neighborhood Landmark</div>
+            </div>
+            <div class="slideshow-slide">
+                <img src="<?= asset('images/gallery/gallery-3.png') ?>" alt="Alex Theatre auditorium interior">
+                <div class="slideshow-caption">Two Screens &mdash; Classic Movie Experience</div>
+            </div>
+            <div class="slideshow-slide">
+                <img src="<?= asset('images/gallery/gallery-4.png') ?>" alt="Alex Theatre at night with neon sign">
+                <div class="slideshow-caption">Open Every Weekend &mdash; Come See a Show</div>
+            </div>
+        </div>
+
+        <button class="slideshow-btn slideshow-btn-prev" aria-label="Previous photo">&#8249;</button>
+        <button class="slideshow-btn slideshow-btn-next" aria-label="Next photo">&#8250;</button>
+
+        <div class="slideshow-dots">
+            <button class="slideshow-dot active" aria-label="Photo 1"></button>
+            <button class="slideshow-dot" aria-label="Photo 2"></button>
+            <button class="slideshow-dot" aria-label="Photo 3"></button>
+            <button class="slideshow-dot" aria-label="Photo 4"></button>
+        </div>
     </div>
 </section>
 

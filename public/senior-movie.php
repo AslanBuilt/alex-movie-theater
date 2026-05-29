@@ -23,7 +23,7 @@ require TEMPLATES_PATH . '/header.php';
 
 <section>
     <div class="container">
-        <div class="senior-badge">&#x2605; Free Admission &bull; Ages 55 &amp; Up &bull; Sponsored by Senior Essential Connections</div>
+        <div class="senior-badge">Free Admission &bull; Ages 55 &amp; Up &bull; Sponsored by Senior Essential Connections</div>
 
         <div class="two-col">
             <div>
@@ -50,7 +50,7 @@ require TEMPLATES_PATH . '/header.php';
                 </div>
 
                 <div class="info-card mt-3">
-                    <h3>&#x1F4DE; Questions?</h3>
+                    <h3>Questions?</h3>
                     <p>Contact Senior Essential Connections directly for the latest scheduling information, or call the theatre at <a href="tel:<?= SITE_PHONE ?>"><?= e(SITE_PHONE) ?></a>.</p>
                 </div>
             </div>
@@ -95,12 +95,12 @@ require TEMPLATES_PATH . '/header.php';
                 <?php endif; ?>
 
                 <div class="info-card">
-                    <h3>&#x1F3AA; About Senior Essential Connections</h3>
+                    <h3>About Senior Essential Connections</h3>
                     <p>Senior Essential Connections is an organization dedicated to supporting and enriching the lives of older adults in the Alexandria community. They sponsor this free movie program as part of their mission to keep seniors engaged and connected.</p>
                 </div>
 
                 <div class="info-card mt-2">
-                    <h3>&#x1F4CD; Theatre Location</h3>
+                    <h3>Theatre Location</h3>
                     <p><?= e(SITE_ADDRESS) ?><br><br>
                     Parking available in the adjacent gravel lot, along the street, and at Horners Grocery.</p>
                     <a href="<?= url('location.php') ?>" class="btn btn-outline mt-2" style="display:inline-block; margin-top:1rem;">Get Directions</a>

@@ -24,7 +24,7 @@ function isCurrentPage(string $page): bool
 
 function navClass(string $page): string
 {
-    return 'nav-link';
+    return isCurrentPage($page) ? 'nav-link active' : 'nav-link';
 }
 
 /**

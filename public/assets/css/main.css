@@ -40,6 +40,32 @@ a:hover { color: var(--crimson-dark); }
     padding: 0 1.5rem;
 }
 
+/* ── Page Transitions ── */
+@keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
+
+.page-main {
+    animation: fadeIn 0.3s ease-out forwards;
+}
+
+.reveal {
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.35s ease-out, transform 0.35s ease-out;
+}
+
+.reveal.visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
 /* ── Navbar ── */
 .navbar {
     background: #FFFFFF;
@@ -92,19 +118,25 @@ a:hover { color: var(--crimson-dark); }
 
 .nav-link {
     color: var(--text-secondary);
-    font-size: 0.82rem;
+    font-size: 0.88rem;
     font-weight: 700;
     letter-spacing: 0.06em;
     text-transform: uppercase;
     padding: 0.5rem 0.65rem;
     border-radius: 3px;
-    transition: color 0.2s;
+    transition: color 0.3s ease, transform 0.2s ease;
     text-decoration: none;
     white-space: nowrap;
     line-height: 1;
+    display: inline-block;
 }
 
 .nav-link:hover {
+    color: var(--crimson);
+    transform: scale(1.05);
+}
+
+.nav-link.active {
     color: var(--crimson);
 }
 
@@ -116,11 +148,13 @@ a:hover { color: var(--crimson-dark); }
     border-bottom: none !important;
     white-space: nowrap;
     margin-left: 0.35rem;
+    transition: background 0.3s ease, transform 0.2s ease !important;
 }
 
 .nav-cta:hover {
     background: var(--crimson-dark) !important;
     color: #FFFFFF !important;
+    transform: scale(1.05) !important;
 }
 
 .nav-toggle {
@@ -221,10 +255,14 @@ a:hover { color: var(--crimson-dark); }
     letter-spacing: 0.1em;
     text-transform: uppercase;
     border-radius: 3px;
-    transition: all 0.2s;
+    transition: all 0.3s ease;
     cursor: pointer;
     border: none;
     text-decoration: none;
+}
+
+.btn:hover {
+    transform: scale(1.05);
 }
 
 .btn-crimson {
@@ -278,8 +316,8 @@ a:hover { color: var(--crimson-dark); }
 section { padding: 4rem 0; }
 
 .section-label {
-    font-size: 0.75rem;
-    letter-spacing: 0.25em;
+    font-size: 0.875rem;
+    letter-spacing: 0.2em;
     text-transform: uppercase;
     color: var(--crimson);
     margin-bottom: 0.5rem;
@@ -331,7 +369,7 @@ section { padding: 4rem 0; }
 
 .movie-poster {
     background: #1A1210;
-    height: 340px;
+    height: 400px;
     border-bottom: 1px solid var(--border);
     position: relative;
     overflow: hidden;
@@ -341,13 +379,13 @@ section { padding: 4rem 0; }
     width: 100%;
     height: 100%;
     object-fit: cover;
-    object-position: center top;
+    object-position: center center;
     display: block;
     transition: transform 0.4s ease;
 }
 
 .movie-card:hover .movie-poster img {
-    transform: scale(1.03);
+    transform: scale(1.04);
 }
 
 .movie-poster-inner {
@@ -376,13 +414,13 @@ section { padding: 4rem 0; }
     position: absolute;
     top: 0.75rem;
     right: 0.75rem;
-    background: rgba(0,0,0,0.6);
-    color: rgba(247,243,238,0.9);
-    font-size: 0.65rem;
+    background: rgba(0,0,0,0.72);
+    color: #FFFFFF;
+    font-size: 0.75rem;
     font-weight: 700;
     letter-spacing: 0.1em;
     text-transform: uppercase;
-    padding: 0.2rem 0.55rem;
+    padding: 0.25rem 0.65rem;
     border-radius: 2px;
 }
 
@@ -390,11 +428,11 @@ section { padding: 4rem 0; }
 
 .movie-rating {
     display: inline-block;
-    border: 1px solid var(--border);
-    color: var(--text-muted);
-    font-size: 0.75rem;
+    border: 1.5px solid var(--text-secondary);
+    color: var(--text-primary);
+    font-size: 0.82rem;
     font-weight: 700;
-    padding: 0.15rem 0.45rem;
+    padding: 0.18rem 0.55rem;
     border-radius: 2px;
     margin-bottom: 0.6rem;
     letter-spacing: 0.05em;
@@ -412,8 +450,8 @@ section { padding: 4rem 0; }
 }
 
 .showtimes-label {
-    font-size: 0.75rem;
-    letter-spacing: 0.2em;
+    font-size: 0.85rem;
+    letter-spacing: 0.18em;
     text-transform: uppercase;
     color: var(--crimson);
     margin-bottom: 0.6rem;
@@ -425,20 +463,20 @@ section { padding: 4rem 0; }
     display: flex;
     justify-content: space-between;
     align-items: baseline;
-    padding: 0.5rem 0;
+    padding: 0.55rem 0;
     border-bottom: 1px solid var(--border-light);
-    font-size: 0.95rem;
+    font-size: 1rem;
     gap: 1rem;
 }
 
 .showtime-row:last-of-type { border-bottom: none; }
 
-.showtime-day { color: var(--text-secondary); }
+.showtime-day { color: var(--text-primary); font-weight: 600; }
 
 .showtime-times {
     color: var(--text-primary);
     font-weight: 700;
-    font-size: 0.9rem;
+    font-size: 0.95rem;
     letter-spacing: 0.02em;
 }
 
@@ -544,17 +582,17 @@ section { padding: 4rem 0; }
 
 .info-card h3 {
     font-family: var(--font-body);
-    font-size: 0.85rem;
+    font-size: 0.95rem;
     text-transform: uppercase;
-    letter-spacing: 0.12em;
+    letter-spacing: 0.1em;
     color: var(--text-primary);
     margin-bottom: 0.85rem;
     font-weight: 700;
 }
 
 .info-card p, .info-card li {
-    font-size: 1rem;
-    color: var(--text-secondary);
+    font-size: 1.05rem;
+    color: var(--text-primary);
     line-height: 1.75;
 }
 
@@ -586,8 +624,8 @@ section { padding: 4rem 0; }
 }
 
 .breadcrumb {
-    font-size: 0.78rem;
-    color: var(--text-muted);
+    font-size: 0.85rem;
+    color: var(--text-secondary);
     margin-bottom: 0.75rem;
     letter-spacing: 0.05em;
     text-transform: uppercase;
@@ -833,28 +871,40 @@ section { padding: 4rem 0; }
     display: inline-flex;
     align-items: center;
     gap: 0.35rem;
-    font-size: 0.8rem;
+    font-size: 0.82rem;
     letter-spacing: 0.06em;
     text-transform: uppercase;
-    color: var(--text-secondary);
-    padding: 0.4rem 0.75rem;
-    border: 1.5px solid var(--border);
+    color: rgba(255,255,255,0.7);
+    padding: 0.4rem 0.85rem;
+    border: 1.5px solid rgba(255,255,255,0.25);
     border-radius: 3px;
-    transition: all 0.2s;
+    transition: all 0.3s;
     font-family: var(--font-body);
     font-weight: 700;
 }
 
 .social-links a:hover {
+    border-color: #FFFFFF;
+    color: #FFFFFF;
+    transform: scale(1.04);
+}
+
+/* social links on white backgrounds (non-footer) */
+.contact-social .social-links a {
+    color: var(--text-secondary);
+    border-color: var(--border);
+}
+
+.contact-social .social-links a:hover {
     border-color: var(--crimson);
     color: var(--crimson);
 }
 
 /* ── Footer ── */
 .footer {
-    background: #1A1210;
-    border-top: 1px solid #2A1A12;
-    padding: 3rem 0 1.5rem;
+    background: #111111;
+    border-top: 3px solid var(--crimson);
+    padding: 3.5rem 0 1.5rem;
     margin-top: 4rem;
 }
 
@@ -867,58 +917,65 @@ section { padding: 4rem 0; }
 
 .footer-brand .brand-name {
     font-family: var(--font-display);
-    font-size: 1.4rem;
+    font-size: 1.5rem;
     font-weight: 700;
     font-style: italic;
-    color: #F7F3EE;
-    margin-bottom: 0.2rem;
+    color: #FFFFFF;
+    margin-bottom: 0.25rem;
 }
 
 .footer-brand .brand-tag {
-    font-size: 0.65rem;
+    font-size: 0.72rem;
     letter-spacing: 0.18em;
     text-transform: uppercase;
-    color: #7A6A60;
-    margin-bottom: 1rem;
+    color: rgba(255,255,255,0.55);
+    margin-bottom: 1.1rem;
     font-family: var(--font-body);
 }
 
 .footer-brand p {
-    font-size: 0.925rem;
-    color: #9A8070;
+    font-size: 1rem;
+    color: rgba(255,255,255,0.8);
     line-height: 1.8;
     margin-bottom: 1.25rem;
 }
 
+.footer-brand p a {
+    color: rgba(255,255,255,0.8);
+    transition: color 0.3s;
+}
+
+.footer-brand p a:hover { color: #FFFFFF; }
+
 .footer-col h4 {
     font-family: var(--font-body);
-    font-size: 0.72rem;
-    letter-spacing: 0.22em;
+    font-size: 0.78rem;
+    letter-spacing: 0.2em;
     text-transform: uppercase;
-    color: #7A6A60;
+    color: #FFFFFF;
     margin-bottom: 1rem;
     font-weight: 700;
 }
 
-.footer-col ul { list-style: none; display: grid; gap: 0.55rem; }
+.footer-col ul { list-style: none; display: grid; gap: 0.6rem; }
 
 .footer-col ul a {
-    font-size: 0.925rem;
-    color: #9A8070;
-    transition: color 0.2s;
+    font-size: 1rem;
+    color: rgba(255,255,255,0.75);
+    transition: color 0.3s;
     text-decoration: none;
 }
 
-.footer-col ul a:hover { color: #C8B8A8; }
+.footer-col ul a:hover { color: #FFFFFF; }
 
 .footer-bottom {
-    border-top: 1px solid #2A1A12;
+    border-top: 1px solid rgba(255,255,255,0.12);
     padding-top: 1.25rem;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    font-size: 0.78rem;
-    color: #584035;
+    font-size: 0.85rem;
+    color: rgba(255,255,255,0.55);
     flex-wrap: wrap;
     gap: 0.5rem;
     letter-spacing: 0.04em;
@@ -1212,4 +1269,142 @@ section { padding: 4rem 0; }
     .info-bar-items { gap: 0.25rem; }
     .info-bar-sep { margin: 0 0.5rem; }
     .info-bar-items { font-size: 0.75rem; }
+}
+
+/* ── Info Bar — bigger text ── */
+.info-bar-items {
+    font-size: 0.92rem;
+}
+
+/* ── Movie poster placeholder — fix height ── */
+.movie-poster-placeholder {
+    width: 100%;
+    height: 100%;
+    min-height: 400px;
+    background: linear-gradient(145deg, #1A1210, #0C0807);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Oswald', var(--font-body);
+    font-size: 1.4rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: rgba(247,243,238,0.4);
+    text-align: center;
+    padding: 1.5rem;
+}
+
+/* ── Photo Slideshow ── */
+.photo-slideshow {
+    position: relative;
+    overflow: hidden;
+    background: #0C0807;
+    line-height: 0;
+}
+
+.slideshow-track {
+    display: flex;
+    transition: transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    will-change: transform;
+}
+
+.slideshow-slide {
+    flex: 0 0 100%;
+    position: relative;
+}
+
+.slideshow-slide img {
+    width: 100%;
+    height: 480px;
+    object-fit: cover;
+    object-position: center center;
+    display: block;
+}
+
+.slideshow-caption {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 1.5rem 2rem;
+    background: linear-gradient(to top, rgba(0,0,0,0.72) 0%, transparent 100%);
+    color: #FFFFFF;
+    font-size: 0.85rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    font-family: var(--font-body);
+    font-weight: 700;
+    line-height: 1;
+}
+
+.slideshow-btn {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(0,0,0,0.55);
+    color: #FFFFFF;
+    border: none;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 1.2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.3s, transform 0.2s;
+    z-index: 10;
+    line-height: 1;
+}
+
+.slideshow-btn:hover {
+    background: var(--crimson);
+    transform: translateY(-50%) scale(1.1);
+}
+
+.slideshow-btn-prev { left: 1.25rem; }
+.slideshow-btn-next { right: 1.25rem; }
+
+.slideshow-dots {
+    position: absolute;
+    bottom: 1rem;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 0.5rem;
+    z-index: 10;
+}
+
+.slideshow-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.45);
+    border: none;
+    cursor: pointer;
+    transition: background 0.3s, transform 0.2s;
+    padding: 0;
+}
+
+.slideshow-dot.active {
+    background: #FFFFFF;
+    transform: scale(1.25);
+}
+
+/* ── Location gallery photo ── */
+.location-photo {
+    border-radius: 5px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    margin-bottom: 1.5rem;
+    line-height: 0;
+}
+
+.location-photo img {
+    width: 100%;
+    height: 280px;
+    object-fit: cover;
+    object-position: center center;
+    display: block;
 }

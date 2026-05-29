@@ -31,7 +31,7 @@ require TEMPLATES_PATH . '/header.php';
 
         <div class="info-grid">
             <div class="info-card">
-                <h3>&#x1F37F; Popcorn</h3>
+                <h3>Popcorn</h3>
                 <ul>
                     <li>Fresh-popped buttered popcorn</li>
                     <li>Available in multiple sizes</li>
@@ -39,7 +39,7 @@ require TEMPLATES_PATH . '/header.php';
                 </ul>
             </div>
             <div class="info-card">
-                <h3>&#x1F964; Drinks</h3>
+                <h3>Drinks</h3>
                 <ul>
                     <li>Fountain sodas</li>
                     <li>Water</li>
@@ -47,7 +47,7 @@ require TEMPLATES_PATH . '/header.php';
                 </ul>
             </div>
             <div class="info-card">
-                <h3>&#x1F36C; Candy &amp; Snacks</h3>
+                <h3>Candy &amp; Snacks</h3>
                 <ul>
                     <li>A variety of classic movie candies</li>
                     <li>Packaged snacks</li>
@@ -55,7 +55,7 @@ require TEMPLATES_PATH . '/header.php';
                 </ul>
             </div>
             <div class="info-card">
-                <h3>&#x1F354; Hot Items</h3>
+                <h3>Hot Items</h3>
                 <ul>
                     <li>Nachos</li>
                     <li>Hot dogs</li>
@@ -71,7 +71,7 @@ require TEMPLATES_PATH . '/header.php';
 
         <div style="text-align:center; margin-top:3rem;">
             <p class="text-secondary mb-2">Ready to catch a show?</p>
-            <a href="<?= SQUARE_URL ?>" class="btn btn-crimson" target="_blank" rel="noopener">Buy Tickets Online</a>
+            <a href="<?= e(TICKETS_URL) ?>" class="btn btn-crimson">Buy Tickets Online</a>
             <a href="<?= url() ?>" class="btn btn-outline" style="margin-left:1rem;">View Showtimes</a>
         </div>
     </div>

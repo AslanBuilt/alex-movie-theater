@@ -28,14 +28,14 @@ require TEMPLATES_PATH . '/header.php';
                 </div>
 
                 <div class="info-card mb-3">
-                    <h3>&#x1F4CD; Address</h3>
+                    <h3>Address</h3>
                     <p>407 N. Harrison Street<br>Alexandria, Indiana 46001<br><br>
                     <a href="https://maps.google.com/?q=407+N+Harrison+Street+Alexandria+Indiana+46001" target="_blank" rel="noopener" class="btn btn-outline" style="display:inline-block; margin-top:0.75rem; font-size:0.8rem; padding:0.45rem 1rem;">Open in Google Maps</a>
                     </p>
                 </div>
 
                 <div class="info-card mb-3">
-                    <h3>&#x1F9ED; How to Get Here</h3>
+                    <h3>How to Get Here</h3>
                     <ul>
                         <li>5 blocks north of W. Washington Street (1100N)</li>
                         <li>6 blocks west of N. State Road 9</li>
@@ -44,7 +44,7 @@ require TEMPLATES_PATH . '/header.php';
                 </div>
 
                 <div class="info-card mb-3">
-                    <h3>&#x1F4DE; Contact</h3>
+                    <h3>Contact</h3>
                     <p>Phone: <a href="tel:<?= SITE_PHONE ?>"><?= e(SITE_PHONE) ?></a><br><br>
                     Call ahead to confirm showtimes or ask any questions before your visit.</p>
                 </div>
@@ -69,6 +69,10 @@ require TEMPLATES_PATH . '/header.php';
             </div>
 
             <div>
+                <div class="location-photo">
+                    <img src="<?= asset('images/gallery/gallery-4.png') ?>" alt="Alex Theatre at night, Alexandria Indiana">
+                </div>
+
                 <div class="map-wrapper">
                     <iframe
                         src="https://maps.google.com/maps?q=407+N+Harrison+Street,+Alexandria,+IN+46001&t=&z=16&ie=UTF8&iwloc=&output=embed"
@@ -80,8 +84,8 @@ require TEMPLATES_PATH . '/header.php';
                 </div>
 
                 <div class="info-card mt-3">
-                    <h3>&#x1F3D9; About Alexandria</h3>
-                    <p>Alexandria is a small, friendly town in east-central Indiana, located approximately 50 miles northeast of Indianapolis. The Alex Theatre has been a part of this community &mdash; bringing affordable, quality entertainment to families, seniors, and film fans of all ages.</p>
+                    <h3>About Alexandria</h3>
+                    <p>Alexandria is a small, friendly town in east-central Indiana, approximately 50 miles northeast of Indianapolis. The Alex Theatre has been part of this community for years &mdash; bringing affordable, quality entertainment to families, seniors, and film fans of all ages.</p>
                 </div>
             </div>
         </div>

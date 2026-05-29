@@ -209,34 +209,34 @@
               <thead>
                 <tr><th>Title</th><th>Rating</th><th>Screen</th><th>Status</th><th>Actions</th></tr>
               </thead>
-              <tbody>
-                <tr>
+              <tbody id="dashboard-movies-tbody">
+                <tr data-movie-id="1">
                   <td><strong>Star Wars: The Mandalorian &amp; Grogu</strong></td>
                   <td>PG-13</td>
                   <td><span class="badge badge-screen">Large</span></td>
                   <td><span class="badge badge-showing">Now Showing</span></td>
-                  <td><div class="action-btns"><button class="btn-icon">Edit</button><button class="btn-icon delete">Delete</button></div></td>
+                  <td><div class="action-btns"><button class="btn-icon delete" onclick="deleteMovieRow(this)">Delete</button></div></td>
                 </tr>
-                <tr>
+                <tr data-movie-id="2">
                   <td><strong>The Sheep Detectives</strong></td>
                   <td>PG</td>
                   <td><span class="badge badge-screen">Small</span></td>
                   <td><span class="badge badge-showing">Now Showing</span></td>
-                  <td><div class="action-btns"><button class="btn-icon">Edit</button><button class="btn-icon delete">Delete</button></div></td>
+                  <td><div class="action-btns"><button class="btn-icon delete" onclick="deleteMovieRow(this)">Delete</button></div></td>
                 </tr>
-                <tr>
+                <tr data-movie-id="3">
                   <td><strong>The Mummy</strong></td>
                   <td>PG-13</td>
                   <td><span class="badge badge-screen">TBD</span></td>
                   <td><span class="badge badge-soon">Coming Soon</span></td>
-                  <td><div class="action-btns"><button class="btn-icon">Edit</button><button class="btn-icon delete">Delete</button></div></td>
+                  <td><div class="action-btns"><button class="btn-icon delete" onclick="deleteMovieRow(this)">Delete</button></div></td>
                 </tr>
-                <tr>
+                <tr data-movie-id="4">
                   <td><strong>Toy Story 5</strong></td>
                   <td>G</td>
                   <td><span class="badge badge-screen">TBD</span></td>
                   <td><span class="badge badge-soon">Coming Soon</span></td>
-                  <td><div class="action-btns"><button class="btn-icon">Edit</button><button class="btn-icon delete">Delete</button></div></td>
+                  <td><div class="action-btns"><button class="btn-icon delete" onclick="deleteMovieRow(this)">Delete</button></div></td>
                 </tr>
               </tbody>
             </table>
@@ -291,18 +291,21 @@
             <div class="form-row">
               <div class="form-group">
                 <label>Movie Title</label>
-                <input type="text" placeholder="e.g. The Mummy" id="movie-title-input" oninput="filterSuggestions(this.value)">
+                <div style="display:flex;gap:0.4rem;flex-wrap:wrap;">
+                  <input type="text" placeholder="e.g. The Mummy" id="movie-title-input" oninput="filterSuggestions(this.value)" style="flex:1;min-width:160px;">
+                  <button class="btn-sm btn-outline" type="button" onclick="var t=document.getElementById('movie-title-input').value.trim();if(!t){alert('Enter a title first.');return;}window.open('https://www.google.com/search?q='+encodeURIComponent(t+' movie poster')+'&tbm=isch','_blank');" style="white-space:nowrap;">Find Poster</button>
+                </div>
                 <div class="suggestion-chips" id="title-chips">
                   <span class="chip" onclick="fillTitle(this)">Star Wars: The Mandalorian &amp; Grogu</span>
                   <span class="chip" onclick="fillTitle(this)">The Sheep Detectives</span>
                   <span class="chip" onclick="fillTitle(this)">The Mummy</span>
                   <span class="chip" onclick="fillTitle(this)">Toy Story 5</span>
                 </div>
-                <span class="form-hint">Select a past title or type a new one</span>
+                <span class="form-hint">Type a title or pick from recent films</span>
               </div>
               <div class="form-group">
                 <label>Rating</label>
-                <select>
+                <select id="movie-rating-input">
                   <option value="">Select rating&hellip;</option>
                   <option>G</option>
                   <option>PG</option>
@@ -315,30 +318,37 @@
             <div class="form-row three">
               <div class="form-group">
                 <label>Screen</label>
-                <select>
+                <select id="movie-screen-input">
                   <option value="">Select screen&hellip;</option>
-                  <option>Large Screen</option>
-                  <option>Small Screen</option>
+                  <option>Large</option>
+                  <option>Small</option>
+                  <option>TBD</option>
                 </select>
               </div>
               <div class="form-group">
                 <label>Status</label>
-                <select>
-                  <option>Now Showing</option>
-                  <option>Coming Soon</option>
+                <select id="movie-status-input">
+                  <option value="now_showing">Now Showing</option>
+                  <option value="coming_soon">Coming Soon</option>
                 </select>
               </div>
               <div class="form-group">
                 <label>Online Tickets Only</label>
-                <select>
+                <select id="movie-online-input">
                   <option value="0">No</option>
                   <option value="1">Yes (small screen)</option>
                 </select>
               </div>
             </div>
+            <div class="form-group" style="margin-bottom:1rem;">
+              <label>Poster Image</label>
+              <input type="file" id="movie-poster-file" accept="image/*" style="font-size:0.85rem;">
+              <span class="form-hint">JPG or PNG — shown on the public site. Or use Find Poster above.</span>
+              <img id="movie-poster-preview" src="" alt="" style="display:none;margin-top:0.5rem;height:70px;width:48px;object-fit:cover;border-radius:3px;border:1px solid var(--border);">
+            </div>
             <div class="form-actions">
-              <button class="btn-sm btn-crimson" onclick="alert('Demo mode — no data saved on GitHub Pages.')">Add Movie</button>
-              <button class="btn-sm btn-ghost">Clear</button>
+              <button class="btn-sm btn-crimson" onclick="addMovieRow()">Add Movie</button>
+              <button class="btn-sm btn-ghost" onclick="clearMovieForm()">Clear</button>
             </div>
           </div>
         </div>
@@ -348,36 +358,40 @@
           <div class="panel-body" style="padding:0;">
             <table>
               <thead>
-                <tr><th>Title</th><th>Rating</th><th>Screen</th><th>Status</th><th>Actions</th></tr>
+                <tr><th style="width:52px;">Poster</th><th>Title</th><th>Rating</th><th>Screen</th><th>Status</th><th>Actions</th></tr>
               </thead>
-              <tbody>
-                <tr>
+              <tbody id="movies-tbody">
+                <tr data-movie-id="1">
+                  <td><div style="width:38px;height:54px;background:#EDE6DB;border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:0.6rem;color:#7A6A60;text-align:center;line-height:1.2;">No<br>img</div></td>
                   <td><strong>Star Wars: The Mandalorian &amp; Grogu</strong></td>
                   <td>PG-13</td>
                   <td><span class="badge badge-screen">Large</span></td>
                   <td><span class="badge badge-showing">Now Showing</span></td>
-                  <td><div class="action-btns"><button class="btn-icon">Edit</button><button class="btn-icon delete">Delete</button></div></td>
+                  <td><div class="action-btns"><button class="btn-icon delete" onclick="deleteMovieRow(this)">Delete</button></div></td>
                 </tr>
-                <tr>
+                <tr data-movie-id="2">
+                  <td><div style="width:38px;height:54px;background:#EDE6DB;border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:0.6rem;color:#7A6A60;text-align:center;line-height:1.2;">No<br>img</div></td>
                   <td><strong>The Sheep Detectives</strong></td>
                   <td>PG</td>
                   <td><span class="badge badge-screen">Small</span></td>
                   <td><span class="badge badge-showing">Now Showing</span></td>
-                  <td><div class="action-btns"><button class="btn-icon">Edit</button><button class="btn-icon delete">Delete</button></div></td>
+                  <td><div class="action-btns"><button class="btn-icon delete" onclick="deleteMovieRow(this)">Delete</button></div></td>
                 </tr>
-                <tr>
+                <tr data-movie-id="3">
+                  <td><div style="width:38px;height:54px;background:#EDE6DB;border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:0.6rem;color:#7A6A60;text-align:center;line-height:1.2;">No<br>img</div></td>
                   <td><strong>The Mummy</strong></td>
                   <td>PG-13</td>
                   <td><span class="badge badge-screen">TBD</span></td>
                   <td><span class="badge badge-soon">Coming Soon</span></td>
-                  <td><div class="action-btns"><button class="btn-icon">Edit</button><button class="btn-icon delete">Delete</button></div></td>
+                  <td><div class="action-btns"><button class="btn-icon delete" onclick="deleteMovieRow(this)">Delete</button></div></td>
                 </tr>
-                <tr>
+                <tr data-movie-id="4">
+                  <td><div style="width:38px;height:54px;background:#EDE6DB;border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:0.6rem;color:#7A6A60;text-align:center;line-height:1.2;">No<br>img</div></td>
                   <td><strong>Toy Story 5</strong></td>
                   <td>G</td>
                   <td><span class="badge badge-screen">TBD</span></td>
                   <td><span class="badge badge-soon">Coming Soon</span></td>
-                  <td><div class="action-btns"><button class="btn-icon">Edit</button><button class="btn-icon delete">Delete</button></div></td>
+                  <td><div class="action-btns"><button class="btn-icon delete" onclick="deleteMovieRow(this)">Delete</button></div></td>
                 </tr>
               </tbody>
             </table>
@@ -550,7 +564,9 @@
 </div><!-- /admin-wrap -->
 
 <script>
-  const titles = {
+  var nextMovieId = 10;
+
+  var pageLabels = {
     dashboard: 'Dashboard',
     movies: 'Movies',
     showtimes: 'Showtimes',
@@ -559,23 +575,146 @@
   };
 
   function showView(id, btn) {
-    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-    document.querySelectorAll('.sidebar-link').forEach(l => l.classList.remove('active'));
+    document.querySelectorAll('.view').forEach(function(v) { v.classList.remove('active'); });
+    document.querySelectorAll('.sidebar-link').forEach(function(l) { l.classList.remove('active'); });
     document.getElementById('view-' + id).classList.add('active');
     if (btn) btn.classList.add('active');
-    document.getElementById('topbar-title').textContent = titles[id] || id;
+    document.getElementById('topbar-title').textContent = pageLabels[id] || id;
   }
 
   function fillTitle(chip) {
     document.getElementById('movie-title-input').value = chip.textContent;
+    filterSuggestions(chip.textContent);
   }
 
   function filterSuggestions(val) {
-    const chips = document.querySelectorAll('#title-chips .chip');
-    chips.forEach(c => {
-      c.style.display = val === '' || c.textContent.toLowerCase().includes(val.toLowerCase()) ? '' : 'none';
+    var chips = document.querySelectorAll('#title-chips .chip');
+    chips.forEach(function(c) {
+      c.style.display = (val === '' || c.textContent.toLowerCase().includes(val.toLowerCase())) ? '' : 'none';
     });
   }
+
+  function updateMovieCount() {
+    var count = document.querySelectorAll('#movies-tbody tr').length;
+    var nowShowing = document.querySelectorAll('#movies-tbody .badge-showing').length;
+    var comingSoon = document.querySelectorAll('#movies-tbody .badge-soon').length;
+    var nowStat = document.querySelector('.stat-number');
+    var soonStat = document.querySelectorAll('.stat-number')[1];
+    if (nowStat) nowStat.textContent = nowShowing;
+    if (soonStat) soonStat.textContent = comingSoon;
+  }
+
+  function makeRowHtml(id, posterSrc, title, rating, screen, statusVal) {
+    var isShowing = statusVal === 'now_showing';
+    var badgeClass = isShowing ? 'badge-showing' : 'badge-soon';
+    var badgeLabel = isShowing ? 'Now Showing' : 'Coming Soon';
+    var posterCell = posterSrc
+      ? '<img src="' + posterSrc + '" alt="" style="width:38px;height:54px;object-fit:cover;border-radius:3px;display:block;">'
+      : '<div style="width:38px;height:54px;background:#EDE6DB;border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:0.6rem;color:#7A6A60;text-align:center;line-height:1.2;">No<br>img</div>';
+    var screenLabel = screen || 'TBD';
+    return '<tr data-movie-id="' + id + '">'
+      + '<td>' + posterCell + '</td>'
+      + '<td><strong>' + escHtml(title) + '</strong></td>'
+      + '<td>' + escHtml(rating) + '</td>'
+      + '<td><span class="badge badge-screen">' + escHtml(screenLabel) + '</span></td>'
+      + '<td><span class="badge ' + badgeClass + '">' + badgeLabel + '</span></td>'
+      + '<td><div class="action-btns"><button class="btn-icon delete" onclick="deleteMovieRow(this)">Delete</button></div></td>'
+      + '</tr>';
+  }
+
+  function makeDashboardRowHtml(id, title, rating, screen, statusVal) {
+    var isShowing = statusVal === 'now_showing';
+    var badgeClass = isShowing ? 'badge-showing' : 'badge-soon';
+    var badgeLabel = isShowing ? 'Now Showing' : 'Coming Soon';
+    var screenLabel = screen || 'TBD';
+    return '<tr data-movie-id="' + id + '">'
+      + '<td><strong>' + escHtml(title) + '</strong></td>'
+      + '<td>' + escHtml(rating) + '</td>'
+      + '<td><span class="badge badge-screen">' + escHtml(screenLabel) + '</span></td>'
+      + '<td><span class="badge ' + badgeClass + '">' + badgeLabel + '</span></td>'
+      + '<td><div class="action-btns"><button class="btn-icon delete" onclick="deleteMovieRow(this)">Delete</button></div></td>'
+      + '</tr>';
+  }
+
+  function escHtml(str) {
+    return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  function addMovieRow() {
+    var title   = document.getElementById('movie-title-input').value.trim();
+    var rating  = document.getElementById('movie-rating-input').value;
+    var screen  = document.getElementById('movie-screen-input').value;
+    var status  = document.getElementById('movie-status-input').value;
+    var posterPreview = document.getElementById('movie-poster-preview');
+
+    if (!title) { alert('Please enter a movie title.'); return; }
+
+    var posterSrc = (posterPreview && posterPreview.style.display !== 'none') ? posterPreview.src : '';
+    var id = nextMovieId++;
+
+    var moviesBody = document.getElementById('movies-tbody');
+    var dashBody   = document.getElementById('dashboard-movies-tbody');
+
+    moviesBody.insertAdjacentHTML('beforeend', makeRowHtml(id, posterSrc, title, rating, screen, status));
+    if (dashBody) dashBody.insertAdjacentHTML('beforeend', makeDashboardRowHtml(id, title, rating, screen, status));
+
+    updateMovieCount();
+    clearMovieForm();
+
+    // Flash the new row
+    var newRow = moviesBody.querySelector('[data-movie-id="' + id + '"]');
+    if (newRow) {
+      newRow.style.background = 'rgba(139,29,51,0.07)';
+      setTimeout(function() { newRow.style.background = ''; }, 1200);
+    }
+  }
+
+  function deleteMovieRow(btn) {
+    var row = btn.closest('tr');
+    if (!row) return;
+    var id = row.getAttribute('data-movie-id');
+    // Animate out
+    row.style.opacity = '0';
+    row.style.transition = 'opacity 0.25s';
+    setTimeout(function() {
+      row.remove();
+      // Also remove matching row in the other table
+      var mirror = document.querySelector('[data-movie-id="' + id + '"]');
+      if (mirror) mirror.remove();
+      updateMovieCount();
+    }, 260);
+  }
+
+  function clearMovieForm() {
+    document.getElementById('movie-title-input').value = '';
+    document.getElementById('movie-rating-input').value = '';
+    document.getElementById('movie-screen-input').value = '';
+    document.getElementById('movie-status-input').value = 'now_showing';
+    document.getElementById('movie-online-input').value = '0';
+    var file = document.getElementById('movie-poster-file');
+    if (file) file.value = '';
+    var prev = document.getElementById('movie-poster-preview');
+    if (prev) { prev.src = ''; prev.style.display = 'none'; }
+    filterSuggestions('');
+  }
+
+  // Poster file preview
+  document.addEventListener('DOMContentLoaded', function() {
+    var posterFile = document.getElementById('movie-poster-file');
+    var posterPreview = document.getElementById('movie-poster-preview');
+    if (posterFile && posterPreview) {
+      posterFile.addEventListener('change', function() {
+        var file = posterFile.files[0];
+        if (!file) return;
+        var reader = new FileReader();
+        reader.onload = function(e) {
+          posterPreview.src = e.target.result;
+          posterPreview.style.display = 'block';
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+  });
 </script>
 </body>
 </html>
