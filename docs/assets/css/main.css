@@ -1592,7 +1592,7 @@ section { padding: 4rem 0; }
 }
 
 .review-text {
-    font-size: 0.85rem;
-    color: var(--text-secondary);
+    font-size: 0.95rem;
+    color: var(--text-primary);
     line-height: 1.65;
 }
