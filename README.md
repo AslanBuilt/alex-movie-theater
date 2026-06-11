@@ -8,8 +8,8 @@ Website for **Alex Movie Theatre** in Alexandria, Indiana. Two-screen independen
 
 | | URL |
 |---|---|
-| **Public Site (GitHub Pages)** | https://2ktay.github.io/alex-movie-theater/ |
-| **Admin Panel (GitHub Pages)** | https://2ktay.github.io/alex-movie-theater/admin/ |
+| **Public Site (GitHub Pages)** | https://aslanbuilt.github.io/alex-movie-theater/ |
+| **Admin Panel (GitHub Pages)** | https://aslanbuilt.github.io/alex-movie-theater/admin/ |
 | **Production Site (PHP/MySQL)** | https://parityrfp.com/cs/alex-movie-theater/ |
 | **Production Admin** | https://parityrfp.com/cs/alex-movie-theater/admin/ |
 
@@ -66,7 +66,7 @@ Auto-deploys to parityrfp.com on every push to `master` via GitHub Actions.
 
 ### Required GitHub Secrets
 
-Go to: **https://github.com/2KTay/alex-movie-theater/settings/secrets/actions**
+Go to: **https://github.com/AslanBuilt/alex-movie-theater/settings/secrets/actions**
 Click **New repository secret** for each:
 
 | Secret | Value |
@@ -82,7 +82,7 @@ Once all three secrets are added, push any commit to `master` to trigger a deplo
 ## GitHub Pages (Static Preview)
 
 Served from the `docs/` folder. Enable once at:
-**https://github.com/2KTay/alex-movie-theater/settings/pages**
+**https://github.com/AslanBuilt/alex-movie-theater/settings/pages**
 → Source: `master` branch, `/docs` folder → Save
 
 Updates automatically on every push to `master`.
