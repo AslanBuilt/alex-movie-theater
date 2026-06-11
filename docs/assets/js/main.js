@@ -104,39 +104,6 @@ document.addEventListener('DOMContentLoaded', function () {
         startTimer();
     });
 
-    // ── Now Showing carousel ──
-    document.querySelectorAll('[data-carousel]').forEach(function (carousel) {
-        var track = carousel.querySelector('[data-carousel-track]');
-        var prev  = carousel.querySelector('[data-carousel-prev]');
-        var next  = carousel.querySelector('[data-carousel-next]');
-        if (!track) return;
-
-        function step() {
-            var card = track.querySelector('.poster-card');
-            var styles = getComputedStyle(track);
-            var gap = parseInt(styles.columnGap || styles.gap, 10) || 24;
-            return card ? card.getBoundingClientRect().width + gap : 320;
-        }
-
-        function update() {
-            var maxScroll = track.scrollWidth - track.clientWidth;
-            var overflowing = maxScroll > 4;
-            if (prev) prev.hidden = !overflowing || track.scrollLeft <= 2;
-            if (next) next.hidden = !overflowing || track.scrollLeft >= maxScroll - 2;
-        }
-
-        if (prev) prev.addEventListener('click', function () {
-            track.scrollBy({ left: -step(), behavior: 'smooth' });
-        });
-        if (next) next.addEventListener('click', function () {
-            track.scrollBy({ left: step(), behavior: 'smooth' });
-        });
-
-        track.addEventListener('scroll', update, { passive: true });
-        window.addEventListener('resize', update);
-        update();
-    });
-
     // ── Contact form — Formspree AJAX ──
     var form = document.getElementById('contact-form');
     if (form) {
