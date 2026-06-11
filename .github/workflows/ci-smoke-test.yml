@@ -1,0 +1,14 @@
+name: CI smoke test
+
+"on":
+  push:
+    branches:
+      - master
+  workflow_dispatch:
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Echo
+        run: echo "actions runner is alive"
