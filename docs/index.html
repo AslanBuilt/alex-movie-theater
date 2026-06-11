@@ -1,279 +1,325 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Now Showing | Alex Movie Theatre — Alexandria, Indiana</title>
-<meta name="description" content="See what's playing at Alex Movie Theatre in Alexandria, Indiana. Two-screen independent theatre. Adults $5, Children $3. Buy tickets online.">
-<link rel="icon" type="image/svg+xml" href="assets/images/favicon.svg">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@700&family=Playfair+Display:ital,wght@0,700;1,400;1,700&family=Lato:wght@400;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/css/main.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Now Showing | Alex Movie Theatre — Alexandria, Indiana</title>
+    <link rel="icon" type="image/svg+xml" href="assets/images/favicon.svg">
+    <meta name="description" content="See what&#039;s playing at Alex Movie Theatre in Alexandria, Indiana. Two-screen independent theatre. Adults $5, Children $3. Buy tickets online.">
+    <meta name="keywords" content="now showing Alexandria Indiana, movies playing Alexandria IN, Alex Movie Theatre showtimes, cheap movies Indiana">
+    <link rel="canonical" href="index.html">
+
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="index.html">
+    <meta property="og:title" content="Now Showing | Alex Movie Theatre — Alexandria, Indiana">
+    <meta property="og:description" content="See what&#039;s playing at Alex Movie Theatre in Alexandria, Indiana. Two-screen independent theatre. Adults $5, Children $3. Buy tickets online.">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@700&family=Playfair+Display:ital,wght@0,700;1,400;1,700&family=Lato:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="assets/css/main.css">
+
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "MovieTheater",
+        "name": "Alex Movie Theatre",
+        "url": "index.html",
+        "telephone": "765-620-9093",
+        "address": {
+            "@type": "PostalAddress",
+            "streetAddress": "407 N. Harrison Street",
+            "addressLocality": "Alexandria",
+            "addressRegion": "IN",
+            "postalCode": "46001",
+            "addressCountry": "US"
+        },
+        "priceRange": "$"
+    }
+    </script>
 </head>
 <body>
 
 <header class="navbar">
-  <div class="container">
-    <a href="index.html" class="navbar-brand">
-      <span class="brand-name">Alex Theatre</span>
-      <span class="brand-sub">Alexandria, Indiana</span>
-    </a>
-    <button class="nav-toggle" aria-label="Toggle navigation" aria-expanded="false">
-      <span></span><span></span><span></span>
-    </button>
-    <ul class="nav-menu">
-      <li><a href="index.html" class="nav-link active">Now Showing</a></li>
-      <li><a href="senior-movie.html" class="nav-link">Senior Movie</a></li>
-      <li><a href="concessions.html" class="nav-link">Concessions</a></li>
-      <li><a href="events.html" class="nav-link">Events</a></li>
-      <li><a href="private-screenings.html" class="nav-link">Private Screenings</a></li>
-      <li><a href="location.html" class="nav-link">Location</a></li>
-      <li><a href="contact.html" class="nav-link">Contact</a></li>
-      <li><a href="https://the-alexandria-theatre.square.site/" target="_blank" rel="noopener" class="nav-link nav-cta">Buy Tickets</a></li>
-    </ul>
-  </div>
+    <div class="container">
+        <a href="index.html" class="navbar-brand">
+            <span class="brand-name">The Alex</span>
+        </a>
+
+        <button class="nav-toggle" aria-label="Toggle navigation" aria-expanded="false">
+            <span></span><span></span><span></span>
+        </button>
+
+        <ul class="nav-menu">
+            <li><a href="index.html" class="nav-link active">Now Showing</a></li>
+            <li><a href="senior-movie.html" class="nav-link">Senior Movie</a></li>
+            <li><a href="concessions.html" class="nav-link">Concessions</a></li>
+            <li><a href="events.html" class="nav-link">Events</a></li>
+            <li><a href="private-screenings.html" class="nav-link">Private Screenings</a></li>
+            <li><a href="contact.html" class="nav-link">Visit &amp; Contact</a></li>
+            <li><a href="tickets.html" class="nav-link nav-cta">Buy Tickets</a></li>
+        </ul>
+    </div>
 </header>
 
 <main>
 
-<!-- Cinematic Hero Slideshow -->
-<div class="hero-cinematic">
-  <div class="photo-slideshow hero-slideshow">
-    <div class="slideshow-track">
-      <div class="slideshow-slide">
-        <img src="assets/images/hero-1.png" alt="Alex Theatre exterior, daytime" loading="eager">
-      </div>
-      <div class="slideshow-slide">
-        <img src="assets/images/hero-2.png" alt="Alex Theatre at night with neon sign" loading="eager">
-      </div>
-      <div class="slideshow-slide">
-        <img src="assets/images/hero-3.png" alt="Alex Theatre auditorium interior" loading="lazy">
-      </div>
-      <div class="slideshow-slide">
-        <img src="assets/images/hero-4.png" alt="Alex Theatre exterior with classic car" loading="lazy">
-      </div>
+<!-- Hero — the white Chevelle out front of the marquee -->
+<section class="hero-cinematic">
+    <div class="hero-bg">
+        <img src="assets/images/hero-4.png" alt="The Alex marquee with a classic white Chevelle parked out front in downtown Alexandria, Indiana" loading="eager" fetchpriority="high">
     </div>
-    <button class="slideshow-btn slideshow-btn-prev" aria-label="Previous photo">&#8249;</button>
-    <button class="slideshow-btn slideshow-btn-next" aria-label="Next photo">&#8250;</button>
-    <div class="slideshow-dots">
-      <button class="slideshow-dot active" aria-label="Photo 1"></button>
-      <button class="slideshow-dot" aria-label="Photo 2"></button>
-      <button class="slideshow-dot" aria-label="Photo 3"></button>
-      <button class="slideshow-dot" aria-label="Photo 4"></button>
+    <div class="hero-overlay"></div>
+    <div class="hero-content">
+        <p class="hero-eyebrow-split">Alexandria, Indiana &bull; Independent Cinema</p>
+        <h1 class="hero-headline">Real Movies.<br>Five Dollar<br>Tickets.</h1>
+        <p class="hero-sub">Your neighborhood two-screen theater since the marquee was new.</p>
+        <div class="hero-actions">
+            <a href="#now-showing" class="btn btn-crimson">See This Week's Showtimes</a>
+            <a href="private-screenings.html" class="btn btn-outline-hero">Book the Theatre</a>
+        </div>
     </div>
-  </div>
-  <div class="hero-overlay"></div>
-  <div class="hero-content">
-    <p class="hero-eyebrow-split">Alexandria, Indiana &bull; Independent Cinema</p>
-    <h1 class="hero-headline">Real Movies.<br>Five Dollar<br>Tickets.</h1>
-    <p class="hero-sub">Your neighborhood two-screen theater since the marquee was new.</p>
-    <div class="hero-actions">
-      <a href="#now-showing" class="btn btn-crimson">See This Week's Showtimes</a>
-      <a href="private-screenings.html" class="btn btn-outline-hero">Book the Theatre</a>
-    </div>
-  </div>
-</div>
+</section>
 
 <!-- Info Bar -->
 <div class="info-bar">
-  <div class="info-bar-items">
-    <span>Adults $5</span>
-    <span class="info-bar-sep">&bull;</span>
-    <span>Kids 12 &amp; Under $3</span>
-    <span class="info-bar-sep info-bar-address-sep">&bull;</span>
-    <span class="info-bar-address">407 N. Harrison St, Alexandria IN</span>
-    <span class="info-bar-sep">&bull;</span>
-    <span><a href="tel:765-620-9093">(765) 620-9093</a></span>
-  </div>
+    <div class="info-bar-items">
+        <span>Adults $5</span>
+        <span class="info-bar-sep">&bull;</span>
+        <span>Kids 12 &amp; Under $3</span>
+        <span class="info-bar-sep info-bar-address-sep">&bull;</span>
+        <span class="info-bar-address">407 N. Harrison St, Alexandria IN</span>
+        <span class="info-bar-sep">&bull;</span>
+        <span><a href="tel:765-620-9093">765-620-9093</a></span>
+    </div>
 </div>
 
 <!-- Now Showing -->
-<section id="now-showing">
-  <div class="container">
-    <div class="section-header">
-      <p class="section-label">On the Screen This Week</p>
-      <h2 class="section-title">Now Showing</h2>
-      <div class="section-divider"></div>
+<section id="now-showing" class="now-showing-section">
+    <div class="container">
+        <div class="section-header">
+            <p class="section-label">On the Screen This Week</p>
+            <h2 class="section-title">Now Showing</h2>
+            <div class="section-divider"></div>
+        </div>
     </div>
 
-    <div class="movies-grid">
-      <div class="movie-card">
-        <div class="movie-poster">
-          <span class="screen-badge">Large Screen</span>
-          <img src="assets/images/mandalorian.jpg" alt="Star Wars: The Mandalorian &amp; Grogu movie poster" loading="eager">
+    <div class="container">
+        <div class="movie-carousel" data-carousel>
+            <button type="button" class="carousel-arrow carousel-arrow-prev" aria-label="Scroll to previous movies" data-carousel-prev>&#8249;</button>
+            <div class="carousel-track" data-carousel-track>
+                                                        <a class="poster-card" href="tickets.html">
+                        <div class="poster-card-media">
+                                                            <span class="screen-badge">Large Screen</span>
+                                                                                        <img src="assets/images/starwars.jpg" alt="Star Wars: The Mandalorian &amp; Grogu movie poster" loading="eager">
+                                                        <span class="poster-card-overlay"><span class="poster-card-cta">Showtimes &amp; Tickets &rarr;</span></span>
+                        </div>
+                        <div class="poster-card-info">
+                            <div class="poster-card-head">
+                                                                    <span class="movie-rating">PG-13</span>
+                                                                <h3 class="poster-card-title">Star Wars: The Mandalorian &amp; Grogu</h3>
+                            </div>
+                                                            <ul class="poster-card-times">
+                                                                            <li>
+                                            <span class="st-day">Thu, May 22</span>
+                                            <span class="st-times">4:00 · 7:15 PM</span>
+                                        </li>
+                                                                            <li>
+                                            <span class="st-day">Fri–Sun, May 23–25</span>
+                                            <span class="st-times">1:00 · 4:00 · 7:15 PM</span>
+                                        </li>
+                                                                            <li>
+                                            <span class="st-day">Memorial Day</span>
+                                            <span class="st-times">1:00 · 4:00 PM</span>
+                                        </li>
+                                                                    </ul>
+                                                    </div>
+                    </a>
+                                                        <a class="poster-card" href="tickets.html">
+                        <div class="poster-card-media">
+                                                            <span class="screen-badge">Small Screen</span>
+                                                                                        <img src="assets/images/sheep.jpg" alt="The Sheep Detectives movie poster" loading="eager">
+                                                        <span class="poster-card-overlay"><span class="poster-card-cta">Showtimes &amp; Tickets &rarr;</span></span>
+                        </div>
+                        <div class="poster-card-info">
+                            <div class="poster-card-head">
+                                                                    <span class="movie-rating">PG</span>
+                                                                <h3 class="poster-card-title">The Sheep Detectives</h3>
+                            </div>
+                                                            <ul class="poster-card-times">
+                                                                            <li>
+                                            <span class="st-day">Thu, May 22</span>
+                                            <span class="st-times">4:30 · 7:30 PM</span>
+                                        </li>
+                                                                            <li>
+                                            <span class="st-day">Fri–Sun, May 23–25</span>
+                                            <span class="st-times">1:30 · 4:30 · 7:30 PM</span>
+                                        </li>
+                                                                            <li>
+                                            <span class="st-day">Memorial Day</span>
+                                            <span class="st-times">1:30 · 4:30 PM</span>
+                                        </li>
+                                                                    </ul>
+                                                    </div>
+                    </a>
+                            </div>
+            <button type="button" class="carousel-arrow carousel-arrow-next" aria-label="Scroll to more movies" data-carousel-next>&#8250;</button>
         </div>
-        <div class="movie-card-body">
-          <span class="movie-rating">PG-13</span>
-          <h2 class="movie-title">Star Wars: The Mandalorian &amp; Grogu</h2>
-          <p class="showtimes-label">Showtimes</p>
-          <div class="showtime-row">
-            <span class="showtime-day">Thursday, May 22</span>
-            <span class="showtime-times">4:00 PM &bull; 7:15 PM</span>
-          </div>
-          <div class="showtime-row">
-            <span class="showtime-day">Fri&ndash;Sun, May 23&ndash;25</span>
-            <span class="showtime-times">1:00 &bull; 4:00 &bull; 7:15 PM</span>
-          </div>
-          <div class="showtime-row">
-            <span class="showtime-day">Memorial Day, May 26</span>
-            <span class="showtime-times">1:00 PM &bull; 4:00 PM</span>
-          </div>
-          <div class="movie-cta">
-            <a href="https://the-alexandria-theatre.square.site/" target="_blank" rel="noopener" class="btn btn-crimson">Buy Tickets</a>
-          </div>
-        </div>
-      </div>
 
-      <div class="movie-card">
-        <div class="movie-poster">
-          <span class="screen-badge">Small Screen</span>
-          <img src="assets/images/sheep.jpg" alt="The Sheep Detectives movie poster" loading="eager">
+        <div class="policy-box mt-3">
+            <h3>Showtime Policy</h3>
+            <p>The theatre reserves the right to adjust showtimes, screens, or auditoriums based on equipment issues or when ticket sales for a particular film exceed 20 seats. We appreciate your flexibility and understanding.</p>
         </div>
-        <div class="movie-card-body">
-          <span class="movie-rating">PG</span>
-          <h2 class="movie-title">The Sheep Detectives</h2>
-          <p class="showtimes-label">Showtimes</p>
-          <div class="showtime-row">
-            <span class="showtime-day">Thursday, May 22</span>
-            <span class="showtime-times">4:30 PM &bull; 7:30 PM</span>
-          </div>
-          <div class="showtime-row">
-            <span class="showtime-day">Fri&ndash;Sun, May 23&ndash;25</span>
-            <span class="showtime-times">1:30 &bull; 4:30 &bull; 7:30 PM</span>
-          </div>
-          <div class="showtime-row">
-            <span class="showtime-day">Memorial Day, May 26</span>
-            <span class="showtime-times">1:30 PM &bull; 4:30 PM</span>
-          </div>
-          <div class="movie-cta">
-            <a href="https://the-alexandria-theatre.square.site/" target="_blank" rel="noopener" class="btn btn-crimson">Buy Tickets</a>
-            <span class="online-required">Small screen tickets must be purchased online</span>
-          </div>
-        </div>
-      </div>
     </div>
+</section>
 
-    <div class="policy-box mt-3">
-      <h3>Showtime Policy</h3>
-      <p>The theatre reserves the right to adjust showtimes, screens, or auditoriums based on equipment issues or when ticket sales for a particular film exceed 20 seats. We appreciate your flexibility and understanding.</p>
+<!-- Google Reviews -->
+<section class="home-reviews-section">
+    <div class="container">
+        <div class="section-header centered">
+            <p class="section-label">What Our Neighbors Say</p>
+            <h2 class="section-title">Loved by Alexandria</h2>
+            <div class="section-divider centered"></div>
+        </div>
+
+        <div class="reviews-grid">
+            <div class="review-card">
+                <div class="review-stars">★★★★★</div>
+                <p class="review-text">What a great budget friendly place to take the family to see a movie! Even the concessions are budget friendly.</p>
+                <div class="review-meta"><span class="review-name">Jackie</span><span class="review-time">2 months ago</span></div>
+            </div>
+            <div class="review-card">
+                <div class="review-stars">★★★★★</div>
+                <p class="review-text">We love this historical movie theater. Staff and owners are super nice. Great hospitality.</p>
+                <div class="review-meta"><span class="review-name">Robin</span><span class="review-time">3 months ago</span></div>
+            </div>
+            <div class="review-card">
+                <div class="review-stars">★★★★★</div>
+                <p class="review-text">I love the vintage feel of this place. The prices are amazing and it's never too busy.</p>
+                <div class="review-meta"><span class="review-name">Brian</span><span class="review-time">7 months ago</span></div>
+            </div>
+            <div class="review-card">
+                <div class="review-stars">★★★★★</div>
+                <p class="review-text">Really neat small town mom and pop operation. First run movies at second run pricing — worth the trip from surrounding counties.</p>
+                <div class="review-meta"><span class="review-name">Jim</span><span class="review-time">a year ago</span></div>
+            </div>
+        </div>
+        <p class="reviews-attribution">Reviews from Google</p>
     </div>
-  </div>
 </section>
 
 <!-- Coming Soon -->
 <section class="coming-soon-section">
-  <div class="container">
-    <div class="section-header centered">
-      <p class="section-label">Coming to the Alex</p>
-      <h2 class="section-title">Coming Soon</h2>
-      <div class="section-divider centered"></div>
-    </div>
-    <div class="coming-soon-grid">
-      <div class="coming-soon-card">
-        <div class="film-title">The Mummy</div>
-        <div class="film-status">Coming Soon</div>
-      </div>
-      <div class="coming-soon-card">
-        <div class="film-title">Toy Story 5</div>
-        <div class="film-status">Coming Soon</div>
-      </div>
-    </div>
-  </div>
+    <div class="container">
+        <div class="section-header centered">
+            <p class="section-label">Coming to the Alex</p>
+            <h2 class="section-title">Coming Soon</h2>
+            <div class="section-divider centered"></div>
+        </div>
+
+                <div class="coming-soon-grid">
+            <div class="coming-soon-card">
+                <div class="film-title">The Mummy</div>
+                <div class="film-status">Coming Soon</div>
+            </div>
+            <div class="coming-soon-card">
+                <div class="film-title">Toy Story 5</div>
+                <div class="film-status">Coming Soon</div>
+            </div>
+        </div>
+            </div>
 </section>
 
-<!-- Pricing -->
-<section class="pricing-section">
-  <div class="container">
-    <div class="section-header centered">
-      <p class="section-label">Affordable for Everyone</p>
-      <h2 class="section-title">Ticket Prices</h2>
-      <div class="section-divider centered"></div>
+<!-- Senior Movie Teaser -->
+<section class="senior-teaser-section">
+    <div class="container">
+        <div class="senior-teaser">
+            <div class="senior-teaser-text">
+                <p class="section-label">A Gift to the Community</p>
+                <h2 class="section-title">Free Movies for Seniors 55+</h2>
+                <p>Every month, the Alex partners with Senior Essential Connections to host a free screening for seniors. No ticket, no reservation — just show up and enjoy.</p>
+                <a href="senior-movie.html" class="btn btn-crimson">Senior Movie Details</a>
+            </div>
+        </div>
     </div>
-    <div class="pricing-grid">
-      <div class="price-card">
-        <div class="price-amount">$5</div>
-        <div class="price-label">Adults</div>
-      </div>
-      <div class="price-card">
-        <div class="price-amount">$3</div>
-        <div class="price-label">Children</div>
-      </div>
-    </div>
-    <p class="text-secondary" style="text-align:center;font-size:1rem;margin-top:1rem;">Purchase tickets at the door or online for the small screen.</p>
-  </div>
 </section>
 
 <!-- Quick Info -->
 <section class="visit-section">
-  <div class="container">
-    <div class="section-header centered">
-      <p class="section-label">Everything You Need to Know</p>
-      <h2 class="section-title">Visit the Alex</h2>
-      <div class="section-divider centered"></div>
+    <div class="container">
+        <div class="section-header centered">
+            <p class="section-label">Everything You Need to Know</p>
+            <h2 class="section-title">Visit the Alex</h2>
+            <div class="section-divider centered"></div>
+        </div>
+
+        <div class="info-grid">
+            <div class="info-card">
+                <h3>Location</h3>
+                <p>407 N. Harrison Street<br>Alexandria, IN 46001<br><br>5 blocks north of W. Washington St, 6 blocks west of State Rd 9.</p>
+            </div>
+            <div class="info-card">
+                <h3>What We Offer</h3>
+                <ul>
+                    <li>Two-screen independent theatre</li>
+                    <li>Free senior movies (55+)</li>
+                    <li>Private screenings &amp; rentals</li>
+                    <li>Concession stand</li>
+                    <li>Birthday party packages</li>
+                </ul>
+            </div>
+            <div class="info-card">
+                <h3>Contact</h3>
+                <p>Phone: <a href="tel:765-620-9093">765-620-9093</a><br><br>
+                Follow us on Facebook and Instagram for the latest updates and announcements.</p>
+            </div>
+        </div>
     </div>
-    <div class="info-grid">
-      <div class="info-card">
-        <h3>Location</h3>
-        <p>407 N. Harrison Street<br>Alexandria, IN 46001<br><br>5 blocks north of W. Washington St, 6 blocks west of State Rd 9.</p>
-      </div>
-      <div class="info-card">
-        <h3>What We Offer</h3>
-        <ul>
-          <li>Two-screen independent theatre</li>
-          <li>Free senior movies (55+)</li>
-          <li>Private screenings &amp; rentals</li>
-          <li>Concession stand</li>
-          <li>Birthday party packages</li>
-        </ul>
-      </div>
-      <div class="info-card">
-        <h3>Contact</h3>
-        <p>Phone: <a href="tel:765-620-9093">(765) 620-9093</a><br><br>Follow us on Facebook and Instagram for the latest updates and announcements.</p>
-      </div>
-    </div>
-  </div>
 </section>
 
 </main>
 
 <footer class="footer">
-  <div class="container">
-    <div class="footer-grid">
-      <div class="footer-brand">
-        <div class="brand-name">Alex Theatre</div>
-        <div class="brand-tag">Alexandria's Independent Cinema</div>
-        <p>407 N. Harrison Street, Alexandria, IN 46001<br>Phone: <a href="tel:765-620-9093">(765) 620-9093</a></p>
-        <div class="social-links">
-          <a href="https://www.facebook.com/TheAlexandriaTheatre" target="_blank" rel="noopener">Facebook</a>
-          <a href="https://www.instagram.com/the.alextheatre" target="_blank" rel="noopener">Instagram</a>
+    <div class="container">
+        <div class="footer-grid">
+            <div class="footer-brand">
+                <div class="brand-name">Alex Theatre</div>
+                <div class="brand-tag">Alexandria's Independent Cinema</div>
+                <p>407 N. Harrison Street, Alexandria, IN 46001<br>
+                Phone: <a href="tel:765-620-9093">765-620-9093</a></p>
+                <div class="social-links">
+                    <a href="https://www.facebook.com/TheAlexandriaTheatre" target="_blank" rel="noopener">Facebook</a>
+                    <a href="https://www.instagram.com/the.alextheatre" target="_blank" rel="noopener">Instagram</a>
+                </div>
+            </div>
+
+            <div class="footer-col">
+                <h4>Quick Links</h4>
+                <ul>
+                    <li><a href="index.html">Now Showing</a></li>
+                    <li><a href="senior-movie.html">Free Senior Movie</a></li>
+                    <li><a href="concessions.html">Concessions</a></li>
+                    <li><a href="events.html">Events</a></li>
+                    <li><a href="private-screenings.html">Private Screenings</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-col">
+                <h4>Visit Us</h4>
+                <ul>
+                    <li><a href="contact.html">Visit &amp; Contact</a></li>
+                    <li><a href="https://docs.google.com/forms/d/e/1FAIpQLSeIx_YNZ91tXNZ2PvcmIRTIoVUjqDo56f3cjPNgs2z9OWspww/viewform" target="_blank" rel="noopener">Employment</a></li>
+                    <li><a href="tickets.html">Buy Tickets</a></li>
+                    <li><a href="privacy.html">Privacy Policy</a></li>
+                </ul>
+            </div>
         </div>
-      </div>
-      <div class="footer-col">
-        <h4>Quick Links</h4>
-        <ul>
-          <li><a href="index.html">Now Showing</a></li>
-          <li><a href="senior-movie.html">Free Senior Movie</a></li>
-          <li><a href="concessions.html">Concessions</a></li>
-          <li><a href="events.html">Events</a></li>
-          <li><a href="private-screenings.html">Private Screenings</a></li>
-        </ul>
-      </div>
-      <div class="footer-col">
-        <h4>Visit Us</h4>
-        <ul>
-          <li><a href="location.html">Location &amp; Parking</a></li>
-          <li><a href="contact.html">Contact Us</a></li>
-          <li><a href="https://the-alexandria-theatre.square.site/" target="_blank" rel="noopener">Buy Tickets</a></li>
-          <li><a href="https://2ktay.github.io/alex-movie-theater/admin/" target="_blank" rel="noopener">Admin Panel</a></li>
-        </ul>
-      </div>
+
+        <div class="footer-bottom">
+            <span>&copy; 2026 Alex Movie Theatre · Alexandria, Indiana</span>
+            <span>$5 Adults &bull; $3 Children</span>
+        </div>
     </div>
-    <div class="footer-bottom">
-      <span>&copy; 2026 Alex Movie Theatre · Alexandria, Indiana</span>
-      <span>$5 Adults &bull; $3 Children</span>
-    </div>
-  </div>
 </footer>
 
 <script src="assets/js/main.js"></script>
