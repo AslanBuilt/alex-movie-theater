@@ -1,0 +1,14 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "",
+        "hooks": [
+          { "type": "command", "command": "cat $CLAUDE_PROJECT_DIR/.claude/workflow-bootstrap.txt" },
+          { "type": "command", "command": "cat $CLAUDE_PROJECT_DIR/.claude/project-rules.md 2>/dev/null" },
+          { "type": "command", "command": "node $CLAUDE_PROJECT_DIR/.claude/crm-context.mjs 2>&1 || true" }
+        ]
+      }
+    ]
+  }
+}

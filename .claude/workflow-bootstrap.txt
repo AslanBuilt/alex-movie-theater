@@ -1,0 +1,63 @@
+This is an Aslan client project (type: hybrid, stage: demo).
+
+Stage rules (lifecycle-stage skill) govern commit/push/branch/deploy rigor —
+rigor ratchets up prototype → mvp → demo → production → maintenance:
+  prototype/mvp = push to main freely & often; CI must stay green; auto-deploy
+                  to staging; default-and-present, move fast.
+  demo          = client reviewing on parityrfp; verify demo creds; audit green.
+  production    = backup-GATED deploys; audit + Playwright; 63-item readiness
+                  before first prod deploy; tag releases; careful on money/data.
+  maintenance   = live client — MOST cautious: backup-first, short branch +
+                  self-review, ask before destructive changes.
+Invoke `lifecycle-stage` if unsure what the current stage permits. Stage is in
+.claude/project-stage; project facts (deploy path, creds location, DB names,
+where specs/mockups live) are in .claude/project-rules.md (also loaded above).
+
+Defaults — decide these yourself, don't ask (see aslan "Zero-friction defaults"):
+  Stack = PHP 8 / MySQL / cPanel (unless the SOW needs a native mobile/desktop app)
+  Scope = full platform up front
+  Existing site = look it up with WebFetch; don't ask if one exists
+  hybrid type = full gate on operated surfaces (admin/DB/payments/ordering),
+                new-page/section gate on public marketing pages
+
+FIRST action this session — invoke the `aslan` skill and run its
+"Session orientation — document freshness review": a fast, read-only pass
+over this project's docs that reports what's Stale / Needs update / Helpful
+for development before any coding. Report briefly, then proceed. Do NOT edit
+docs during orientation.
+
+Before any code action on a non-trivial task, invoke the `workflow` skill.
+The aslan master skill's workflow gate refuses Edit/Write on non-trivial
+work without an approved spec + plan.
+
+Where to look in this repo:
+  docs/superpowers/specs/   — read the most recent if it's in-flight
+  docs/superpowers/plans/   — check for an open plan with unchecked steps
+  docs/client-context/decisions.md      — confirmed decisions (dated, append-only)
+  docs/client-context/open-questions.md — Client Questions log; log anything only
+                          the client can answer here, then keep going (don't stall)
+
+Workflow children available (Phase A so far):
+  workflow            — index / routing table
+  workflow-brainstorm — produce a spec + HTML mockups (HARD GATE: refuses to
+                        write code until spec is approved + has Business meaning)
+  workflow-spec-review— red-team the spec for failure modes a happy read misses
+  workflow-flow-review— derive every user flow, score coverage (RTM), walk you
+                        through each so you own it; log gaps to a backlog
+  workflow-plan       — implementation plan; each task cites spec§ + mockup
+
+For phases not yet built (execute, verify, debug, code-review,
+finish-branch, client-intake), use the equivalent superpowers skill:
+  workflow-execute       → superpowers:executing-plans
+  workflow-verify        → superpowers:verification-before-completion
+  workflow-debug         → superpowers:systematic-debugging
+  workflow-code-review   → superpowers:requesting-code-review
+  workflow-finish-branch → superpowers:finishing-a-development-branch
+
+Override: type `skip workflow:` followed by what you want to skip the gate
+on a legitimate fast-fix moment. Commit message footer will record the
+override for audit.
+
+Trivial bypass (no workflow needed): copy/text changes, one-line CSS,
+README/CLAUDE.md edits, dependency version bumps, typos, reverting a
+recent commit.
