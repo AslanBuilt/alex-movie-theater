@@ -8,95 +8,57 @@ name: Deploy to parityrfp.com
 
 jobs:
   ftp-deploy:
-    name: FTP Deploy to /cs/alex-movie-theater/
+    name: FTP Deploy
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Deploy public/ to web root
+      - name: Deploy public to web root
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
           server: ${{ secrets.FTP_HOST }}
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
           protocol: ftp
-          port: 21
+          port: "21"
           local-dir: ./public/
           server-dir: /cs/alex-movie-theater/
-          exclude: |
-            **/.git*
-            **/.git*/**
-            **/.DS_Store
-            **/Thumbs.db
-            **/.htaccess.bak
+          exclude: "**/.git*\n**/.git*/**\n**/.DS_Store\n**/Thumbs.db\n**/.htaccess.bak"
 
-      - name: Deploy includes/
+      - name: Deploy includes
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
           server: ${{ secrets.FTP_HOST }}
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
           protocol: ftp
-          port: 21
+          port: "21"
           local-dir: ./includes/
           server-dir: /cs/alex-movie-theater/includes/
-          exclude: |
-            **/.git*
-            **/.git*/**
-            **/.DS_Store
-            **/Thumbs.db
 
-      - name: Deploy templates/
+      - name: Deploy templates
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
           server: ${{ secrets.FTP_HOST }}
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
           protocol: ftp
-          port: 21
+          port: "21"
           local-dir: ./templates/
           server-dir: /cs/alex-movie-theater/templates/
-          exclude: |
-            **/.git*
-            **/.git*/**
-            **/.DS_Store
-            **/Thumbs.db
 
-      - name: Deploy config/ (excluding database.php)
+      - name: Deploy config (excluding database.php)
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
           server: ${{ secrets.FTP_HOST }}
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
           protocol: ftp
-          port: 21
+          port: "21"
           local-dir: ./config/
           server-dir: /cs/alex-movie-theater/config/
-          exclude: |
-            **/.git*
-            **/.git*/**
-            **/.DS_Store
-            **/Thumbs.db
-            **/database.php
-
-      - name: Deploy database/ (excluding seed.sql)
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
-        with:
-          server: ${{ secrets.FTP_HOST }}
-          username: ${{ secrets.FTP_USERNAME }}
-          password: ${{ secrets.FTP_PASSWORD }}
-          protocol: ftp
-          port: 21
-          local-dir: ./database/
-          server-dir: /cs/alex-movie-theater/database/
-          exclude: |
-            **/.git*
-            **/.git*/**
-            **/.DS_Store
-            **/Thumbs.db
-            **/seed.sql
+          exclude: "**/database.php"
 
       - name: Deployment summary
-        run: echo "Deploy complete: https://parityrfp.com/cs/alex-movie-theater/"
+        run: echo "Deploy complete to /cs/alex-movie-theater/"
