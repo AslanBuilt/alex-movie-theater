@@ -12,3 +12,11 @@ jobs:
     steps:
       - name: Echo
         run: echo "actions runner is alive"
+      - name: Resolve FTP action
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: example.com
+          username: x
+          password: x
+          dry-run: true
+          local-dir: ./public/
