@@ -66,19 +66,19 @@ require TEMPLATES_PATH . '/header.php';
 
         <div class="info-grid">
             <div class="info-card">
-                <h3>&#x1F4B0; Group Spend Minimum</h3>
+                <h3><?= icon('cash') ?> Group Spend Minimum</h3>
                 <p>Your entire group must collectively spend at least <strong class="text-crimson">$100</strong> to qualify for a private rental booking.</p>
             </div>
             <div class="info-card">
-                <h3>&#x1F354; Food &amp; Beverages</h3>
+                <h3><?= icon('food') ?> Food &amp; Beverages</h3>
                 <p>No outside food or beverages are permitted. Exception: <strong class="text-crimson">birthday cakes are welcome</strong> for birthday rental events. Our full concession stand will be open.</p>
             </div>
             <div class="info-card">
-                <h3>&#x1F4B3; Payment Options</h3>
+                <h3><?= icon('credit-card') ?> Payment Options</h3>
                 <p>The host can choose to cover all costs for the group, or have each guest pay individually at the door. Flexibility is built in.</p>
             </div>
             <div class="info-card">
-                <h3>&#x1F4DE; How to Book</h3>
+                <h3><?= icon('phone') ?> How to Book</h3>
                 <p>Fill out our inquiry form to get started. We'll reach out to confirm availability, discuss your film choice, and finalize details.</p>
             </div>
         </div>

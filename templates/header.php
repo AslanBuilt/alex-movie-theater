@@ -43,8 +43,7 @@
 <header class="navbar">
     <div class="container">
         <a href="<?= url() ?>" class="navbar-brand">
-            <span class="brand-name">Alex Theatre</span>
-            <span class="brand-sub">Alexandria, Indiana</span>
+            <span class="brand-name">The Alex</span>
         </a>
 
         <button class="nav-toggle" aria-label="Toggle navigation" aria-expanded="false">
@@ -57,8 +56,7 @@
             <li><a href="<?= url('concessions.php') ?>" class="<?= navClass('concessions') ?>">Concessions</a></li>
             <li><a href="<?= url('events.php') ?>" class="<?= navClass('events') ?>">Events</a></li>
             <li><a href="<?= url('private-screenings.php') ?>" class="<?= navClass('private-screenings') ?>">Private Screenings</a></li>
-            <li><a href="<?= url('location.php') ?>" class="<?= navClass('location') ?>">Location</a></li>
-            <li><a href="<?= url('contact.php') ?>" class="<?= navClass('contact') ?>">Contact</a></li>
+            <li><a href="<?= url('contact.php') ?>" class="<?= navClass('contact') ?>">Visit &amp; Contact</a></li>
             <li><a href="<?= e(TICKETS_URL) ?>" class="nav-link nav-cta">Buy Tickets</a></li>
         </ul>
     </div>

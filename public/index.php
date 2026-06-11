@@ -11,34 +11,46 @@ $canonical = SITE_URL;
 $nowShowing = tryDb(fn() => MovieRepo::getNowShowing());
 $comingSoon = tryDb(fn() => MovieRepo::getComingSoon());
 
+// Fall back to static demo data when the DB is unavailable (e.g. static preview).
+$hasDbMovies = !empty($nowShowing);
+if (!$hasDbMovies) {
+    $nowShowing = [
+        [
+            'id' => 1,
+            'title' => 'Star Wars: The Mandalorian & Grogu',
+            'rating' => 'PG-13',
+            'screen' => 'large',
+            'poster_path' => 'images/starwars.jpg',
+            'online_only' => false,
+            'showtimes' => [
+                ['label' => 'Thu, May 22', 'times' => '4:00 · 7:15 PM'],
+                ['label' => 'Fri–Sun, May 23–25', 'times' => '1:00 · 4:00 · 7:15 PM'],
+                ['label' => 'Memorial Day', 'times' => '1:00 · 4:00 PM'],
+            ],
+        ],
+        [
+            'id' => 2,
+            'title' => 'The Sheep Detectives',
+            'rating' => 'PG',
+            'screen' => 'small',
+            'poster_path' => 'images/sheep.jpg',
+            'online_only' => true,
+            'showtimes' => [
+                ['label' => 'Thu, May 22', 'times' => '4:30 · 7:30 PM'],
+                ['label' => 'Fri–Sun, May 23–25', 'times' => '1:30 · 4:30 · 7:30 PM'],
+                ['label' => 'Memorial Day', 'times' => '1:30 · 4:30 PM'],
+            ],
+        ],
+    ];
+}
+
 require TEMPLATES_PATH . '/header.php';
 ?>
 
-<!-- Cinematic Hero Slideshow -->
-<div class="hero-cinematic">
-    <div class="photo-slideshow hero-slideshow">
-        <div class="slideshow-track">
-            <div class="slideshow-slide">
-                <img src="<?= asset('images/hero-1.png') ?>" alt="Alex Theatre exterior, daytime" loading="eager">
-            </div>
-            <div class="slideshow-slide">
-                <img src="<?= asset('images/hero-2.png') ?>" alt="Alex Theatre at night with neon sign" loading="eager">
-            </div>
-            <div class="slideshow-slide">
-                <img src="<?= asset('images/hero-3.png') ?>" alt="Alex Theatre auditorium interior" loading="lazy">
-            </div>
-            <div class="slideshow-slide">
-                <img src="<?= asset('images/hero-4.png') ?>" alt="Alex Theatre exterior with classic car" loading="lazy">
-            </div>
-        </div>
-        <button class="slideshow-btn slideshow-btn-prev" aria-label="Previous photo">&#8249;</button>
-        <button class="slideshow-btn slideshow-btn-next" aria-label="Next photo">&#8250;</button>
-        <div class="slideshow-dots">
-            <button class="slideshow-dot active" aria-label="Photo 1"></button>
-            <button class="slideshow-dot" aria-label="Photo 2"></button>
-            <button class="slideshow-dot" aria-label="Photo 3"></button>
-            <button class="slideshow-dot" aria-label="Photo 4"></button>
-        </div>
+<!-- Hero — the white Chevelle out front of the marquee -->
+<section class="hero-cinematic">
+    <div class="hero-bg">
+        <img src="<?= asset('images/hero-4.png') ?>" alt="The Alex marquee with a classic white Chevelle parked out front in downtown Alexandria, Indiana" loading="eager" fetchpriority="high">
     </div>
     <div class="hero-overlay"></div>
     <div class="hero-content">
@@ -50,7 +62,7 @@ require TEMPLATES_PATH . '/header.php';
             <a href="<?= url('private-screenings.php') ?>" class="btn btn-outline-hero">Book the Theatre</a>
         </div>
     </div>
-</div>
+</section>
 
 <!-- Info Bar -->
 <div class="info-bar">
@@ -66,136 +78,107 @@ require TEMPLATES_PATH . '/header.php';
 </div>
 
 <!-- Now Showing -->
-<section id="now-showing">
+<section id="now-showing" class="now-showing-section">
     <div class="container">
         <div class="section-header">
             <p class="section-label">On the Screen This Week</p>
             <h2 class="section-title">Now Showing</h2>
             <div class="section-divider"></div>
         </div>
+    </div>
 
-        <?php if (!empty($nowShowing)): ?>
-        <div class="movies-grid">
-            <?php foreach ($nowShowing as $movie): ?>
-                <?php
-                    $screen = (string) ($movie['screen'] ?? 'either');
-                    $screenLabel = $screen === 'large'
-                        ? 'Large Screen'
-                        : ($screen === 'small' ? 'Small Screen' : '');
-                    $posterPath = (string) ($movie['poster_path'] ?? '');
-                    $title = (string) ($movie['title'] ?? '');
-                    $rating = (string) ($movie['rating'] ?? '');
-                    $onlineOnly = !empty($movie['online_only']);
-                    $showtimes = $movie['showtimes'] ?? [];
-                ?>
-            <div class="movie-card">
-                <div class="movie-poster">
-                    <?php if ($screenLabel !== ''): ?>
-                        <span class="screen-badge"><?= e($screenLabel) ?></span>
-                    <?php endif; ?>
-                    <?php if ($posterPath !== ''): ?>
-                        <img src="<?= e(asset($posterPath)) ?>" alt="<?= e($title) ?> movie poster" loading="eager">
-                    <?php else: ?>
-                        <div class="movie-poster-placeholder"><?= e($title) ?></div>
-                    <?php endif; ?>
-                </div>
-                <div class="movie-card-body">
-                    <?php if ($rating !== ''): ?>
-                        <span class="movie-rating"><?= e($rating) ?></span>
-                    <?php endif; ?>
-                    <h2 class="movie-title"><?= e($title) ?></h2>
-
-                    <?php if (!empty($showtimes)): ?>
-                        <p class="showtimes-label">Showtimes</p>
-                        <?php foreach ($showtimes as $st): ?>
-                            <div class="showtime-row">
-                                <span class="showtime-day"><?= e((string) ($st['label'] ?? '')) ?></span>
-                                <span class="showtime-times"><?= e((string) ($st['times'] ?? '')) ?></span>
+    <div class="container">
+        <div class="movie-carousel" data-carousel>
+            <button type="button" class="carousel-arrow carousel-arrow-prev" aria-label="Scroll to previous movies" data-carousel-prev>&#8249;</button>
+            <div class="carousel-track" data-carousel-track>
+                <?php foreach ($nowShowing as $movie): ?>
+                    <?php
+                        $id = (int) ($movie['id'] ?? 0);
+                        $screen = (string) ($movie['screen'] ?? 'either');
+                        $screenLabel = $screen === 'large'
+                            ? 'Large Screen'
+                            : ($screen === 'small' ? 'Small Screen' : '');
+                        $posterPath = (string) ($movie['poster_path'] ?? '');
+                        $title = (string) ($movie['title'] ?? '');
+                        $rating = (string) ($movie['rating'] ?? '');
+                        $showtimes = $movie['showtimes'] ?? [];
+                        $detailUrl = $hasDbMovies ? url('movie.php?id=' . $id) : TICKETS_URL;
+                    ?>
+                    <a class="poster-card" href="<?= e($detailUrl) ?>">
+                        <div class="poster-card-media">
+                            <?php if ($screenLabel !== ''): ?>
+                                <span class="screen-badge"><?= e($screenLabel) ?></span>
+                            <?php endif; ?>
+                            <?php if ($posterPath !== ''): ?>
+                                <img src="<?= e(asset($posterPath)) ?>" alt="<?= e($title) ?> movie poster" loading="eager">
+                            <?php else: ?>
+                                <div class="movie-poster-placeholder"><?= e($title) ?></div>
+                            <?php endif; ?>
+                            <span class="poster-card-overlay"><span class="poster-card-cta">Showtimes &amp; Tickets &rarr;</span></span>
+                        </div>
+                        <div class="poster-card-info">
+                            <div class="poster-card-head">
+                                <?php if ($rating !== ''): ?>
+                                    <span class="movie-rating"><?= e($rating) ?></span>
+                                <?php endif; ?>
+                                <h3 class="poster-card-title"><?= e($title) ?></h3>
                             </div>
-                        <?php endforeach; ?>
-                    <?php endif; ?>
-
-                    <div class="movie-cta">
-                        <a href="<?= e(TICKETS_URL) ?>" class="btn btn-crimson" target="_blank" rel="noopener">Buy Tickets</a>
-                        <?php if ($onlineOnly): ?>
-                            <span class="online-required">Small screen tickets must be purchased online</span>
-                        <?php endif; ?>
-                    </div>
-                </div>
+                            <?php if (!empty($showtimes)): ?>
+                                <ul class="poster-card-times">
+                                    <?php foreach (array_slice($showtimes, 0, 3) as $st): ?>
+                                        <li>
+                                            <span class="st-day"><?= e((string) ($st['label'] ?? '')) ?></span>
+                                            <span class="st-times"><?= e((string) ($st['times'] ?? '')) ?></span>
+                                        </li>
+                                    <?php endforeach; ?>
+                                </ul>
+                            <?php endif; ?>
+                        </div>
+                    </a>
+                <?php endforeach; ?>
             </div>
-            <?php endforeach; ?>
+            <button type="button" class="carousel-arrow carousel-arrow-next" aria-label="Scroll to more movies" data-carousel-next>&#8250;</button>
         </div>
-        <?php else: ?>
-        <div class="movies-grid">
-            <!-- Movie 1: Large Screen -->
-            <div class="movie-card">
-                <div class="movie-poster">
-                    <span class="screen-badge">Large Screen</span>
-                    <img src="<?= asset('images/starwars.jpg') ?>" alt="Star Wars: The Mandalorian &amp; Grogu movie poster" loading="eager">
-                </div>
-                <div class="movie-card-body">
-                    <span class="movie-rating">PG-13</span>
-                    <h2 class="movie-title">Star Wars: The Mandalorian &amp; Grogu</h2>
-
-                    <p class="showtimes-label">Showtimes</p>
-
-                    <div class="showtime-row">
-                        <span class="showtime-day">Thursday, May 22</span>
-                        <span class="showtime-times">4:00 PM &bull; 7:15 PM</span>
-                    </div>
-                    <div class="showtime-row">
-                        <span class="showtime-day">Fri–Sun, May 23–25</span>
-                        <span class="showtime-times">1:00 &bull; 4:00 &bull; 7:15 PM</span>
-                    </div>
-                    <div class="showtime-row">
-                        <span class="showtime-day">Memorial Day, May 26</span>
-                        <span class="showtime-times">1:00 PM &bull; 4:00 PM</span>
-                    </div>
-
-                    <div class="movie-cta">
-                        <a href="<?= e(TICKETS_URL) ?>" class="btn btn-crimson" target="_blank" rel="noopener">Buy Tickets</a>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Movie 2: Small Screen -->
-            <div class="movie-card">
-                <div class="movie-poster">
-                    <span class="screen-badge">Small Screen</span>
-                    <img src="<?= asset('images/sheep.jpg') ?>" alt="The Sheep Detectives movie poster" loading="eager">
-                </div>
-                <div class="movie-card-body">
-                    <span class="movie-rating">PG</span>
-                    <h2 class="movie-title">The Sheep Detectives</h2>
-
-                    <p class="showtimes-label">Showtimes</p>
-
-                    <div class="showtime-row">
-                        <span class="showtime-day">Thursday, May 22</span>
-                        <span class="showtime-times">4:30 PM &bull; 7:30 PM</span>
-                    </div>
-                    <div class="showtime-row">
-                        <span class="showtime-day">Fri–Sun, May 23–25</span>
-                        <span class="showtime-times">1:30 &bull; 4:30 &bull; 7:30 PM</span>
-                    </div>
-                    <div class="showtime-row">
-                        <span class="showtime-day">Memorial Day, May 26</span>
-                        <span class="showtime-times">1:30 PM &bull; 4:30 PM</span>
-                    </div>
-
-                    <div class="movie-cta">
-                        <a href="<?= e(TICKETS_URL) ?>" class="btn btn-crimson" target="_blank" rel="noopener">Buy Tickets</a>
-                        <span class="online-required">Small screen tickets must be purchased online</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <?php endif; ?>
 
         <div class="policy-box mt-3">
             <h3>Showtime Policy</h3>
             <p>The theatre reserves the right to adjust showtimes, screens, or auditoriums based on equipment issues or when ticket sales for a particular film exceed 20 seats. We appreciate your flexibility and understanding.</p>
         </div>
+    </div>
+</section>
+
+<!-- Google Reviews -->
+<section class="home-reviews-section">
+    <div class="container">
+        <div class="section-header centered">
+            <p class="section-label">What Our Neighbors Say</p>
+            <h2 class="section-title">Loved by Alexandria</h2>
+            <div class="section-divider centered"></div>
+        </div>
+
+        <div class="reviews-grid">
+            <div class="review-card">
+                <div class="review-stars">★★★★★</div>
+                <p class="review-text">What a great budget friendly place to take the family to see a movie! Even the concessions are budget friendly.</p>
+                <div class="review-meta"><span class="review-name">Jackie</span><span class="review-time">2 months ago</span></div>
+            </div>
+            <div class="review-card">
+                <div class="review-stars">★★★★★</div>
+                <p class="review-text">We love this historical movie theater. Staff and owners are super nice. Great hospitality.</p>
+                <div class="review-meta"><span class="review-name">Robin</span><span class="review-time">3 months ago</span></div>
+            </div>
+            <div class="review-card">
+                <div class="review-stars">★★★★★</div>
+                <p class="review-text">I love the vintage feel of this place. The prices are amazing and it's never too busy.</p>
+                <div class="review-meta"><span class="review-name">Brian</span><span class="review-time">7 months ago</span></div>
+            </div>
+            <div class="review-card">
+                <div class="review-stars">★★★★★</div>
+                <p class="review-text">Really neat small town mom and pop operation. First run movies at second run pricing — worth the trip from surrounding counties.</p>
+                <div class="review-meta"><span class="review-name">Jim</span><span class="review-time">a year ago</span></div>
+            </div>
+        </div>
+        <p class="reviews-attribution">Reviews from Google</p>
     </div>
 </section>
 
@@ -232,29 +215,17 @@ require TEMPLATES_PATH . '/header.php';
     </div>
 </section>
 
-<!-- Pricing -->
-<section class="pricing-section">
+<!-- Senior Movie Teaser -->
+<section class="senior-teaser-section">
     <div class="container">
-        <div class="section-header centered">
-            <p class="section-label">Affordable for Everyone</p>
-            <h2 class="section-title">Ticket Prices</h2>
-            <div class="section-divider centered"></div>
-        </div>
-
-        <div class="pricing-grid">
-            <div class="price-card">
-                <div class="price-amount">$5</div>
-                <div class="price-label">Adults</div>
-            </div>
-            <div class="price-card">
-                <div class="price-amount">$3</div>
-                <div class="price-label">Children</div>
+        <div class="senior-teaser">
+            <div class="senior-teaser-text">
+                <p class="section-label">A Gift to the Community</p>
+                <h2 class="section-title">Free Movies for Seniors 55+</h2>
+                <p>Every month, the Alex partners with Senior Essential Connections to host a free screening for seniors. No ticket, no reservation — just show up and enjoy.</p>
+                <a href="<?= url('senior-movie.php') ?>" class="btn btn-crimson">Senior Movie Details</a>
             </div>
         </div>
-
-        <p class="text-secondary" style="text-align:center; font-size:0.875rem;">
-            Purchase tickets at the door or online at Square for the small screen.
-        </p>
     </div>
 </section>
 
