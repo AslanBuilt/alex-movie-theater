@@ -1,6 +1,6 @@
 name: Deploy to parityrfp.com
 
-on:
+"on":
   push:
     branches:
       - master
