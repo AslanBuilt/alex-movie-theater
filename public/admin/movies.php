@@ -43,7 +43,7 @@ try {
     }
     $offset = ($page - 1) * $perPage;
 
-    $listSql = "SELECT id, title, rating, screen, status, online_only, sort_order, updated_at
+    $listSql = "SELECT id, title, rating, screen, status, online_only, sort_order, updated_at, poster_path
                 FROM movies
                 $whereSql
                 ORDER BY sort_order ASC, title ASC
@@ -120,12 +120,11 @@ function admin_page_url(array $overrides, string $base): string
     <table class="admin-table">
         <thead>
             <tr>
-                <th>ID</th>
+                <th>Poster</th>
                 <th>Title</th>
                 <th>Rating</th>
                 <th>Screen</th>
                 <th>Status</th>
-                <th>Online Only</th>
                 <th>Sort</th>
                 <th>Updated</th>
                 <th class="actions">Actions</th>
@@ -133,15 +132,24 @@ function admin_page_url(array $overrides, string $base): string
         </thead>
         <tbody>
         <?php if (count($rows) === 0) : ?>
-            <tr><td colspan="9" class="empty-state">No movies found.</td></tr>
+            <tr><td colspan="8" class="empty-state">No movies found. <a href="movie-edit.php">Add the first one.</a></td></tr>
         <?php else : foreach ($rows as $row) : ?>
+            <?php
+                $posterPath = (string)($row['poster_path'] ?? '');
+                $posterUrl  = $posterPath !== '' ? (SITE_URL . 'assets/' . $posterPath) : '';
+            ?>
             <tr>
-                <td class="muted"><?= (int)$row['id'] ?></td>
+                <td style="width:52px; padding:0.5rem 0.75rem;">
+                    <?php if ($posterUrl !== ''): ?>
+                        <img src="<?= e($posterUrl) ?>" alt="" style="width:40px; height:56px; object-fit:cover; border-radius:3px; display:block;">
+                    <?php else: ?>
+                        <div style="width:40px; height:56px; background:var(--bg-card-hover); border-radius:3px; display:flex; align-items:center; justify-content:center; font-size:0.6rem; color:var(--text-secondary); text-align:center; line-height:1.2;">No<br>img</div>
+                    <?php endif; ?>
+                </td>
                 <td><a href="movie-edit.php?id=<?= (int)$row['id'] ?>"><?= e((string)$row['title']) ?></a></td>
                 <td><?= e((string)($row['rating'] ?? '')) ?></td>
                 <td><?= e((string)$row['screen']) ?></td>
                 <td><span class="<?= e(admin_status_badge_movies((string)$row['status'])) ?>"><?= e(str_replace('_', ' ', (string)$row['status'])) ?></span></td>
-                <td><?= ((int)$row['online_only'] === 1) ? 'Yes' : 'No' ?></td>
                 <td><?= (int)$row['sort_order'] ?></td>
                 <td class="muted"><?= e((string)$row['updated_at']) ?></td>
                 <td class="actions">

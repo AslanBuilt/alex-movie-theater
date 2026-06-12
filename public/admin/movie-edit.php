@@ -67,6 +67,38 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $old['online_only'] = isset($_POST['online_only']) ? 1 : 0;
         $old['sort_order']  = (int)($_POST['sort_order'] ?? 0);
 
+        // Handle poster image upload
+        if (!empty($_FILES['poster_file']['tmp_name'])) {
+            $file     = $_FILES['poster_file'];
+            $allowed  = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+            $maxBytes = 8 * 1024 * 1024;
+
+            $finfo    = finfo_open(FILEINFO_MIME_TYPE);
+            $mime     = finfo_file($finfo, $file['tmp_name']);
+            finfo_close($finfo);
+
+            if (!in_array($mime, $allowed, true)) {
+                $errors[] = 'Poster must be a JPG, PNG, GIF, or WebP image.';
+            } elseif ($file['size'] > $maxBytes) {
+                $errors[] = 'Poster image must be under 8 MB.';
+            } else {
+                $ext      = pathinfo((string)$file['name'], PATHINFO_EXTENSION);
+                $safeName = preg_replace('/[^a-z0-9_-]/', '', strtolower(str_replace(' ', '-', $old['title'])));
+                $safeName = $safeName ?: 'poster';
+                $filename = $safeName . '-' . time() . '.' . strtolower($ext);
+                $destDir  = dirname(__DIR__) . '/assets/images/posters/';
+                if (!is_dir($destDir)) {
+                    mkdir($destDir, 0755, true);
+                }
+                $dest = $destDir . $filename;
+                if (move_uploaded_file($file['tmp_name'], $dest)) {
+                    $old['poster_path'] = 'images/posters/' . $filename;
+                } else {
+                    $errors[] = 'Could not save the uploaded image. Check server permissions.';
+                }
+            }
+        }
+
         if ($old['title'] === '') {
             $errors[] = 'Title is required.';
         } elseif (mb_strlen($old['title']) > 255) {
@@ -159,12 +191,19 @@ $csrf = $auth->generateCsrfToken();
     </div>
 <?php endif; ?>
 
-<form method="post" class="admin-form" data-prevent-double="1" novalidate>
+<form method="post" class="admin-form" data-prevent-double="1" novalidate enctype="multipart/form-data">
     <input type="hidden" name="csrf_token" value="<?= e($csrf) ?>">
 
     <div class="form-group">
         <label for="title">Title *</label>
-        <input type="text" name="title" id="title" maxlength="255" value="<?= e($old['title']) ?>" required>
+        <div style="display:flex; gap:0.5rem; align-items:center; flex-wrap:wrap;">
+            <input type="text" name="title" id="title" maxlength="255" value="<?= e($old['title']) ?>" required style="flex:1; min-width:200px;">
+            <button type="button" class="btn btn-outline btn-sm" id="google-poster-btn" title="Open Google Images to find a poster for this movie" onclick="
+                var t = document.getElementById('title').value.trim();
+                if (!t) { alert('Enter a movie title first.'); return; }
+                window.open('https://www.google.com/search?q=' + encodeURIComponent(t + ' movie poster') + '&tbm=isch', '_blank');
+            ">Find Poster on Google</button>
+        </div>
     </div>
 
     <div class="form-row">
@@ -192,9 +231,24 @@ $csrf = $auth->generateCsrfToken();
     </div>
 
     <div class="form-group">
-        <label for="poster_path">Poster path</label>
+        <label for="poster_file">Upload Poster Image</label>
+        <input type="file" name="poster_file" id="poster_file" accept="image/jpeg,image/png,image/gif,image/webp" style="color:var(--text-primary);">
+        <small class="form-help">Upload JPG, PNG, or WebP (max 8 MB). Overwrites the path below if provided.</small>
+        <?php if ($old['poster_path'] !== ''): ?>
+            <div style="margin-top:0.6rem; display:flex; align-items:center; gap:0.75rem; flex-wrap:wrap;">
+                <img src="<?= e(SITE_URL . 'assets/' . $old['poster_path']) ?>" alt="Current poster" id="poster-preview"
+                     style="height:80px; width:56px; object-fit:cover; border-radius:3px; border:1px solid var(--border);">
+                <span style="font-size:0.8rem; color:var(--text-secondary);">Current poster</span>
+            </div>
+        <?php else: ?>
+            <img id="poster-preview" src="" alt="" style="display:none; height:80px; width:56px; object-fit:cover; border-radius:3px; border:1px solid var(--border); margin-top:0.6rem;">
+        <?php endif; ?>
+    </div>
+
+    <div class="form-group">
+        <label for="poster_path">Poster Path (manual)</label>
         <input type="text" name="poster_path" id="poster_path" maxlength="500" value="<?= e($old['poster_path']) ?>">
-        <small class="form-help">Relative path or URL to the poster image.</small>
+        <small class="form-help">Relative path (e.g. <code>images/posters/mymovie.jpg</code>) or leave blank if uploading above.</small>
     </div>
 
     <div class="form-group">

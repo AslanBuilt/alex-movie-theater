@@ -1,82 +1,100 @@
-# Alex Movie Theatre — Website Rebuild
+# Alex Movie Theatre — Website
 
-A rebuilt website for **Alex Movie Theatre** in Alexandria, Indiana. Two-screen independent cinema serving the local community with affordable tickets. The site is now database-backed with an admin panel for managing movies, showtimes, events, and senior showings.
+Website for **Alex Movie Theatre** in Alexandria, Indiana. Two-screen independent cinema with affordable tickets. Database-backed with a full admin panel for managing movies, showtimes, events, and senior showings.
 
-## Live Site
+---
 
-**https://parityrfp.com/cs/alex-movie-theater/**
+## Live Links
 
-Admin panel: **https://parityrfp.com/cs/alex-movie-theater/admin/**
+| | URL |
+|---|---|
+| **Public Site (GitHub Pages)** | https://2ktay.github.io/alex-movie-theater/ |
+| **Admin Panel (GitHub Pages)** | https://2ktay.github.io/alex-movie-theater/admin/ |
+| **Production Site (PHP/MySQL)** | https://parityrfp.com/cs/alex-movie-theater/ |
+| **Production Admin** | https://parityrfp.com/cs/alex-movie-theater/admin/ |
 
-> A static GitHub Pages mirror previously lived at https://2ktay.github.io/alex-movie-theater/ but is no longer maintained — the live PHP site above is the source of truth.
+> GitHub Pages serves the static version (no database). The production site on parityrfp.com runs full PHP + MySQL with live data.
+
+---
 
 ## Pages
 
-| Page | URL |
-|------|-----|
-| Now Showing | [/](https://parityrfp.com/cs/alex-movie-theater/) |
-| Senior Movie | [/senior-movie](https://parityrfp.com/cs/alex-movie-theater/senior-movie) |
-| Concessions | [/concessions](https://parityrfp.com/cs/alex-movie-theater/concessions) |
-| Events | [/events](https://parityrfp.com/cs/alex-movie-theater/events) |
-| Private Screenings | [/private-screenings](https://parityrfp.com/cs/alex-movie-theater/private-screenings) |
-| Location & Parking | [/location](https://parityrfp.com/cs/alex-movie-theater/location) |
-| Contact | [/contact](https://parityrfp.com/cs/alex-movie-theater/contact) |
-| Admin | [/admin](https://parityrfp.com/cs/alex-movie-theater/admin/) |
+| Page | File |
+|------|------|
+| Now Showing | `index` |
+| Senior Movie | `senior-movie` |
+| Concessions | `concessions` |
+| Events | `events` |
+| Private Screenings | `private-screenings` |
+| Location & Parking | `location` |
+| Contact | `contact` |
+| Admin Panel | `admin/` |
+
+---
 
 ## Tech Stack
 
 - PHP 8.0+
-- MySQL 5.7+ (cPanel-managed database)
-- Vanilla HTML / CSS / JavaScript
-- Admin Panel at `/admin` (CSRF-protected, session auth)
+- MySQL 5.7+ (cPanel-managed)
+- Vanilla HTML / CSS / JavaScript — no frameworks
+- Fonts: Oswald + Playfair Display + Lato (Google Fonts)
+- Contact form: Formspree (`xaqkjakn`)
 - Deployed via GitHub Actions FTP to parityrfp.com
+
+---
 
 ## Admin Panel
 
-The admin panel lives at `/admin` and lets staff manage:
-
-- Movies (now-showing posters, titles, descriptions, ratings)
-- Showtimes
-- Events
-- Senior Movie showings
+Lives at `/admin` — lets staff manage movies, showtimes, events, and senior showings.
 
 **Default credentials:** `admin` / `changeme123`
+**Change the password immediately on first login.**
 
-**Change this password immediately on first login.** The default is documented in `docs/HANDOFF.md` and flagged as a critical FAIL item in the production audit.
+---
 
 ## Database Setup
 
-See [`docs/HANDOFF.md`](docs/HANDOFF.md) for the full cPanel walkthrough: creating the MySQL database and user, importing `database/schema.sql` then `database/seed.sql` via phpMyAdmin, and copying `config/database.example.php` to `config/database.php` on the server with the live credentials.
+1. In cPanel on parityrfp.com, create a MySQL database (e.g. `aslanadv_alextheatre`) and a user with full privileges
+2. Import `database/schema.sql` then `database/seed.sql` via phpMyAdmin
+3. Copy `config/database.example.php` to `config/database.php` on the server and fill in the real credentials
 
-## Deployment
+---
 
-Deployment is automated via GitHub Actions (`.github/workflows/deploy.yml`). Every push to `master` triggers an FTP deploy to `/cs/alex-movie-theater/` on parityrfp.com.
+## Deployment (Production)
 
-Required repository secrets:
+Auto-deploys to parityrfp.com on every push to `master` via GitHub Actions.
+
+### Required GitHub Secrets
+
+Go to: **https://github.com/2KTay/alex-movie-theater/settings/secrets/actions**
+Click **New repository secret** for each:
 
 | Secret | Value |
 |--------|-------|
 | `FTP_HOST` | `72.167.208.71` |
 | `FTP_USERNAME` | `DW@parityrfp.com` |
-| `FTP_PASSWORD` | (private) |
+| `FTP_PASSWORD` | *(FTP password — find in cPanel on parityrfp.com under FTP Accounts)* |
 
-The workflow uploads `public/` to the web root and `includes/`, `templates/`, `config/` (without `database.php`), and `database/` (without `seed.sql`) to sibling directories.
+Once all three secrets are added, push any commit to `master` to trigger a deploy.
 
-## Design
+---
 
-- **Theme:** Boutique cinema — dark warm background, deep burgundy/crimson accents, warm cream text
-- **Typography:** Playfair Display (headings) + Lato (body)
-- **Inspired by:** Independent/boutique cinema aesthetics, not big chain templates
-- **Built with:** Aslan Skills (`project-scaffolding`, `professional-frontend-design`, `seo-sao-optimization`, `ftp-deploy-parity`, `formspree-integration`, `htaccess-management`, `production-readiness-audit`)
+## GitHub Pages (Static Preview)
+
+Served from the `docs/` folder. Enable once at:
+**https://github.com/2KTay/alex-movie-theater/settings/pages**
+→ Source: `master` branch, `/docs` folder → Save
+
+Updates automatically on every push to `master`.
+
+---
 
 ## Project Structure
 
 ```
 alex-movie-theater/
-├── .github/
-│   └── workflows/
-│       └── deploy.yml      # GitHub Actions FTP deploy
-├── public/                 # Web root — all pages and assets
+├── .github/workflows/deploy.yml   — GitHub Actions FTP deploy
+├── public/                        — Web root (PHP site)
 │   ├── index.php
 │   ├── senior-movie.php
 │   ├── concessions.php
@@ -84,36 +102,39 @@ alex-movie-theater/
 │   ├── private-screenings.php
 │   ├── location.php
 │   ├── contact.php
-│   ├── .htaccess
-│   ├── robots.txt
-│   ├── sitemap.xml
-│   ├── llms.txt
-│   ├── admin/              # Admin panel (CSRF + session auth)
+│   ├── tickets.php
+│   ├── admin/                     — Admin panel (CSRF + session auth)
 │   └── assets/
 │       ├── css/main.css
 │       ├── js/main.js
-│       └── images/         # Movie posters, favicon.svg
+│       └── images/
+├── docs/                          — Static GitHub Pages version
+│   ├── index.html
+│   ├── admin/index.html
+│   └── assets/
 ├── config/
-│   ├── config.php          # Site constants (URL, phone, form links)
+│   ├── config.php                 — Site constants (URL, phone, form links)
 │   ├── database.example.php
-│   └── database.php        # gitignored — created on server
+│   └── database.php               — gitignored, created on server
 ├── database/
 │   ├── schema.sql
 │   └── seed.sql
 ├── includes/
-│   ├── helpers.php         # Utility functions (e, asset, url)
+│   ├── helpers.php
 │   ├── Database.php
 │   ├── AdminAuth.php
-│   └── *Repo.php           # Movie / Event / Showtime repositories
+│   └── *Repo.php
 └── templates/
     ├── header.php
     └── footer.php
 ```
 
+---
+
 ## Client Info
 
 - **Theatre:** Alex Movie Theatre
 - **Address:** 407 N. Harrison Street, Alexandria, IN 46001
-- **Phone:** 765-620-9093
-- **Tickets:** Square Online Store (being replaced with on-site Stripe checkout)
-- **Contact Form:** Formspree (`xaqkjakn`)
+- **Phone:** (765) 620-9093
+- **Contact Form:** Formspree `xaqkjakn`
+- **Admin default login:** `admin` / `changeme123`

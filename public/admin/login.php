@@ -5,7 +5,22 @@ require_once __DIR__ . '/../../config/config.php';
 require_once INCLUDES_PATH . '/Database.php';
 require_once INCLUDES_PATH . '/AdminAuth.php';
 
-$db   = Database::getInstance();
+try {
+    $db = Database::getInstance();
+} catch (RuntimeException $e) {
+    http_response_code(503);
+    ?><!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Admin Unavailable</title>
+<style>body{font-family:sans-serif;display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0;background:#f5f5f5}
+.box{background:#fff;padding:2rem 2.5rem;border-radius:6px;max-width:400px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,.1)}
+h1{font-size:1.25rem;margin-bottom:.75rem}p{color:#555;font-size:.9rem}</style>
+</head><body><div class="box">
+<h1>Admin panel unavailable</h1>
+<p>The database has not been configured on this server yet. Please set up <code>config/database.php</code> and try again.</p>
+</div></body></html><?php
+    exit;
+}
 $auth = new AdminAuth($db);
 
 if ($auth->isLoggedIn()) {

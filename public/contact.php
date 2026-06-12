@@ -13,7 +13,7 @@ require TEMPLATES_PATH . '/header.php';
     <div class="container">
         <p class="breadcrumb"><a href="<?= url() ?>">Home</a><span class="sep">/</span>Contact</p>
         <h1>Contact Us</h1>
-        <p class="subtitle">We'd love to hear from you &mdash; reach out anytime.</p>
+        <p class="subtitle">We'd love to hear from you · reach out anytime.</p>
     </div>
 </section>
 
@@ -29,7 +29,7 @@ require TEMPLATES_PATH . '/header.php';
 
                 <div class="contact-grid" style="grid-template-columns:1fr;">
                     <div class="contact-item">
-                        <div class="contact-icon">&#x1F4DE;</div>
+                        <div class="contact-icon">Ph</div>
                         <div class="contact-detail">
                             <div class="label">Phone</div>
                             <div class="value"><a href="tel:<?= SITE_PHONE ?>"><?= e(SITE_PHONE) ?></a></div>
@@ -37,7 +37,7 @@ require TEMPLATES_PATH . '/header.php';
                     </div>
 
                     <div class="contact-item">
-                        <div class="contact-icon">&#x1F4CD;</div>
+                        <div class="contact-icon">Loc</div>
                         <div class="contact-detail">
                             <div class="label">Address</div>
                             <div class="value"><?= e(SITE_ADDRESS) ?></div>
@@ -45,7 +45,7 @@ require TEMPLATES_PATH . '/header.php';
                     </div>
 
                     <div class="contact-item">
-                        <div class="contact-icon">&#x1F4D8;</div>
+                        <div class="contact-icon">Fb</div>
                         <div class="contact-detail">
                             <div class="label">Facebook</div>
                             <div class="value"><a href="<?= FACEBOOK_URL ?>" target="_blank" rel="noopener">The Alexandria Theatre</a></div>
@@ -53,7 +53,7 @@ require TEMPLATES_PATH . '/header.php';
                     </div>
 
                     <div class="contact-item">
-                        <div class="contact-icon">&#x1F4F7;</div>
+                        <div class="contact-icon">@</div>
                         <div class="contact-detail">
                             <div class="label">Instagram</div>
                             <div class="value"><a href="<?= INSTAGRAM_URL ?>" target="_blank" rel="noopener">@the.alextheatre</a></div>
@@ -62,7 +62,7 @@ require TEMPLATES_PATH . '/header.php';
                 </div>
 
                 <div class="info-card mt-3">
-                    <h3>&#x1F4DD; Employment</h3>
+                    <h3>Employment</h3>
                     <p>Interested in working at the Alex? We'd love to have you on the team.</p>
                     <a href="<?= FORM_EMPLOYMENT ?>" class="btn btn-outline mt-2" target="_blank" rel="noopener" style="display:inline-block; margin-top:1rem; font-size:0.8rem; padding:0.5rem 1rem;">Apply Now</a>
                 </div>
@@ -120,7 +120,7 @@ require TEMPLATES_PATH . '/header.php';
                     </form>
 
                     <div id="cf-success" style="display:none" class="form-feedback form-success">
-                        <p>Thank you &mdash; your message has been sent. We&rsquo;ll get back to you soon.</p>
+                        <p>Thank you · your message has been sent. We&rsquo;ll get back to you soon.</p>
                     </div>
 
                     <div id="cf-error" style="display:none" class="form-feedback form-error">
@@ -129,13 +129,13 @@ require TEMPLATES_PATH . '/header.php';
                 </div>
 
                 <div class="info-card mt-3">
-                    <h3>&#x1F382; Private Screenings &amp; Rentals</h3>
+                    <h3>Private Screenings &amp; Rentals</h3>
                     <p>Looking to book the theatre for a private event, birthday, or group outing?</p>
                     <a href="<?= url('private-screenings.php') ?>" class="btn btn-outline mt-2" style="display:inline-block; margin-top:1rem; font-size:0.8rem; padding:0.5rem 1rem;">View Rental Info</a>
                 </div>
 
                 <div class="info-card mt-2">
-                    <h3>&#x1F4CD; Location &amp; Parking</h3>
+                    <h3>Location &amp; Parking</h3>
                     <p>Need directions or parking info? We've got you covered.</p>
                     <a href="<?= url('location.php') ?>" class="btn btn-outline mt-2" style="display:inline-block; margin-top:1rem; font-size:0.8rem; padding:0.5rem 1rem;">Get Directions</a>
                 </div>

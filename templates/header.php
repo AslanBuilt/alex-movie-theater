@@ -16,7 +16,7 @@
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,400;1,700&family=Lato:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@700&family=Playfair+Display:ital,wght@0,700;1,400;1,700&family=Lato:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="<?= asset('css/main.css') ?>">
 
     <script type="application/ld+json">
@@ -59,7 +59,7 @@
             <li><a href="<?= url('private-screenings.php') ?>" class="<?= navClass('private-screenings') ?>">Private Screenings</a></li>
             <li><a href="<?= url('location.php') ?>" class="<?= navClass('location') ?>">Location</a></li>
             <li><a href="<?= url('contact.php') ?>" class="<?= navClass('contact') ?>">Contact</a></li>
-            <li><a href="<?= SQUARE_URL ?>" class="nav-link nav-cta" target="_blank" rel="noopener">Buy Tickets</a></li>
+            <li><a href="<?= e(TICKETS_URL) ?>" class="nav-link nav-cta" target="_blank" rel="noopener">Buy Tickets</a></li>
         </ul>
     </div>
 </header>

@@ -14,37 +14,59 @@ $comingSoon = tryDb(fn() => MovieRepo::getComingSoon());
 require TEMPLATES_PATH . '/header.php';
 ?>
 
-<!-- Hero -->
-<section class="hero">
-    <div class="container">
-        <p class="hero-eyebrow">Alexandria, Indiana &bull; Est. Independent Cinema</p>
-        <h1>The <span>Alex</span> Theatre</h1>
-        <p class="hero-tagline">Your community's two-screen independent movie house &mdash; affordable tickets, real movies.</p>
-        <div class="hero-rule"></div>
-        <div class="hero-actions">
-            <a href="<?= SQUARE_URL ?>" class="btn btn-crimson" target="_blank" rel="noopener">Buy Tickets Online</a>
-            <a href="<?= url('location.php') ?>" class="btn btn-outline">Location &amp; Parking</a>
+<!-- Cinematic Hero Slideshow -->
+<div class="hero-cinematic">
+    <div class="photo-slideshow hero-slideshow">
+        <div class="slideshow-track">
+            <div class="slideshow-slide">
+                <img src="<?= asset('images/hero-1.png') ?>" alt="Alex Theatre exterior, daytime" loading="eager">
+            </div>
+            <div class="slideshow-slide">
+                <img src="<?= asset('images/hero-2.png') ?>" alt="Alex Theatre at night with neon sign" loading="eager">
+            </div>
+            <div class="slideshow-slide">
+                <img src="<?= asset('images/hero-3.png') ?>" alt="Alex Theatre auditorium interior" loading="lazy">
+            </div>
+            <div class="slideshow-slide">
+                <img src="<?= asset('images/hero-4.png') ?>" alt="Alex Theatre exterior with classic car" loading="lazy">
+            </div>
+        </div>
+        <button class="slideshow-btn slideshow-btn-prev" aria-label="Previous photo">&#8249;</button>
+        <button class="slideshow-btn slideshow-btn-next" aria-label="Next photo">&#8250;</button>
+        <div class="slideshow-dots">
+            <button class="slideshow-dot active" aria-label="Photo 1"></button>
+            <button class="slideshow-dot" aria-label="Photo 2"></button>
+            <button class="slideshow-dot" aria-label="Photo 3"></button>
+            <button class="slideshow-dot" aria-label="Photo 4"></button>
         </div>
     </div>
-</section>
-
-<!-- Pricing Strip -->
-<div class="info-strip">
-    <div class="container">
-        <div class="strip-items">
-            <span>Adults &mdash; <strong>$5</strong></span>
-            <span class="sep">|</span>
-            <span>Children &mdash; <strong>$3</strong></span>
-            <span class="sep">|</span>
-            <span>&#x260E; <a href="tel:<?= SITE_PHONE ?>" style="color:inherit"><?= e(SITE_PHONE) ?></a></span>
-            <span class="sep">|</span>
-            <span>407 N. Harrison St, Alexandria IN</span>
+    <div class="hero-overlay"></div>
+    <div class="hero-content">
+        <p class="hero-eyebrow-split">Alexandria, Indiana &bull; Independent Cinema</p>
+        <h1 class="hero-headline">Real Movies.<br>Five Dollar<br>Tickets.</h1>
+        <p class="hero-sub">Your neighborhood two-screen theater since the marquee was new.</p>
+        <div class="hero-actions">
+            <a href="#now-showing" class="btn btn-crimson">See This Week's Showtimes</a>
+            <a href="<?= url('private-screenings.php') ?>" class="btn btn-outline-hero">Book the Theatre</a>
         </div>
     </div>
 </div>
 
+<!-- Info Bar -->
+<div class="info-bar">
+    <div class="info-bar-items">
+        <span>Adults $5</span>
+        <span class="info-bar-sep">&bull;</span>
+        <span>Kids 12 &amp; Under $3</span>
+        <span class="info-bar-sep info-bar-address-sep">&bull;</span>
+        <span class="info-bar-address">407 N. Harrison St, Alexandria IN</span>
+        <span class="info-bar-sep">&bull;</span>
+        <span><a href="tel:<?= SITE_PHONE ?>"><?= e(SITE_PHONE) ?></a></span>
+    </div>
+</div>
+
 <!-- Now Showing -->
-<section>
+<section id="now-showing">
     <div class="container">
         <div class="section-header">
             <p class="section-label">On the Screen This Week</p>
@@ -94,9 +116,9 @@ require TEMPLATES_PATH . '/header.php';
                     <?php endif; ?>
 
                     <div class="movie-cta">
-                        <a href="<?= SQUARE_URL ?>" class="btn btn-crimson" target="_blank" rel="noopener">Buy Tickets</a>
+                        <a href="<?= e(TICKETS_URL) ?>" class="btn btn-crimson" target="_blank" rel="noopener">Buy Tickets</a>
                         <?php if ($onlineOnly): ?>
-                            <span class="online-required">&#x26A0; Small screen tickets must be purchased online</span>
+                            <span class="online-required">Small screen tickets must be purchased online</span>
                         <?php endif; ?>
                     </div>
                 </div>
@@ -109,7 +131,7 @@ require TEMPLATES_PATH . '/header.php';
             <div class="movie-card">
                 <div class="movie-poster">
                     <span class="screen-badge">Large Screen</span>
-                    <img src="<?= asset('images/starwars.jpg') ?>" alt="Star Wars: The Mandalorian &amp; Grogu movie poster" loading="eager">
+                    <img src="<?= asset('images/mandalorian.jpg') ?>" alt="Star Wars: The Mandalorian &amp; Grogu movie poster" loading="eager">
                 </div>
                 <div class="movie-card-body">
                     <span class="movie-rating">PG-13</span>
@@ -131,7 +153,7 @@ require TEMPLATES_PATH . '/header.php';
                     </div>
 
                     <div class="movie-cta">
-                        <a href="<?= SQUARE_URL ?>" class="btn btn-crimson" target="_blank" rel="noopener">Buy Tickets</a>
+                        <a href="<?= e(TICKETS_URL) ?>" class="btn btn-crimson" target="_blank" rel="noopener">Buy Tickets</a>
                     </div>
                 </div>
             </div>
@@ -162,8 +184,8 @@ require TEMPLATES_PATH . '/header.php';
                     </div>
 
                     <div class="movie-cta">
-                        <a href="<?= SQUARE_URL ?>" class="btn btn-crimson" target="_blank" rel="noopener">Buy Tickets</a>
-                        <span class="online-required">&#x26A0; Small screen tickets must be purchased online</span>
+                        <a href="<?= e(TICKETS_URL) ?>" class="btn btn-crimson" target="_blank" rel="noopener">Buy Tickets</a>
+                        <span class="online-required">Small screen tickets must be purchased online</span>
                     </div>
                 </div>
             </div>
@@ -230,14 +252,12 @@ require TEMPLATES_PATH . '/header.php';
             </div>
         </div>
 
-        <p class="text-secondary" style="text-align:center; font-size:0.875rem;">
-            Purchase tickets at the door or online at Square for the small screen.
-        </p>
+        <p class="text-secondary" style="text-align:center;font-size:1rem;margin-top:1rem;">Purchase tickets at the door or online for the small screen.</p>
     </div>
 </section>
 
 <!-- Quick Info -->
-<section style="background:var(--bg-secondary); border-top:1px solid var(--border);">
+<section class="visit-section">
     <div class="container">
         <div class="section-header centered">
             <p class="section-label">Everything You Need to Know</p>
@@ -247,11 +267,11 @@ require TEMPLATES_PATH . '/header.php';
 
         <div class="info-grid">
             <div class="info-card">
-                <h3>&#x1F4CD; Location</h3>
+                <h3>Location</h3>
                 <p>407 N. Harrison Street<br>Alexandria, IN 46001<br><br>5 blocks north of W. Washington St, 6 blocks west of State Rd 9.</p>
             </div>
             <div class="info-card">
-                <h3>&#x1F3AA; What We Offer</h3>
+                <h3>What We Offer</h3>
                 <ul>
                     <li>Two-screen independent theatre</li>
                     <li>Free senior movies (55+)</li>
@@ -261,7 +281,7 @@ require TEMPLATES_PATH . '/header.php';
                 </ul>
             </div>
             <div class="info-card">
-                <h3>&#x1F4DE; Contact</h3>
+                <h3>Contact</h3>
                 <p>Phone: <a href="tel:<?= SITE_PHONE ?>"><?= e(SITE_PHONE) ?></a><br><br>
                 Follow us on Facebook and Instagram for the latest updates and announcements.</p>
             </div>

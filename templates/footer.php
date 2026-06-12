@@ -9,8 +9,8 @@
                 <p><?= e(SITE_ADDRESS) ?><br>
                 Phone: <a href="tel:<?= e(SITE_PHONE) ?>"><?= e(SITE_PHONE) ?></a></p>
                 <div class="social-links">
-                    <a href="<?= FACEBOOK_URL ?>" target="_blank" rel="noopener">&#x1F4D8; Facebook</a>
-                    <a href="<?= INSTAGRAM_URL ?>" target="_blank" rel="noopener">&#x1F4F7; Instagram</a>
+                    <a href="<?= FACEBOOK_URL ?>" target="_blank" rel="noopener">Facebook</a>
+                    <a href="<?= INSTAGRAM_URL ?>" target="_blank" rel="noopener">Instagram</a>
                 </div>
             </div>
 
@@ -31,13 +31,14 @@
                     <li><a href="<?= url('location.php') ?>">Location &amp; Parking</a></li>
                     <li><a href="<?= url('contact.php') ?>">Contact Us</a></li>
                     <li><a href="<?= FORM_EMPLOYMENT ?>" target="_blank" rel="noopener">Employment</a></li>
-                    <li><a href="<?= SQUARE_URL ?>" target="_blank" rel="noopener">Buy Tickets Online</a></li>
+                    <li><a href="<?= e(TICKETS_URL) ?>" target="_blank" rel="noopener">Buy Tickets Online</a></li>
+                    <li><a href="https://2ktay.github.io/alex-movie-theater/admin/" target="_blank" rel="noopener">Admin Panel</a></li>
                 </ul>
             </div>
         </div>
 
         <div class="footer-bottom">
-            <span>&copy; <?= date('Y') ?> Alex Movie Theatre &mdash; Alexandria, Indiana</span>
+            <span>&copy; <?= date('Y') ?> Alex Movie Theatre · Alexandria, Indiana</span>
             <span>$5 Adults &bull; $3 Children</span>
         </div>
     </div>

@@ -17,13 +17,17 @@ require TEMPLATES_PATH . '/header.php';
     <div class="container">
         <p class="breadcrumb"><a href="<?= url() ?>">Home</a><span class="sep">/</span>Senior Movie</p>
         <h1>Free Senior Movie</h1>
-        <p class="subtitle">A community gift for seniors 55 and up &mdash; no ticket required.</p>
+        <p class="subtitle">A community gift for seniors 55 and up · no ticket required.</p>
     </div>
 </section>
 
 <section>
     <div class="container">
-        <div class="senior-badge">&#x2605; Free Admission &bull; Ages 55 &amp; Up &bull; Sponsored by Senior Essential Connections</div>
+        <div class="senior-badge">Free Admission &bull; Ages 55 &amp; Up &bull; Sponsored by Senior Essential Connections</div>
+
+        <div class="senior-banner">
+            <img src="<?= asset('images/hero-3.png') ?>" alt="Alex Theatre auditorium interior" loading="lazy">
+        </div>
 
         <div class="two-col">
             <div>
@@ -33,25 +37,64 @@ require TEMPLATES_PATH . '/header.php';
                     <div class="section-divider"></div>
                 </div>
 
-                <p style="color:var(--text-secondary); margin-bottom:1.5rem; line-height:1.8;">
-                    The Alex Theatre is proud to partner with <strong class="text-crimson">Senior Essential Connections</strong> to bring free movie screenings to the community. Every eligible senior 55 years of age or older is welcome at no charge.
-                </p>
-
-                <p style="color:var(--text-secondary); margin-bottom:2rem; line-height:1.8;">
-                    This is a recurring program designed to keep our senior community connected, entertained, and part of the Alex Theatre family. No reservations needed — just show up and enjoy!
+                <p style="color:var(--text-secondary); margin-bottom:1.75rem; line-height:1.8;">
+                    The Alex Theatre is proud to partner with <strong class="text-crimson">Senior Essential Connections</strong> to bring free monthly screenings to the community. Every senior 55 or older is welcome at no charge &mdash; no reservations needed, just show up and enjoy.
                 </p>
 
                 <div class="highlight-box">
                     <p><strong>Who qualifies?</strong> Any senior citizen 55 years of age or older. No ID check required &mdash; just arrive and take your seat.</p>
                 </div>
 
-                <div class="highlight-box">
-                    <p><strong>No outside concessions allowed.</strong> Please enjoy our in-house concession stand for snacks and drinks during your visit.</p>
+                <div class="highlight-box" style="margin-top:1rem;">
+                    <p><strong>No outside food or drinks.</strong> Our concession stand will be open during the screening.</p>
                 </div>
 
                 <div class="info-card mt-3">
-                    <h3>&#x1F4DE; Questions?</h3>
-                    <p>Contact Senior Essential Connections directly for the latest scheduling information, or call the theatre at <a href="tel:<?= SITE_PHONE ?>"><?= e(SITE_PHONE) ?></a>.</p>
+                    <h3>Questions?</h3>
+                    <p>Contact Senior Essential Connections or call the theatre at <a href="tel:<?= SITE_PHONE ?>"><?= e(SITE_PHONE) ?></a>.</p>
+                </div>
+
+                <div class="reviews-section">
+                    <div class="reviews-header">
+                        <span class="reviews-label">Google Reviews</span>
+                        <span class="reviews-google-badge">via Google</span>
+                    </div>
+
+                    <div class="review-item">
+                        <div class="review-meta">
+                            <span class="review-name">Jackie</span>
+                            <span class="review-time">2 months ago</span>
+                        </div>
+                        <div class="review-stars">★★★★★</div>
+                        <p class="review-text">What a great budget friendly place to take the family to see a movie! Even the concessions are budget friendly.</p>
+                    </div>
+
+                    <div class="review-item">
+                        <div class="review-meta">
+                            <span class="review-name">Robin</span>
+                            <span class="review-time">3 months ago</span>
+                        </div>
+                        <div class="review-stars">★★★★★</div>
+                        <p class="review-text">We love this historical movie theater. Staff and owners are super nice. Great hospitality.</p>
+                    </div>
+
+                    <div class="review-item">
+                        <div class="review-meta">
+                            <span class="review-name">Brian</span>
+                            <span class="review-time">7 months ago</span>
+                        </div>
+                        <div class="review-stars">★★★★★</div>
+                        <p class="review-text">I love the vintage feel of this place. The prices are amazing and it's never too busy.</p>
+                    </div>
+
+                    <div class="review-item">
+                        <div class="review-meta">
+                            <span class="review-name">Jim</span>
+                            <span class="review-time">a year ago</span>
+                        </div>
+                        <div class="review-stars">★★★★★</div>
+                        <p class="review-text">Really neat small town mom and pop operation. Prices are super reasonable. First run movies at second run pricing — worth making the trip from surrounding counties.</p>
+                    </div>
                 </div>
             </div>
 
@@ -74,7 +117,7 @@ require TEMPLATES_PATH . '/header.php';
                     <div class="next-showing-card">
                         <div class="film-name"><?= e($title !== '' ? $title : 'TBA — Check Back Soon') ?></div>
                         <div class="film-meta">
-                            <p style="margin-top:0.5rem;"><?= e($dateLine) ?><?php if ($time !== ''): ?> &mdash; <?= e($time) ?><?php endif; ?></p>
+                            <p style="margin-top:0.5rem;"><?= e($dateLine) ?><?php if ($time !== ''): ?> · <?= e($time) ?><?php endif; ?></p>
                             <?php if ($notes !== ''): ?>
                                 <p style="margin-top:0.5rem;"><?= e($notes) ?></p>
                             <?php else: ?>
@@ -95,12 +138,16 @@ require TEMPLATES_PATH . '/header.php';
                 <?php endif; ?>
 
                 <div class="info-card">
-                    <h3>&#x1F3AA; About Senior Essential Connections</h3>
+                    <h3>About Senior Essential Connections</h3>
                     <p>Senior Essential Connections is an organization dedicated to supporting and enriching the lives of older adults in the Alexandria community. They sponsor this free movie program as part of their mission to keep seniors engaged and connected.</p>
                 </div>
 
-                <div class="info-card mt-2">
-                    <h3>&#x1F4CD; Theatre Location</h3>
+                <div class="location-photo mt-2">
+                    <img src="<?= asset('images/hero-1.png') ?>" alt="Alex Theatre exterior" loading="lazy">
+                </div>
+
+                <div class="info-card">
+                    <h3>Theatre Location</h3>
                     <p><?= e(SITE_ADDRESS) ?><br><br>
                     Parking available in the adjacent gravel lot, along the street, and at Horners Grocery.</p>
                     <a href="<?= url('location.php') ?>" class="btn btn-outline mt-2" style="display:inline-block; margin-top:1rem;">Get Directions</a>
