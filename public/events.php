@@ -53,8 +53,7 @@ require TEMPLATES_PATH . '/header.php';
                         <span class="screen-badge" style="background:var(--crimson-dark);"><?= e($eBadge) ?></span>
                         <?php if ($eImage !== ''): ?>
                             <img src="<?= e(asset($eImage)) ?>" alt="<?= e($eTitle) ?>" loading="lazy">
-                        <?php else: ?>
-                                    <?php endif; ?>
+                        <?php endif; ?>
                     </div>
                     <div class="movie-card-body">
                         <h2 class="movie-title"><?= e($eTitle) ?></h2>
