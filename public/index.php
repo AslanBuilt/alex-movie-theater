@@ -131,7 +131,7 @@ require TEMPLATES_PATH . '/header.php';
             <div class="movie-card">
                 <div class="movie-poster">
                     <span class="screen-badge">Large Screen</span>
-                    <img src="<?= asset('images/starwars.jpg') ?>" alt="Star Wars: The Mandalorian &amp; Grogu movie poster" loading="eager">
+                    <img src="<?= asset('images/mandalorian.jpg') ?>" alt="Star Wars: The Mandalorian &amp; Grogu movie poster" loading="eager">
                 </div>
                 <div class="movie-card-body">
                     <span class="movie-rating">PG-13</span>
@@ -252,9 +252,7 @@ require TEMPLATES_PATH . '/header.php';
             </div>
         </div>
 
-        <p class="text-secondary" style="text-align:center; font-size:0.875rem;">
-            Purchase tickets at the door or online at Square for the small screen.
-        </p>
+        <p class="text-secondary" style="text-align:center;font-size:1rem;margin-top:1rem;">Purchase tickets at the door or online for the small screen.</p>
     </div>
 </section>
 
