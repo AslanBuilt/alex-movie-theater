@@ -1665,3 +1665,506 @@ section { padding: 4rem 0; }
     color: var(--text-primary);
     line-height: 1.65;
 }
+
+/* ── Brand logo mark ── */
+.brand-logo {
+    display: block;
+    border-radius: 4px;
+    flex-shrink: 0;
+}
+
+.navbar-brand {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 0.55rem;
+    margin-right: 2rem;
+    line-height: 1;
+}
+
+.navbar-brand .brand-name {
+    font-family: 'Oswald', var(--font-body);
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: var(--crimson);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+/* ── Now Showing section ── */
+.now-showing-section { padding: 4rem 0 3rem; }
+
+/* ── Poster Carousel ── */
+.poster-carousel-wrap {
+    position: relative;
+    padding: 0 3.5rem;
+}
+
+.poster-carousel {
+    overflow: hidden;
+}
+
+.poster-track {
+    display: flex;
+    gap: 1.5rem;
+    transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    will-change: transform;
+}
+
+.poster-card {
+    flex: 0 0 220px;
+}
+
+.poster-link {
+    display: block;
+    text-decoration: none;
+    color: inherit;
+}
+
+.poster-img-wrap {
+    width: 100%;
+    aspect-ratio: 2 / 3;
+    overflow: hidden;
+    border-radius: 5px;
+    position: relative;
+    background: #1A1210;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.18);
+}
+
+.poster-img-wrap img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center top;
+    display: block;
+    transition: transform 0.35s ease;
+}
+
+.poster-card:hover .poster-img-wrap img {
+    transform: scale(1.04);
+}
+
+.poster-img-wrap .screen-badge {
+    top: 0.65rem;
+    left: 0.65rem;
+    right: auto;
+}
+
+.poster-card-info {
+    padding: 0.85rem 0 0;
+}
+
+.poster-card-info .movie-rating {
+    display: inline-block;
+    margin-bottom: 0.4rem;
+}
+
+.poster-title {
+    font-family: var(--font-display);
+    font-size: 1rem;
+    font-style: italic;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0 0 0.5rem;
+    line-height: 1.25;
+}
+
+.poster-cta {
+    font-size: 0.82rem;
+    color: var(--crimson);
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    transition: color 0.2s;
+}
+
+.poster-card:hover .poster-cta { color: var(--crimson-dark); }
+
+.carousel-arrow {
+    position: absolute;
+    top: calc(33% - 20px);
+    width: 40px;
+    height: 40px;
+    background: #FFFFFF;
+    border: 1.5px solid var(--border);
+    border-radius: 50%;
+    font-size: 1.5rem;
+    cursor: pointer;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+    transition: background 0.2s, border-color 0.2s, transform 0.2s;
+    line-height: 1;
+    color: var(--text-primary);
+}
+
+.carousel-arrow:hover {
+    background: var(--cream);
+    border-color: var(--crimson);
+    transform: scale(1.08);
+}
+
+.carousel-arrow:disabled {
+    opacity: 0.35;
+    cursor: default;
+    transform: none;
+}
+
+.carousel-prev { left: 0; }
+.carousel-next { right: 0; }
+
+@media (max-width: 768px) {
+    .poster-carousel-wrap { padding: 0 2.5rem; }
+    .poster-card { flex: 0 0 160px; }
+}
+
+@media (max-width: 480px) {
+    .poster-carousel-wrap { padding: 0 2rem; }
+    .poster-card { flex: 0 0 140px; }
+}
+
+/* ── Google Reviews on Homepage ── */
+.reviews-home-section {
+    background: var(--cream);
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+}
+
+.reviews-grid-home {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 0;
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    overflow: hidden;
+}
+
+.reviews-grid-home .review-item {
+    padding: 1.5rem;
+    border-bottom: 1px solid var(--border);
+    border-right: 1px solid var(--border);
+    background: #FFFFFF;
+}
+
+.reviews-grid-home .review-item:last-child { border-bottom: none; }
+
+@media (min-width: 600px) {
+    .reviews-grid-home .review-item:nth-child(2n) { border-right: none; }
+}
+
+@media (max-width: 599px) {
+    .reviews-grid-home .review-item { border-right: none; }
+    .reviews-grid-home .review-item:last-child { border-bottom: none; }
+}
+
+/* ── Senior Movie Teaser ── */
+.senior-teaser-section {
+    background: #1A1210;
+    border-top: 3px solid var(--crimson);
+    padding: 4rem 0;
+}
+
+.senior-teaser-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 2rem;
+    flex-wrap: wrap;
+}
+
+.senior-teaser-text { max-width: 540px; }
+
+.senior-teaser-heading {
+    font-family: var(--font-display);
+    font-size: clamp(1.8rem, 4vw, 2.6rem);
+    font-style: italic;
+    font-weight: 700;
+    color: #FFFFFF;
+    margin-bottom: 0.75rem;
+    line-height: 1.1;
+}
+
+.senior-teaser-sub {
+    color: rgba(247,243,238,0.8);
+    font-size: 1.05rem;
+    line-height: 1.7;
+}
+
+.senior-teaser-badge {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    border: 3px solid var(--crimson);
+    flex-shrink: 0;
+}
+
+.badge-free {
+    font-family: 'Oswald', var(--font-body);
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: var(--crimson);
+    letter-spacing: 0.08em;
+    line-height: 1;
+}
+
+.badge-age {
+    font-size: 0.72rem;
+    color: rgba(247,243,238,0.65);
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    font-weight: 700;
+    margin-top: 0.25rem;
+}
+
+@media (max-width: 600px) {
+    .senior-teaser-inner { justify-content: flex-start; }
+    .senior-teaser-badge { display: none; }
+}
+
+/* ── Contact icon SVG ── */
+.contact-icon-svg {
+    width: 40px;
+    height: 40px;
+    background: var(--cream);
+    border: 1.5px solid var(--border);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    color: var(--crimson);
+}
+
+/* ── Movie Detail Layout ── */
+.movie-detail-layout {
+    display: grid;
+    grid-template-columns: 220px 1fr;
+    gap: 3rem;
+    align-items: start;
+}
+
+.movie-detail-poster img {
+    width: 100%;
+    aspect-ratio: 2 / 3;
+    object-fit: cover;
+    border-radius: 5px;
+    box-shadow: 0 6px 24px rgba(0,0,0,0.2);
+}
+
+.movie-detail-desc {
+    color: var(--text-secondary);
+    font-size: 1.05rem;
+    line-height: 1.8;
+    margin-bottom: 1.5rem;
+}
+
+.showtime-list { margin-bottom: 1.5rem; }
+
+@media (max-width: 640px) {
+    .movie-detail-layout {
+        grid-template-columns: 1fr;
+    }
+    .movie-detail-poster {
+        max-width: 200px;
+    }
+}
+
+/* ── Concessions DB grid ── */
+.concession-db-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 1.25rem;
+    margin-bottom: 1.5rem;
+}
+
+.concession-db-card {
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    overflow: hidden;
+    background: var(--bg-card);
+    display: flex;
+    flex-direction: column;
+}
+
+.concession-db-img img {
+    width: 100%;
+    height: 160px;
+    object-fit: cover;
+    display: block;
+}
+
+.concession-db-body {
+    padding: 1rem;
+    flex: 1;
+}
+
+.concession-db-name {
+    font-family: var(--font-body);
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 0.35rem;
+    font-size: 1rem;
+}
+
+.concession-db-desc {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    line-height: 1.55;
+    margin-bottom: 0.5rem;
+}
+
+.concession-db-price {
+    font-family: var(--font-display);
+    font-size: 1.2rem;
+    font-style: italic;
+    color: var(--crimson);
+    font-weight: 700;
+}
+
+/* ── Order form ── */
+.order-layout { max-width: 760px; margin: 0 auto; }
+
+.order-category { margin-bottom: 2rem; }
+
+.order-cat-heading {
+    font-family: 'Oswald', var(--font-body);
+    font-size: 1rem;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--text-primary);
+    margin-bottom: 0.75rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--border);
+}
+
+.order-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid var(--border-light);
+}
+
+.order-item:last-child { border-bottom: none; }
+
+.order-item-img {
+    width: 60px;
+    height: 60px;
+    object-fit: cover;
+    border-radius: 4px;
+    flex-shrink: 0;
+}
+
+.order-item-body { flex: 1; }
+
+.order-item-name {
+    font-weight: 700;
+    color: var(--text-primary);
+    font-size: 0.95rem;
+}
+
+.order-item-desc {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    line-height: 1.4;
+}
+
+.order-item-price {
+    font-family: var(--font-display);
+    font-style: italic;
+    color: var(--crimson);
+    font-size: 1rem;
+    font-weight: 700;
+}
+
+.order-item-qty { flex-shrink: 0; }
+
+.qty-input {
+    width: 64px;
+    text-align: center;
+    padding: 0.45rem 0.5rem;
+    border: 1.5px solid var(--border);
+    border-radius: 3px;
+    font-size: 1rem;
+    font-family: var(--font-body);
+    background: #FFFFFF;
+    color: var(--text-primary);
+}
+
+.qty-input:focus {
+    outline: none;
+    border-color: var(--crimson);
+    box-shadow: 0 0 0 3px rgba(139,29,51,0.1);
+}
+
+/* ── Order confirmation ── */
+.order-confirm-box {
+    max-width: 500px;
+    margin: 3rem auto;
+    text-align: center;
+    padding: 3rem 2rem;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    border-top: 3px solid var(--crimson);
+}
+
+.order-confirm-icon {
+    font-size: 2.5rem;
+    color: #16a34a;
+    margin-bottom: 1rem;
+}
+
+.order-confirm-heading {
+    font-family: var(--font-display);
+    font-size: 1.8rem;
+    font-style: italic;
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+}
+
+.order-confirm-number {
+    font-size: 1.15rem;
+    color: var(--crimson);
+    margin-bottom: 1rem;
+    letter-spacing: 0.06em;
+}
+
+.order-confirm-msg {
+    color: var(--text-secondary);
+    font-size: 1rem;
+    line-height: 1.7;
+}
+
+/* ── Screen-reader only ── */
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0,0,0,0);
+    white-space: nowrap;
+    border: 0;
+}
+
+/* ── Admin extras ── */
+.admin-select-sm {
+    font-size: 0.82rem;
+    padding: 0.3rem 0.5rem;
+    border: 1px solid var(--border, #ccc);
+    border-radius: 3px;
+}
+
+.btn-xs {
+    font-size: 0.75rem;
+    padding: 0.3rem 0.65rem;
+    min-height: unset;
+}
+

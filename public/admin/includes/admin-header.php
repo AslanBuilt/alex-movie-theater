@@ -75,6 +75,8 @@ $pageTitle = $pageTitle ?? 'Admin';
             <a class="<?= admin_nav_class(['showtimes', 'showtime-edit', 'showtime-delete'], $currentPage) ?>" href="showtimes.php">Showtimes</a>
             <a class="<?= admin_nav_class(['events', 'event-edit', 'event-delete'], $currentPage) ?>" href="events.php">Events</a>
             <a class="<?= admin_nav_class(['senior-showings', 'senior-showing-edit', 'senior-showing-delete'], $currentPage) ?>" href="senior-showings.php">Senior Showings</a>
+            <a class="<?= admin_nav_class(['concessions', 'concession-edit', 'concession-delete'], $currentPage) ?>" href="concessions.php">Concessions</a>
+            <a class="<?= admin_nav_class(['orders'], $currentPage) ?>" href="orders.php">Orders</a>
         </nav>
 
         <div class="admin-sidebar-footer">

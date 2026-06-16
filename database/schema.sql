@@ -107,4 +107,46 @@ CREATE TABLE `admin_users` (
     UNIQUE KEY `uq_admin_users_username` (`username`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- ----------------------------------------------------------------------------
+-- concessions
+-- ----------------------------------------------------------------------------
+DROP TABLE IF EXISTS `concessions`;
+CREATE TABLE `concessions` (
+    `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+    `category` VARCHAR(80) NOT NULL DEFAULT 'Other',
+    `name` VARCHAR(255) NOT NULL,
+    `description` TEXT NULL,
+    `price` DECIMAL(6,2) NOT NULL DEFAULT 0.00,
+    `image_path` VARCHAR(500) NOT NULL DEFAULT '',
+    `is_available` TINYINT(1) NOT NULL DEFAULT 1,
+    `sort_order` INT NOT NULL DEFAULT 0,
+    `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (`id`),
+    KEY `idx_concessions_category` (`category`),
+    KEY `idx_concessions_sort` (`sort_order`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ----------------------------------------------------------------------------
+-- concession_orders
+-- ----------------------------------------------------------------------------
+DROP TABLE IF EXISTS `concession_orders`;
+CREATE TABLE `concession_orders` (
+    `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+    `order_number` VARCHAR(20) NOT NULL,
+    `customer_name` VARCHAR(255) NOT NULL,
+    `customer_email` VARCHAR(255) NOT NULL,
+    `customer_phone` VARCHAR(30) NOT NULL DEFAULT '',
+    `show_info` VARCHAR(255) NOT NULL DEFAULT '',
+    `items_json` TEXT NOT NULL,
+    `total_amount` DECIMAL(8,2) NOT NULL DEFAULT 0.00,
+    `status` ENUM('pending','ready','picked_up','cancelled') NOT NULL DEFAULT 'pending',
+    `notes` TEXT NULL,
+    `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `uq_order_number` (`order_number`),
+    KEY `idx_orders_status` (`status`),
+    KEY `idx_orders_created` (`created_at`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 SET FOREIGN_KEY_CHECKS = 1;

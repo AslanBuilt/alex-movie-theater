@@ -76,6 +76,32 @@ VALUES
      'tba');
 
 -- ----------------------------------------------------------------------------
+-- concessions
+-- ----------------------------------------------------------------------------
+INSERT INTO `concessions` (`category`, `name`, `description`, `price`, `is_available`, `sort_order`) VALUES
+-- Popcorn
+('Popcorn', 'Small Popcorn',  'Fresh-popped buttered popcorn — small size.',   3.00, 1, 10),
+('Popcorn', 'Medium Popcorn', 'Fresh-popped buttered popcorn — medium size.',  4.00, 1, 20),
+('Popcorn', 'Large Popcorn',  'Fresh-popped buttered popcorn — large size.',   5.00, 1, 30),
+-- Drinks
+('Drinks', 'Small Fountain Drink', 'Your choice of fountain soda — small.',    2.00, 1, 10),
+('Drinks', 'Medium Fountain Drink','Your choice of fountain soda — medium.',   2.50, 1, 20),
+('Drinks', 'Large Fountain Drink', 'Your choice of fountain soda — large.',    3.00, 1, 30),
+('Drinks', 'Bottled Water',        'Cold bottled water.',                       2.00, 1, 40),
+-- Candy
+('Candy & Snacks', 'M&Ms',              'Classic milk chocolate M&Ms.',          2.50, 1, 10),
+('Candy & Snacks', 'Reese''s Pieces',   'Peanut butter candy classics.',         2.50, 1, 20),
+('Candy & Snacks', 'Sour Patch Kids',   'Sweet and sour gummy candy.',           2.50, 1, 30),
+('Candy & Snacks', 'Raisinets',         'Chocolate-covered raisins.',            2.50, 1, 40),
+('Candy & Snacks', 'Twizzlers',         'Strawberry twists — movie night essential.', 2.50, 1, 50),
+-- Hot items
+('Hot Items', 'Hot Dog',     'All-beef hot dog in a steamed bun.',               3.50, 1, 10),
+('Hot Items', 'Nachos',      'Tortilla chips with warm nacho cheese.',           4.00, 1, 20),
+-- Kids combos
+('Kids'' Combos', 'Kids'' Combo — Small', 'Small popcorn + small drink + candy choice.', 6.00, 1, 10),
+('Kids'' Combos', 'Kids'' Combo — Value', 'Medium popcorn + medium drink.',              7.00, 1, 20);
+
+-- ----------------------------------------------------------------------------
 -- admin_users
 -- ----------------------------------------------------------------------------
 -- Default credentials: admin / changeme123

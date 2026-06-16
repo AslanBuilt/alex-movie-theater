@@ -144,6 +144,53 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
+    // ── Poster carousel (Now Showing) ──
+    document.querySelectorAll('.poster-carousel-wrap').forEach(function (wrap) {
+        var carousel = wrap.querySelector('.poster-carousel');
+        var track    = wrap.querySelector('.poster-track');
+        var prevBtn  = wrap.querySelector('.carousel-prev');
+        var nextBtn  = wrap.querySelector('.carousel-next');
+
+        if (!track || track.children.length === 0) return;
+
+        var pos = 0;
+
+        function cardWidth() {
+            var card = track.children[0];
+            var gap  = parseInt(getComputedStyle(track).gap) || 24;
+            return card.offsetWidth + gap;
+        }
+
+        function visibleCount() {
+            return Math.max(1, Math.floor(carousel.offsetWidth / cardWidth()));
+        }
+
+        function maxPos() {
+            return Math.max(0, track.children.length - visibleCount());
+        }
+
+        function scrollTo(idx) {
+            pos = Math.max(0, Math.min(idx, maxPos()));
+            track.style.transform = 'translateX(-' + (pos * cardWidth()) + 'px)';
+            if (prevBtn) prevBtn.disabled = pos === 0;
+            if (nextBtn) nextBtn.disabled = pos >= maxPos();
+        }
+
+        if (prevBtn) prevBtn.addEventListener('click', function () { scrollTo(pos - 1); });
+        if (nextBtn) nextBtn.addEventListener('click', function () { scrollTo(pos + 1); });
+
+        // Touch / swipe
+        var touchX = 0;
+        track.addEventListener('touchstart', function (e) { touchX = e.touches[0].clientX; }, { passive: true });
+        track.addEventListener('touchend', function (e) {
+            var dx = e.changedTouches[0].clientX - touchX;
+            if (Math.abs(dx) > 40) scrollTo(dx < 0 ? pos + 1 : pos - 1);
+        }, { passive: true });
+
+        scrollTo(0);
+        window.addEventListener('resize', function () { scrollTo(0); });
+    });
+
     // ── Admin: poster image preview ──
     var posterFile = document.getElementById('poster_file');
     var posterPreview = document.getElementById('poster-preview');
