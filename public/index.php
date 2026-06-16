@@ -1,7 +1,13 @@
 <?php
-$pageTitle = 'Now Showing | Alex Movie Theatre — Alexandria, Indiana';
-$pageDescription = 'See what\'s playing at Alex Movie Theatre in Alexandria, Indiana. Two-screen independent theatre. Adults $5, Children $3.';
+require_once __DIR__ . '/config/config.php';
+require_once __DIR__ . '/includes/Database.php';
+require_once __DIR__ . '/includes/MovieRepo.php';
+
+$pageTitle = 'Now Showing | The Alex — Alexandria, Indiana';
+$pageDescription = 'See what\'s playing at The Alex in Alexandria, Indiana. Two-screen independent theatre. Adults $5, Children $3.';
 $currentPage = 'index';
+$nowShowing = tryDb(fn() => MovieRepo::getNowShowing());
+$comingSoon  = tryDb(fn() => MovieRepo::getComingSoon());
 require __DIR__ . '/templates/header.php';
 ?>
 
@@ -10,16 +16,16 @@ require __DIR__ . '/templates/header.php';
   <div class="photo-slideshow hero-slideshow">
     <div class="slideshow-track">
       <div class="slideshow-slide active">
-        <img src="assets/images/hero-4.png" alt="Classic white Chevelle outside the Alex Theatre" loading="eager">
+        <img src="assets/images/hero-4.png" alt="Classic white Chevelle outside the The Alex" loading="eager">
       </div>
       <div class="slideshow-slide">
-        <img src="assets/images/hero-1.png" alt="Alex Theatre exterior, daytime" loading="eager">
+        <img src="assets/images/hero-1.png" alt="The Alex exterior, daytime" loading="eager">
       </div>
       <div class="slideshow-slide">
-        <img src="assets/images/hero-2.png" alt="Alex Theatre at night with neon sign" loading="lazy">
+        <img src="assets/images/hero-2.png" alt="The Alex at night with neon sign" loading="lazy">
       </div>
       <div class="slideshow-slide">
-        <img src="assets/images/hero-3.png" alt="Alex Theatre auditorium interior" loading="lazy">
+        <img src="assets/images/hero-3.png" alt="The Alex auditorium interior" loading="lazy">
       </div>
     </div>
     <button class="slideshow-btn slideshow-btn-prev" aria-label="Previous photo">&#8249;</button>
@@ -34,7 +40,7 @@ require __DIR__ . '/templates/header.php';
   <div class="hero-overlay"></div>
   <div class="hero-content">
     <p class="hero-eyebrow-split">Alexandria, Indiana &bull; Independent Cinema</p>
-    <h1 class="hero-headline">Real Movies.<br>Five Dollar<br>Tickets.</h1>
+    <h1 class="hero-headline">Real Movies.<br>$5 Tickets.</h1>
     <p class="hero-sub">Your neighborhood two-screen theater since the marquee was new.</p>
     <div class="hero-actions">
       <a href="#now-showing" class="btn btn-crimson">See This Week's Showtimes</a>
@@ -70,33 +76,41 @@ require __DIR__ . '/templates/header.php';
       <div class="poster-carousel">
         <div class="poster-track">
 
-          <div class="poster-card">
-            <a href="movie.php?id=1" class="poster-link">
-              <div class="poster-img-wrap">
-                <span class="screen-badge">Large Screen</span>
-                <img src="assets/images/mandalorian.jpg" alt="Star Wars: The Mandalorian &amp; Grogu" loading="eager">
+          <?php if (!empty($nowShowing)): ?>
+            <?php foreach ($nowShowing as $i => $movie): ?>
+              <?php
+                $mid        = (int) ($movie['id'] ?? 0);
+                $title      = (string) ($movie['title'] ?? '');
+                $rating     = (string) ($movie['rating'] ?? '');
+                $screen     = (string) ($movie['screen'] ?? 'either');
+                $poster     = (string) ($movie['poster_path'] ?? '');
+                $posterSrc  = $poster !== '' ? 'assets/' . ltrim($poster, '/') : '';
+                $screenLabel = $screen === 'large' ? 'Large Screen' : ($screen === 'small' ? 'Small Screen' : '');
+              ?>
+              <div class="poster-card" data-track="movie-click" data-track-label="<?= e($title) ?>">
+                <a href="movie.php?id=<?= $mid ?>" class="poster-link">
+                  <div class="poster-img-wrap">
+                    <?php if ($screenLabel !== ''): ?>
+                      <span class="screen-badge"><?= e($screenLabel) ?></span>
+                    <?php endif; ?>
+                    <?php if ($posterSrc !== ''): ?>
+                      <img src="<?= e($posterSrc) ?>" alt="<?= e($title) ?>" loading="<?= $i === 0 ? 'eager' : 'lazy' ?>">
+                    <?php else: ?>
+                      <div class="movie-poster-placeholder"><?= e($title) ?></div>
+                    <?php endif; ?>
+                    <div class="poster-overlay">
+                      <?php if ($rating !== ''): ?><span class="poster-rating-badge"><?= e($rating) ?></span><?php endif; ?>
+                      <h3 class="poster-title"><?= e($title) ?></h3>
+                    </div>
+                  </div>
+                </a>
               </div>
-              <div class="poster-card-info">
-                <span class="movie-rating">PG-13</span>
-                <h3 class="poster-title">Star Wars: The Mandalorian &amp; Grogu</h3>
-                <span class="poster-cta">View Showtimes &#8250;</span>
-              </div>
-            </a>
-          </div>
-
-          <div class="poster-card">
-            <a href="movie.php?id=2" class="poster-link">
-              <div class="poster-img-wrap">
-                <span class="screen-badge">Small Screen</span>
-                <img src="assets/images/sheep.jpg" alt="The Sheep Detectives" loading="eager">
-              </div>
-              <div class="poster-card-info">
-                <span class="movie-rating">PG</span>
-                <h3 class="poster-title">The Sheep Detectives</h3>
-                <span class="poster-cta">View Showtimes &#8250;</span>
-              </div>
-            </a>
-          </div>
+            <?php endforeach; ?>
+          <?php else: ?>
+            <div class="poster-card poster-card--empty">
+              <p>Check back soon for this week&rsquo;s showings.</p>
+            </div>
+          <?php endif; ?>
 
         </div>
       </div>
@@ -169,14 +183,19 @@ require __DIR__ . '/templates/header.php';
       <div class="section-divider centered"></div>
     </div>
     <div class="coming-soon-grid">
-      <div class="coming-soon-card">
-        <div class="film-title">The Mummy</div>
-        <div class="film-status">Coming Soon</div>
-      </div>
-      <div class="coming-soon-card">
-        <div class="film-title">Toy Story 5</div>
-        <div class="film-status">Coming Soon</div>
-      </div>
+      <?php if (!empty($comingSoon)): ?>
+        <?php foreach ($comingSoon as $movie): ?>
+          <div class="coming-soon-card">
+            <div class="film-title"><?= e((string) ($movie['title'] ?? '')) ?></div>
+            <div class="film-status">Coming Soon</div>
+          </div>
+        <?php endforeach; ?>
+      <?php else: ?>
+        <div class="coming-soon-card">
+          <div class="film-title">Announcements Coming</div>
+          <div class="film-status">Check Back Soon</div>
+        </div>
+      <?php endif; ?>
     </div>
   </div>
 </section>

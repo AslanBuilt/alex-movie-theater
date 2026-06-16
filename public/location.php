@@ -1,6 +1,6 @@
 <?php
-$pageTitle = 'Location & Contact | Alex Movie Theatre — Alexandria, Indiana';
-$pageDescription = 'Find Alex Movie Theatre at 407 N. Harrison Street, Alexandria, Indiana 46001. Directions, parking, phone, and contact form.';
+$pageTitle = 'Location & Contact | The Alex — Alexandria, Indiana';
+$pageDescription = 'Find The Alex at 407 N. Harrison Street, Alexandria, Indiana 46001. Directions, parking, phone, and contact form.';
 $currentPage = 'location';
 require __DIR__ . '/templates/header.php';
 ?>
@@ -115,17 +115,17 @@ require __DIR__ . '/templates/header.php';
       <div>
         <div class="map-wrapper">
           <iframe
-            src="https://maps.google.com/maps?q=407+N+Harrison+Street+Alexandria+Indiana+46001&output=embed&z=16"
+            src="https://www.google.com/maps?q=407+N.+Harrison+St,+Alexandria,+IN+46001&t=&z=16&ie=UTF8&iwloc=&output=embed"
             allowfullscreen=""
             loading="lazy"
             referrerpolicy="no-referrer-when-downgrade"
-            title="Alex Movie Theatre location map">
+            title="The Alex — 407 N Harrison St, Alexandria IN">
           </iframe>
         </div>
 
         <div class="info-card mt-3">
           <h3>About Alexandria</h3>
-          <p>Alexandria is a small, friendly town in east-central Indiana, located approximately 50 miles northeast of Indianapolis. The Alex Theatre has been a part of this community, bringing affordable entertainment to families, seniors, and film fans of all ages.</p>
+          <p>Alexandria is a small, friendly town in east-central Indiana, located approximately 50 miles northeast of Indianapolis. The Alex has been a part of this community, bringing affordable entertainment to families, seniors, and film fans of all ages.</p>
         </div>
       </div>
     </div>
@@ -155,7 +155,7 @@ require __DIR__ . '/templates/header.php';
         <div class="contact-form-wrap">
           <form id="contact-form" action="https://formspree.io/f/xaqkjakn" method="POST" novalidate>
             <input type="text" name="_gotcha" style="display:none" tabindex="-1" autocomplete="off">
-            <input type="hidden" name="_subject" value="New Message — Alex Movie Theatre">
+            <input type="hidden" name="_subject" value="New Message — The Alex">
 
             <div class="form-group">
               <label for="cf-name">Name <span style="color:var(--crimson-light)">*</span></label>

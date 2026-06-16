@@ -1,6 +1,6 @@
 <?php
-$pageTitle = 'Concessions | Alex Movie Theatre — Alexandria, Indiana';
-$pageDescription = 'Enjoy concessions at Alex Movie Theatre. Popcorn, drinks, candy, kids\' combos and more — pre-order online or grab them at the stand.';
+$pageTitle = 'Concessions | The Alex — Alexandria, Indiana';
+$pageDescription = 'Enjoy concessions at The Alex. Popcorn, drinks, candy, kids\' combos and more — pre-order online or grab them at the stand.';
 $currentPage = 'concessions';
 require_once __DIR__ . '/config/config.php';
 require_once INCLUDES_PATH . '/Database.php';

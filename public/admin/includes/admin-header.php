@@ -65,7 +65,7 @@ $pageTitle = $pageTitle ?? 'Admin';
 <div class="admin-layout">
     <aside class="admin-sidebar" id="adminSidebar">
         <div class="admin-brand">
-            <span class="admin-brand-name">Alex Theatre</span>
+            <span class="admin-brand-name">The Alex</span>
             <span class="admin-brand-sub">ADMIN</span>
         </div>
 

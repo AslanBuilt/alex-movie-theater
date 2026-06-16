@@ -1,6 +1,6 @@
 <?php
-$pageTitle = 'Events | Alex Movie Theatre — Alexandria, Indiana';
-$pageDescription = 'Special events at Alex Movie Theatre in Alexandria, Indiana. Escape room experiences, special screenings, and more.';
+$pageTitle = 'Events | The Alex — Alexandria, Indiana';
+$pageDescription = 'Special events at The Alex in Alexandria, Indiana. Escape room experiences, special screenings, and more.';
 $currentPage = 'events';
 require __DIR__ . '/templates/header.php';
 ?>
@@ -22,20 +22,20 @@ require __DIR__ . '/templates/header.php';
       <div class="section-divider"></div>
     </div>
 
-    <div class="movie-card" style="max-width:600px; margin-bottom:3rem;">
-      <div class="movie-poster">
-        <span class="screen-badge" style="background:var(--crimson-dark);">Coming Soon</span>
+    <div class="event-feature-card">
+      <div class="event-feature-img">
+        <span class="screen-badge" style="background:var(--crimson-dark); z-index:2; top:0.75rem; left:0.75rem; right:auto;">Coming Soon</span>
         <img src="assets/images/escape-room.png" alt="Escape From The Lockdown Theatre" loading="lazy">
       </div>
-      <div class="movie-card-body">
-        <h2 class="movie-title">Escape From The &ldquo;Lockdown Theatre&rdquo;</h2>
-        <p style="color:var(--text-secondary); font-size:0.9rem; margin-bottom:1rem; line-height:1.7;">
-          An immersive escape room experience set inside the Alex Theatre itself. Details coming soon · follow our social media for the announcement.
-        </p>
-        <p style="color:var(--text-muted); font-size:0.8rem; margin-bottom:1.25rem;">Date &amp; details to be announced</p>
-        <div class="social-links">
-          <a href="https://www.facebook.com/TheAlexandriaTheatre" target="_blank" rel="noopener">Follow on Facebook</a>
-          <a href="https://www.instagram.com/the.alextheatre" target="_blank" rel="noopener">Follow on Instagram</a>
+      <div class="event-feature-body">
+        <h2>Escape From The &ldquo;Lockdown Theatre&rdquo;</h2>
+        <p class="event-meta">Date &amp; details to be announced &middot; Follow our socials for the announcement</p>
+        <p>An immersive escape room experience set inside The Alex itself. A one-of-a-kind night out &mdash; details coming soon.</p>
+        <div class="contact-social" style="margin-top:1.25rem;">
+          <div class="social-links">
+            <a href="https://www.facebook.com/TheAlexandriaTheatre" target="_blank" rel="noopener">Facebook</a>
+            <a href="https://www.instagram.com/the.alextheatre" target="_blank" rel="noopener">Instagram</a>
+          </div>
         </div>
       </div>
     </div>

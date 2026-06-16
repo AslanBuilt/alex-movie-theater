@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title><?= htmlspecialchars($pageTitle ?? 'Alex Movie Theatre — Alexandria, Indiana') ?></title>
+<title><?= htmlspecialchars($pageTitle ?? 'The Alex — Alexandria, Indiana') ?></title>
 <meta name="description" content="<?= htmlspecialchars($pageDescription ?? '') ?>">
 <link rel="icon" type="image/svg+xml" href="assets/images/favicon.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -16,8 +16,8 @@
 <header class="navbar">
   <div class="container">
     <a href="index.php" class="navbar-brand">
-      <img src="assets/images/favicon.svg" alt="" class="brand-logo" aria-hidden="true" width="32" height="32">
-      <span class="brand-name">Alex Theatre</span>
+      <img src="assets/images/logo.jpg" alt="The Alex logo" class="brand-logo" width="44" height="44">
+      <span class="brand-name">The Alex</span>
     </a>
     <button class="nav-toggle" aria-label="Toggle navigation" aria-expanded="false">
       <span></span><span></span><span></span>

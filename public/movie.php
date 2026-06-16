@@ -9,17 +9,17 @@ $movie = null;
 $showtimes = [];
 
 if ($id > 0) {
-    $movie = tryDb(fn() => (new MovieRepo(Database::getInstance()))->getById($id), null);
+    $movie = tryDb(fn() => MovieRepo::getById($id), null);
 }
 
 if ($movie === null) {
-    $pageTitle = 'Movie Not Found | Alex Movie Theatre';
-    $pageDescription = 'Movie information at Alex Movie Theatre in Alexandria, Indiana.';
+    $pageTitle = 'Movie Not Found | The Alex — Alexandria, Indiana';
+    $pageDescription = 'Movie information at The Alex in Alexandria, Indiana.';
 } else {
-    $pageTitle = htmlspecialchars($movie['title']) . ' | Alex Movie Theatre — Alexandria, Indiana';
+    $pageTitle = htmlspecialchars($movie['title']) . ' | The Alex — Alexandria, Indiana';
     $pageDescription = $movie['description']
         ? htmlspecialchars(substr($movie['description'], 0, 155))
-        : 'Now showing at Alex Movie Theatre in Alexandria, Indiana.';
+        : 'Now showing at The Alex in Alexandria, Indiana.';
     $showtimes = $movie['showtimes'] ?? [];
 }
 
@@ -88,25 +88,53 @@ require __DIR__ . '/templates/header.php';
             <h2 class="section-title" style="font-size:1.6rem;">Showtimes</h2>
             <div class="section-divider"></div>
           </div>
-          <div class="showtime-list">
-            <?php foreach ($showtimes as $st): ?>
-              <div class="showtime-row">
-                <span class="showtime-day"><?= e($st['label']) ?></span>
-                <span class="showtime-times"><?= e($st['times']) ?></span>
-              </div>
+
+          <div class="day-tabs" id="showtime-day-tabs">
+            <?php foreach ($showtimes as $idx => $st): ?>
+              <button
+                class="day-tab<?= $idx === 0 ? ' active' : '' ?>"
+                data-times="<?= e($st['times']) ?>"
+                data-track="showtime-day"
+                data-track-label="<?= e($movie['title'] . ' — ' . $st['label']) ?>"
+                role="tab"
+                aria-selected="<?= $idx === 0 ? 'true' : 'false' ?>">
+                <?= e($st['label']) ?>
+              </button>
             <?php endforeach; ?>
           </div>
+
+          <?php
+            $firstTimes = !empty($showtimes[0]['times'])
+              ? preg_split('/\s*[•·]\s*/', $showtimes[0]['times'])
+              : [];
+          ?>
+          <div class="time-btn-group" id="showtime-time-btns">
+            <?php foreach ($firstTimes as $t): $t = trim($t); if ($t === '') continue; ?>
+              <a href="https://the-alexandria-theatre.square.site/"
+                 target="_blank" rel="noopener"
+                 class="time-btn"
+                 data-track="showtime-click"
+                 data-track-label="<?= e($movie['title'] . ' — ' . $t) ?>">
+                <?= e($t) ?>
+              </a>
+            <?php endforeach; ?>
+          </div>
+
+          <div class="movie-cta" style="margin-top:1rem; display:flex; gap:1rem; flex-wrap:wrap;">
+            <a href="https://the-alexandria-theatre.square.site/" target="_blank" rel="noopener" class="btn btn-crimson" data-track="buy-tickets" data-track-label="<?= e($movie['title']) ?>">Buy Tickets</a>
+            <a href="index.php#now-showing" class="btn btn-outline">All Movies</a>
+          </div>
+
         <?php else: ?>
           <div class="policy-box" style="margin-bottom:1.5rem;">
             <h3>Showtimes</h3>
             <p>Showtimes for this film are not yet listed online. Call us at <a href="tel:765-620-9093">(765) 620-9093</a> to confirm times before your visit.</p>
           </div>
+          <div class="movie-cta" style="margin-top:2rem; display:flex; gap:1rem; flex-wrap:wrap;">
+            <a href="https://the-alexandria-theatre.square.site/" target="_blank" rel="noopener" class="btn btn-crimson">Buy Tickets</a>
+            <a href="index.php#now-showing" class="btn btn-outline">All Movies</a>
+          </div>
         <?php endif; ?>
-
-        <div class="movie-cta" style="margin-top:2rem; display:flex; gap:1rem; flex-wrap:wrap;">
-          <a href="https://the-alexandria-theatre.square.site/" target="_blank" rel="noopener" class="btn btn-crimson">Buy Tickets</a>
-          <a href="index.php#now-showing" class="btn btn-outline">All Movies</a>
-        </div>
 
         <div class="policy-box mt-3">
           <h3>Showtime Policy</h3>

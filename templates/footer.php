@@ -4,7 +4,7 @@
   <div class="container">
     <div class="footer-grid">
       <div class="footer-brand">
-        <div class="brand-name">Alex Theatre</div>
+        <div class="brand-name">The Alex</div>
         <div class="brand-tag">Alexandria's Independent Cinema</div>
         <p>407 N. Harrison Street, Alexandria, IN 46001<br>Phone: <a href="tel:765-620-9093">(765) 620-9093</a></p>
         <div class="social-links">
@@ -32,7 +32,7 @@
       </div>
     </div>
     <div class="footer-bottom">
-      <span>&copy; <?= date('Y') ?> Alex Movie Theatre &middot; Alexandria, Indiana</span>
+      <span>&copy; <?= date('Y') ?> The Alex &middot; Alexandria, Indiana</span>
       <span>$5 Adults &bull; $3 Children</span>
     </div>
   </div>

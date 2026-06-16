@@ -1,6 +1,6 @@
 <?php
-$pageTitle = 'Private Screenings & Birthday Rentals | Alex Movie Theatre — Alexandria, Indiana';
-$pageDescription = 'Book a private movie screening or birthday party at Alex Movie Theatre in Alexandria, Indiana. Affordable rental packages starting at $75.';
+$pageTitle = 'Private Screenings & Birthday Rentals | The Alex — Alexandria, Indiana';
+$pageDescription = 'Book a private movie screening or birthday party at The Alex in Alexandria, Indiana. Affordable rental packages starting at $75.';
 $currentPage = 'private-screenings';
 require __DIR__ . '/templates/header.php';
 ?>
@@ -16,7 +16,7 @@ require __DIR__ . '/templates/header.php';
 <section>
   <div class="container">
     <div class="highlight-box">
-      <p><strong>Make it memorable.</strong> Rent out the Alex Theatre for a private experience your group will never forget · whether it's a birthday, a reunion, a corporate outing, or just a fun night out with friends.</p>
+      <p><strong>Make it memorable.</strong> Rent out The Alex for a private experience your group will never forget · whether it's a birthday, a reunion, a corporate outing, or just a fun night out with friends.</p>
     </div>
 
     <div class="section-header">

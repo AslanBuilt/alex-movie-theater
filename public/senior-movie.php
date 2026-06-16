@@ -1,6 +1,6 @@
 <?php
-$pageTitle = 'Free Senior Movie | Alex Movie Theatre — Alexandria, Indiana';
-$pageDescription = 'Free monthly movie screenings for seniors 55 and up at Alex Movie Theatre in Alexandria, Indiana. No reservation needed. Sponsored by Senior Essential Connections.';
+$pageTitle = 'Free Senior Movie | The Alex — Alexandria, Indiana';
+$pageDescription = 'Free monthly movie screenings for seniors 55 and up at The Alex in Alexandria, Indiana. No reservation needed. Sponsored by Senior Essential Connections.';
 $currentPage = 'senior-movie';
 require __DIR__ . '/templates/header.php';
 ?>
@@ -25,7 +25,7 @@ require __DIR__ . '/templates/header.php';
     </div>
 
     <p style="color:var(--text-secondary); margin-bottom:1.75rem; line-height:1.8; max-width:700px;">
-      The Alex Theatre is proud to partner with <strong class="text-crimson">Senior Essential Connections</strong> to bring free monthly screenings to the community. Every senior 55 or older is welcome at no charge &mdash; no reservations needed, just show up and enjoy.
+      The Alex is proud to partner with <strong class="text-crimson">Senior Essential Connections</strong> to bring free monthly screenings to the community. Every senior 55 or older is welcome at no charge &mdash; no reservations needed, just show up and enjoy.
     </p>
 
     <div class="info-grid" style="max-width:800px;">

@@ -62,8 +62,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-$pageTitle       = 'Pre-Order Concessions | Alex Movie Theatre — Alexandria, Indiana';
-$pageDescription = 'Order your concessions online — pick up ready when you arrive at Alex Movie Theatre in Alexandria, Indiana.';
+$pageTitle       = 'Pre-Order Concessions | The Alex — Alexandria, Indiana';
+$pageDescription = 'Order your concessions online — pick up ready when you arrive at The Alex in Alexandria, Indiana.';
 require __DIR__ . '/templates/header.php';
 ?>
 

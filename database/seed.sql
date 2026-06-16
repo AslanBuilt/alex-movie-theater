@@ -78,28 +78,47 @@ VALUES
 -- ----------------------------------------------------------------------------
 -- concessions
 -- ----------------------------------------------------------------------------
-INSERT INTO `concessions` (`category`, `name`, `description`, `price`, `is_available`, `sort_order`) VALUES
+INSERT INTO `concessions` (`category`, `name`, `description`, `price`, `image_path`, `is_available`, `sort_order`) VALUES
+-- Combos
+('Combos', 'Two Person Combo',
+ 'Large Popcorn + Two Large Drinks. Best value for two.',
+ 15.50, 'images/concessions/combo-two.png', 1, 10),
+('Combos', 'One Person Combo',
+ 'Medium Popcorn + Large Drink.',
+ 9.50, 'images/concessions/combo-one.png', 1, 20),
+('Combos', 'Kids Combo',
+ 'Popcorn + Kids Drink + Small Gummy.',
+ 4.00, 'images/concessions/combo-kids.png', 1, 30),
 -- Popcorn
-('Popcorn', 'Small Popcorn',  'Fresh-popped buttered popcorn — small size.',   3.00, 1, 10),
-('Popcorn', 'Medium Popcorn', 'Fresh-popped buttered popcorn — medium size.',  4.00, 1, 20),
-('Popcorn', 'Large Popcorn',  'Fresh-popped buttered popcorn — large size.',   5.00, 1, 30),
+('Popcorn', 'Large Popcorn (170oz)',
+ 'Fresh-popped buttered popcorn — our biggest size.',
+ 7.50, 'images/concessions/popcorn-large.png', 1, 10),
+('Popcorn', 'Medium Popcorn (130oz)',
+ 'Fresh-popped buttered popcorn — medium size.',
+ 5.50, 'images/concessions/popcorn-medium.png', 1, 20),
+('Popcorn', 'Small Popcorn (85oz)',
+ 'Fresh-popped buttered popcorn — small size.',
+ 3.50, 'images/concessions/popcorn-small.png', 1, 30),
 -- Drinks
-('Drinks', 'Small Fountain Drink', 'Your choice of fountain soda — small.',    2.00, 1, 10),
-('Drinks', 'Medium Fountain Drink','Your choice of fountain soda — medium.',   2.50, 1, 20),
-('Drinks', 'Large Fountain Drink', 'Your choice of fountain soda — large.',    3.00, 1, 30),
-('Drinks', 'Bottled Water',        'Cold bottled water.',                       2.00, 1, 40),
+('Drinks', 'Large Fountain (32oz)',
+ 'Pepsi, Mtn Dew, Dr Pepper, Diet Mtn Dew, Tropicana, Crush, Sierra Mist.',
+ 4.00, 'images/concessions/drink-fountain.png', 1, 10),
+('Drinks', 'Medium Fountain (20oz)',
+ 'Pepsi, Mtn Dew, Dr Pepper, Diet Mtn Dew, Tropicana, Crush, Sierra Mist.',
+ 3.00, 'images/concessions/drink-fountain.png', 1, 20),
+('Drinks', 'Bottle Drinks',
+ 'Water, Diet Pepsi, or Sweet Tea.',
+ 2.00, 'images/concessions/drink-bottle.png', 1, 30),
 -- Candy
-('Candy & Snacks', 'M&Ms',              'Classic milk chocolate M&Ms.',          2.50, 1, 10),
-('Candy & Snacks', 'Reese''s Pieces',   'Peanut butter candy classics.',         2.50, 1, 20),
-('Candy & Snacks', 'Sour Patch Kids',   'Sweet and sour gummy candy.',           2.50, 1, 30),
-('Candy & Snacks', 'Raisinets',         'Chocolate-covered raisins.',            2.50, 1, 40),
-('Candy & Snacks', 'Twizzlers',         'Strawberry twists — movie night essential.', 2.50, 1, 50),
--- Hot items
-('Hot Items', 'Hot Dog',     'All-beef hot dog in a steamed bun.',               3.50, 1, 10),
-('Hot Items', 'Nachos',      'Tortilla chips with warm nacho cheese.',           4.00, 1, 20),
--- Kids combos
-('Kids'' Combos', 'Kids'' Combo — Small', 'Small popcorn + small drink + candy choice.', 6.00, 1, 10),
-('Kids'' Combos', 'Kids'' Combo — Value', 'Medium popcorn + medium drink.',              7.00, 1, 20);
+('Candy', 'Box Candy',
+ 'Reese''s Pieces, Skittles, M&M''s, Mike & Ike, Sour Patch, Whoppers, Junior Mints, Cookie Dough Bites, Milk Duds, Buncha Crunch.',
+ 2.50, 'images/concessions/candy-box.png', 1, 10),
+('Candy', 'Wrapper Candy',
+ 'Single-wrapper candy bars and treats.',
+ 1.50, 'images/concessions/candy-box.png', 1, 20),
+('Candy', 'Cotton Candy',
+ 'Classic spun cotton candy — pink & blue.',
+ 3.00, 'images/concessions/candy-cotton.png', 1, 30);
 
 -- ----------------------------------------------------------------------------
 -- admin_users

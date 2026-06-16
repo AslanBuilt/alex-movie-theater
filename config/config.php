@@ -13,7 +13,7 @@ if (ENVIRONMENT === 'development') {
     ini_set('error_log', __DIR__ . '/../logs/php-errors.log');
 }
 
-define('SITE_NAME', 'Alex Movie Theatre');
+define('SITE_NAME', 'The Alex');
 define('SITE_URL', 'https://parityrfp.com/cs/alex-movie-theater/');
 define('SITE_PHONE', '765-620-9093');
 define('SITE_ADDRESS', '407 N. Harrison Street, Alexandria, IN 46001');

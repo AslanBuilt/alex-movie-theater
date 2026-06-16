@@ -92,7 +92,7 @@ $pageTitle = 'Sign in';
 <body class="admin-login">
     <div class="login-card">
         <div class="login-brand">
-            <span class="login-brand-name">Alex Theatre</span>
+            <span class="login-brand-name">The Alex</span>
             <span class="login-brand-sub">ADMIN</span>
         </div>
 

@@ -176,6 +176,12 @@ document.addEventListener('DOMContentLoaded', function () {
             if (nextBtn) nextBtn.disabled = pos >= maxPos();
         }
 
+        function updateArrows() {
+            var needed = track.children.length > visibleCount();
+            if (prevBtn) prevBtn.style.display = needed ? '' : 'none';
+            if (nextBtn) nextBtn.style.display = needed ? '' : 'none';
+        }
+
         if (prevBtn) prevBtn.addEventListener('click', function () { scrollTo(pos - 1); });
         if (nextBtn) nextBtn.addEventListener('click', function () { scrollTo(pos + 1); });
 
@@ -188,7 +194,48 @@ document.addEventListener('DOMContentLoaded', function () {
         }, { passive: true });
 
         scrollTo(0);
-        window.addEventListener('resize', function () { scrollTo(0); });
+        updateArrows();
+        window.addEventListener('resize', function () { scrollTo(0); updateArrows(); });
+    });
+
+    // ── Showtime day tabs (movie detail page) ──
+    var dayTabs = document.getElementById('showtime-day-tabs');
+    var timeBtns = document.getElementById('showtime-time-btns');
+    if (dayTabs && timeBtns) {
+        dayTabs.addEventListener('click', function (e) {
+            var btn = e.target.closest('.day-tab');
+            if (!btn) return;
+            dayTabs.querySelectorAll('.day-tab').forEach(function (b) {
+                b.classList.remove('active');
+                b.setAttribute('aria-selected', 'false');
+            });
+            btn.classList.add('active');
+            btn.setAttribute('aria-selected', 'true');
+            var timesStr = btn.getAttribute('data-times') || '';
+            var times = timesStr.split(/\s*[•·]\s*/).map(function (t) { return t.trim(); }).filter(Boolean);
+            timeBtns.innerHTML = times.map(function (t) {
+                return '<a href="https://the-alexandria-theatre.square.site/" target="_blank" rel="noopener"' +
+                       ' class="time-btn" data-track="showtime-click"' +
+                       ' data-track-label="' + t.replace(/"/g, '&quot;') + '">' + t + '</a>';
+            }).join('');
+        });
+    }
+
+    // ── Click tracking (fires gtag/fbq if loaded; no-op otherwise) ──
+    document.addEventListener('click', function (e) {
+        var el = e.target.closest('[data-track]');
+        if (!el) return;
+        var eventName = el.getAttribute('data-track');
+        var label     = el.getAttribute('data-track-label') || el.textContent.trim().slice(0, 60);
+        if (typeof gtag === 'function') {
+            gtag('event', eventName, { event_label: label });
+        }
+        if (typeof fbq === 'function' && eventName === 'movie-click') {
+            fbq('track', 'ViewContent', { content_name: label });
+        }
+        if (typeof fbq === 'function' && (eventName === 'showtime-click' || eventName === 'buy-tickets')) {
+            fbq('track', 'InitiateCheckout', { content_name: label });
+        }
     });
 
     // ── Admin: poster image preview ──

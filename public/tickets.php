@@ -1,9 +1,9 @@
 <?php
 require_once __DIR__ . '/config/config.php';
 
-$pageTitle = 'Buy Tickets | Alex Movie Theatre — Alexandria, Indiana';
-$pageDescription = 'Tickets at Alex Movie Theatre in Alexandria, Indiana. Adults $5, Children $3. Buy at the door or reserve by phone at 765-620-9093.';
-$pageKeywords = 'Alex Movie Theatre tickets, movie tickets Alexandria Indiana, cheap movie tickets';
+$pageTitle = 'Buy Tickets | The Alex — Alexandria, Indiana';
+$pageDescription = 'Tickets at The Alex in Alexandria, Indiana. Adults $5, Children $3. Buy at the door or reserve by phone at 765-620-9093.';
+$pageKeywords = 'The Alex tickets, movie tickets Alexandria Indiana, cheap movie tickets';
 $canonical = SITE_URL . 'tickets';
 
 require TEMPLATES_PATH . '/header.php';
