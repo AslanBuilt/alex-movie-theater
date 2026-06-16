@@ -9,7 +9,7 @@ $canonical = SITE_URL . 'tickets';
 require TEMPLATES_PATH . '/header.php';
 ?>
 
-<section class="page-hero">
+<section class="page-hero page-hero--photo" style="--hero-img: url('assets/images/hero-4.png')">
     <div class="container">
         <p class="breadcrumb"><a href="<?= url() ?>">Home</a><span class="sep">/</span>Tickets</p>
         <h1>Buy Tickets</h1>

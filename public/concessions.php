@@ -17,7 +17,7 @@ foreach ($items as $item) {
 require __DIR__ . '/templates/header.php';
 ?>
 
-<section class="page-hero">
+<section class="page-hero page-hero--photo" style="--hero-img: url('assets/images/hero-1.png')">
   <div class="container">
     <p class="breadcrumb"><a href="index.php">Home</a><span class="sep">/</span>Concessions</p>
     <h1>Concession Stand</h1>

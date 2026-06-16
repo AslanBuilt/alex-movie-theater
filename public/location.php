@@ -5,7 +5,7 @@ $currentPage = 'location';
 require __DIR__ . '/templates/header.php';
 ?>
 
-<section class="page-hero">
+<section class="page-hero page-hero--photo" style="--hero-img: url('assets/images/hero-theater.png')">
   <div class="container">
     <p class="breadcrumb"><a href="index.php">Home</a><span class="sep">/</span>Location &amp; Contact</p>
     <h1>Location &amp; Contact</h1>

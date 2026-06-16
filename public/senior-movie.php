@@ -5,7 +5,7 @@ $currentPage = 'senior-movie';
 require __DIR__ . '/templates/header.php';
 ?>
 
-<section class="page-hero">
+<section class="page-hero page-hero--photo" style="--hero-img: url('assets/images/hero-3.png')">
   <div class="container">
     <p class="breadcrumb"><a href="index.php">Home</a><span class="sep">/</span>Senior Movie</p>
     <h1>Free Senior Movie</h1>
@@ -39,48 +39,6 @@ require __DIR__ . '/templates/header.php';
       </div>
     </div>
 
-    <div class="reviews-section" style="margin-top:3rem;">
-      <div class="reviews-header">
-        <span class="reviews-label">Google Reviews</span>
-        <span class="reviews-google-badge">via Google</span>
-      </div>
-
-      <div class="review-item">
-        <div class="review-meta">
-          <span class="review-name">Jackie</span>
-          <span class="review-time">2 months ago</span>
-        </div>
-        <div class="review-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
-        <p class="review-text">What a great budget friendly place to take the family to see a movie! Even the concessions are budget friendly.</p>
-      </div>
-
-      <div class="review-item">
-        <div class="review-meta">
-          <span class="review-name">Robin</span>
-          <span class="review-time">3 months ago</span>
-        </div>
-        <div class="review-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
-        <p class="review-text">We love this historical movie theater. Staff and owners are super nice. Great hospitality.</p>
-      </div>
-
-      <div class="review-item">
-        <div class="review-meta">
-          <span class="review-name">Brian</span>
-          <span class="review-time">7 months ago</span>
-        </div>
-        <div class="review-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
-        <p class="review-text">I love the vintage feel of this place. The prices are amazing and it&rsquo;s never too busy.</p>
-      </div>
-
-      <div class="review-item">
-        <div class="review-meta">
-          <span class="review-name">Jim</span>
-          <span class="review-time">a year ago</span>
-        </div>
-        <div class="review-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
-        <p class="review-text">Really neat small town mom and pop operation. Prices are super reasonable. First run movies at second run pricing &mdash; worth making the trip from surrounding counties.</p>
-      </div>
-    </div>
   </div>
 </section>
 
