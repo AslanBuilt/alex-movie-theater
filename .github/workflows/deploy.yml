@@ -99,4 +99,5 @@ jobs:
             **/seed.sql
 
       - name: Deployment summary
-        run: echo "Deploy complete: https://parityrfp.com/cs/alex-movie-theater/"
+        run: |
+          echo "Deploy complete: https://parityrfp.com/cs/alex-movie-theater/"
