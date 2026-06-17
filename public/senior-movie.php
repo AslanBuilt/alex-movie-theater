@@ -18,6 +18,8 @@ require __DIR__ . '/templates/header.php';
   <div class="container">
     <div class="senior-badge">Free Admission &bull; Ages 55 &amp; Up &bull; Sponsored by Senior Essential Connections</div>
 
+    <img src="assets/images/hero-3.png" alt="Alex Theatre auditorium interior" style="width:100%; display:block; margin:2rem 0; border-radius:6px;">
+
     <div class="section-header">
       <p class="section-label">About the Program</p>
       <h2 class="section-title">Free for Seniors 55+</h2>
