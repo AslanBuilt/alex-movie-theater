@@ -17,6 +17,40 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Generate database.php from secrets
+        env:
+          DB_HOST: ${{ secrets.DB_HOST }}
+          DB_NAME: ${{ secrets.DB_NAME }}
+          DB_USER: ${{ secrets.DB_USER }}
+          DB_PASS: ${{ secrets.DB_PASSWORD }}
+        run: |
+          python3 - << 'PYEOF'
+          import os, sys
+
+          def esc(v):
+              return v.replace('\\', '\\\\').replace("'", "\\'")
+
+          host = esc(os.environ.get('DB_HOST', ''))
+          db   = esc(os.environ.get('DB_NAME', ''))
+          user = esc(os.environ.get('DB_USER', ''))
+          pwd  = esc(os.environ.get('DB_PASS', ''))
+
+          php = (
+              "<?php\n"
+              "declare(strict_types=1);\n"
+              "return [\n"
+              "    'host'     => '" + host + "',\n"
+              "    'database' => '" + db   + "',\n"
+              "    'username' => '" + user + "',\n"
+              "    'password' => '" + pwd  + "',\n"
+              "    'charset'  => 'utf8mb4',\n"
+              "];\n"
+          )
+          with open('./config/database.php', 'w') as f:
+              f.write(php)
+          sys.stdout.write("Generated config/database.php\n")
+          PYEOF
+
       - name: Deploy public/ to web root
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
@@ -99,6 +133,32 @@ jobs:
             **/.DS_Store
             **/Thumbs.db
             **/seed.sql
+
+      - name: Deploy database.php via FTP
+        run: |
+          curl -s --ftp-create-dirs \
+            -T "./config/database.php" \
+            -u "${{ secrets.FTP_USERNAME }}:${{ secrets.FTP_PASSWORD }}" \
+            "ftp://${{ secrets.FTP_HOST }}/cs/alex-movie-theater/config/database.php"
+          echo "Uploaded database.php"
+
+      - name: Run DB init and cleanup
+        run: |
+          curl -s --ftp-create-dirs \
+            -T "./scripts/db-init.php" \
+            -u "${{ secrets.FTP_USERNAME }}:${{ secrets.FTP_PASSWORD }}" \
+            "ftp://${{ secrets.FTP_HOST }}/cs/alex-movie-theater/db-init.php"
+          echo "Uploaded db-init.php — running..."
+          curl -s --max-time 30 \
+            "https://parityrfp.com/cs/alex-movie-theater/db-init.php" \
+            -o /tmp/db-result.json
+          echo "DB init result:"
+          cat /tmp/db-result.json
+          curl -s \
+            -u "${{ secrets.FTP_USERNAME }}:${{ secrets.FTP_PASSWORD }}" \
+            -Q "DELE /cs/alex-movie-theater/db-init.php" \
+            "ftp://${{ secrets.FTP_HOST }}"
+          echo "Removed db-init.php from server"
 
       - name: Deployment summary
         run: |
