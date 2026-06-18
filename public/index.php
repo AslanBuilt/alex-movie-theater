@@ -49,19 +49,6 @@ require __DIR__ . '/templates/header.php';
   </div>
 </div>
 
-<!-- Info Bar -->
-<div class="info-bar">
-  <div class="info-bar-items">
-    <span>Adults $5</span>
-    <span class="info-bar-sep">&bull;</span>
-    <span>Kids 12 &amp; Under $3</span>
-    <span class="info-bar-sep info-bar-address-sep">&bull;</span>
-    <span class="info-bar-address">407 N. Harrison St, Alexandria IN</span>
-    <span class="info-bar-sep">&bull;</span>
-    <span><a href="tel:765-620-9093">(765) 620-9093</a></span>
-  </div>
-</div>
-
 <!-- ── Now Showing ── -->
 <section id="now-showing" class="now-showing-section">
   <div class="container">
