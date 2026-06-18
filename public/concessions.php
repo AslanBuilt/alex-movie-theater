@@ -67,19 +67,51 @@ require __DIR__ . '/templates/header.php';
       <?php endforeach; ?>
 
     <?php else: ?>
-      <!-- Fallback when DB is unavailable -->
-      <div class="section-header">
-        <p class="section-label">Classic Movie Favorites</p>
-        <h2 class="section-title">What We Offer</h2>
-        <div class="section-divider"></div>
-      </div>
-      <div class="info-grid">
-        <div class="info-card"><h3>Popcorn</h3><p>Fresh-popped buttered popcorn in multiple sizes.</p></div>
-        <div class="info-card"><h3>Drinks</h3><p>Fountain sodas and bottled water in multiple sizes.</p></div>
-        <div class="info-card"><h3>Candy &amp; Snacks</h3><p>Classic movie candies and packaged snacks.</p></div>
-        <div class="info-card"><h3>Hot Items</h3><p>Hot dogs, nachos, and more. Check with staff for current offerings.</p></div>
-        <div class="info-card"><h3>Kids&rsquo; Combos</h3><p>Popcorn + drink combo deals for the little ones.</p></div>
-      </div>
+      <!-- Static fallback menu with images -->
+      <?php
+      $staticMenu = [
+        'Combos' => [
+          ['name'=>'Two Person Combo','desc'=>'Large Popcorn + Two Large Drinks. Best value for two.','price'=>'15.50','img'=>'images/concessions/combo-two.png'],
+          ['name'=>'One Person Combo','desc'=>'Medium Popcorn + Large Drink.','price'=>'9.50','img'=>'images/concessions/combo-one.png'],
+          ['name'=>'Kids Combo','desc'=>'Popcorn + Kids Drink + Small Gummy.','price'=>'4.00','img'=>'images/concessions/combo-kids.png'],
+        ],
+        'Popcorn' => [
+          ['name'=>'Large Popcorn (170oz)','desc'=>'Fresh-popped buttered popcorn — our biggest size.','price'=>'7.50','img'=>'images/concessions/popcorn-large.png'],
+          ['name'=>'Medium Popcorn (130oz)','desc'=>'Fresh-popped buttered popcorn — medium size.','price'=>'5.50','img'=>'images/concessions/popcorn-medium.png'],
+          ['name'=>'Small Popcorn (85oz)','desc'=>'Fresh-popped buttered popcorn — small size.','price'=>'3.50','img'=>'images/concessions/popcorn-small.png'],
+        ],
+        'Drinks' => [
+          ['name'=>'Large Fountain (32oz)','desc'=>'Pepsi, Mtn Dew, Dr Pepper, Diet Mtn Dew, Tropicana, Crush, Sierra Mist.','price'=>'4.00','img'=>'images/concessions/drink-fountain.png'],
+          ['name'=>'Medium Fountain (20oz)','desc'=>'Pepsi, Mtn Dew, Dr Pepper, Diet Mtn Dew, Tropicana, Crush, Sierra Mist.','price'=>'3.00','img'=>'images/concessions/drink-fountain.png'],
+          ['name'=>'Bottle Drinks','desc'=>'Water, Diet Pepsi, or Sweet Tea.','price'=>'2.00','img'=>'images/concessions/drink-bottle.png'],
+        ],
+        'Candy' => [
+          ['name'=>'Box Candy','desc'=>"Reese's Pieces, Skittles, M&M's, Mike & Ike, Sour Patch, Whoppers, Junior Mints, Cookie Dough Bites, Milk Duds, Buncha Crunch.",'price'=>'2.50','img'=>'images/concessions/candy-box.png'],
+          ['name'=>'Wrapper Candy','desc'=>'Single-wrapper candy bars and treats.','price'=>'1.50','img'=>'images/concessions/candy-box.png'],
+          ['name'=>'Cotton Candy','desc'=>'Classic spun cotton candy — pink &amp; blue.','price'=>'3.00','img'=>'images/concessions/candy-cotton.png'],
+        ],
+      ];
+      foreach ($staticMenu as $cat => $items): ?>
+        <div class="section-header" style="margin-top:2.5rem;">
+          <p class="section-label">Concession Stand</p>
+          <h2 class="section-title"><?= htmlspecialchars($cat) ?></h2>
+          <div class="section-divider"></div>
+        </div>
+        <div class="concession-db-grid">
+          <?php foreach ($items as $item): ?>
+            <div class="concession-db-card">
+              <div class="concession-db-img">
+                <img src="assets/<?= htmlspecialchars($item['img']) ?>" alt="<?= htmlspecialchars($item['name']) ?>" loading="lazy">
+              </div>
+              <div class="concession-db-body">
+                <div class="concession-db-name"><?= htmlspecialchars($item['name']) ?></div>
+                <div class="concession-db-desc"><?= $item['desc'] ?></div>
+                <div class="concession-db-price">$<?= $item['price'] ?></div>
+              </div>
+            </div>
+          <?php endforeach; ?>
+        </div>
+      <?php endforeach; ?>
     <?php endif; ?>
 
     <div class="policy-box mt-3">

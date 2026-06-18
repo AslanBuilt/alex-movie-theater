@@ -110,7 +110,7 @@ a:hover { color: var(--crimson-dark); }
 .nav-menu {
     display: flex;
     align-items: center;
-    gap: 0;
+    gap: 0.15rem;
     list-style: none;
     margin: 0;
     padding: 0;
@@ -827,6 +827,69 @@ section { padding: 4rem 0; }
 
 .rental-features li:last-child { border-bottom: none; }
 .rental-features li::before { content: '✓'; color: var(--crimson); flex-shrink: 0; }
+
+/* ── Senior Cards Grid ── */
+.senior-cards-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2rem;
+    margin-top: 0.5rem;
+}
+
+@media (max-width: 900px) {
+    .senior-cards-grid { grid-template-columns: 1fr; gap: 1.5rem; }
+}
+
+.senior-card {
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+}
+
+.senior-card h2 {
+    font-family: var(--font-display);
+    font-size: 1.3rem;
+    color: var(--text-primary);
+    margin: 0;
+}
+
+.senior-card p {
+    color: var(--text-secondary);
+    line-height: 1.8;
+    margin: 0;
+}
+
+.senior-card-icon {
+    color: var(--crimson);
+    margin-bottom: 0.25rem;
+}
+
+.senior-card-badge {
+    display: inline-block;
+    background: rgba(139,29,51,0.08);
+    border: 1px solid rgba(139,29,51,0.2);
+    border-radius: 3px;
+    padding: 0.35rem 0.85rem;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--crimson-dark);
+    margin-top: 0.25rem;
+}
+
+.senior-contact-phone {
+    font-family: var(--font-display);
+    font-size: 1.5rem !important;
+    margin-top: 0.25rem !important;
+}
+
+.senior-contact-phone a {
+    color: var(--crimson);
+    text-decoration: none;
+}
+
+.senior-contact-phone a:hover { text-decoration: underline; }
 
 /* ── Senior Badge ── */
 .senior-badge {
