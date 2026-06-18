@@ -18,6 +18,10 @@ require __DIR__ . '/templates/header.php';
   <div class="container">
     <div class="senior-badge">Free Admission &bull; Ages 55 &amp; Up &bull; Sponsored by Senior Essential Connections</div>
 
+    <div class="senior-banner">
+      <img src="assets/images/hero-3.png" alt="The Alex auditorium interior" loading="lazy">
+    </div>
+
     <div class="section-header">
       <p class="section-label">About the Program</p>
       <h2 class="section-title">Free for Seniors 55+</h2>
@@ -57,8 +61,8 @@ require __DIR__ . '/templates/header.php';
 
     <div class="info-card mt-3" style="max-width:480px;">
       <h3>Contact</h3>
-      <p><a href="tel:765-620-9093" style="font-weight:700; font-size:1.15rem;">(765) 620-9093</a></p>
-      <p style="margin-top:0.5rem; color:var(--text-secondary);">Call the theatre to confirm the next screening date, or reach out to Senior Essential Connections directly.</p>
+      <p class="senior-contact-phone"><a href="tel:765-620-9093">(765) 620-9093</a></p>
+      <p style="margin-top:0.5rem; color:var(--text-secondary);">Call the theatre to confirm the next screening date or reach out to Senior Essential Connections directly.</p>
     </div>
   </div>
 </section>

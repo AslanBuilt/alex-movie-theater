@@ -94,8 +94,29 @@ require __DIR__ . '/templates/header.php';
               </div>
             <?php endforeach; ?>
           <?php else: ?>
-            <div class="poster-card poster-card--empty">
-              <p>Check back soon for this week&rsquo;s showings.</p>
+            <div class="poster-card" data-track="movie-click" data-track-label="Star Wars: The Mandalorian &amp; Grogu">
+              <a href="movie.php?id=1" class="poster-link">
+                <div class="poster-img-wrap">
+                  <span class="screen-badge">Large Screen</span>
+                  <img src="assets/images/starwars.jpg" alt="Star Wars: The Mandalorian &amp; Grogu" loading="eager">
+                  <div class="poster-overlay">
+                    <span class="poster-rating-badge">PG-13</span>
+                    <h3 class="poster-title">Star Wars: The Mandalorian &amp; Grogu</h3>
+                  </div>
+                </div>
+              </a>
+            </div>
+            <div class="poster-card" data-track="movie-click" data-track-label="The Sheep Detectives">
+              <a href="movie.php?id=2" class="poster-link">
+                <div class="poster-img-wrap">
+                  <span class="screen-badge">Small Screen</span>
+                  <img src="assets/images/sheep.jpg" alt="The Sheep Detectives" loading="lazy">
+                  <div class="poster-overlay">
+                    <span class="poster-rating-badge">PG</span>
+                    <h3 class="poster-title">The Sheep Detectives</h3>
+                  </div>
+                </div>
+              </a>
             </div>
           <?php endif; ?>
 
