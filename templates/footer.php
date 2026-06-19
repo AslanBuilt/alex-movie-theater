@@ -27,7 +27,7 @@
         <ul>
           <li><a href="location.php">Location &amp; Contact</a></li>
           <li><a href="https://docs.google.com/forms/d/e/1FAIpQLSeIx_YNZ91tXNZ2PvcmIRTIoVUjqDo56f3cjPNgs2z9OWspww/viewform" target="_blank" rel="noopener">Employment</a></li>
-          <li><a href="https://the-alexandria-theatre.square.site/" target="_blank" rel="noopener">Buy Tickets Online</a></li>
+          <li><a href="tickets.php">Buy Tickets</a></li>
         </ul>
       </div>
     </div>

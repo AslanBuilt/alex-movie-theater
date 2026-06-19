@@ -214,7 +214,9 @@ document.addEventListener('DOMContentLoaded', function () {
             var timesStr = btn.getAttribute('data-times') || '';
             var times = timesStr.split(/\s*[•·]\s*/).map(function (t) { return t.trim(); }).filter(Boolean);
             timeBtns.innerHTML = times.map(function (t) {
-                return '<a href="https://the-alexandria-theatre.square.site/" target="_blank" rel="noopener"' +
+                var sid = btn.getAttribute('data-showtime-id') || '';
+                var href = sid ? ('checkout.php?showtime=' + sid + '&t=' + encodeURIComponent(t)) : 'tickets.php';
+                return '<a href="' + href + '"' +
                        ' class="time-btn" data-track="showtime-click"' +
                        ' data-track-label="' + t.replace(/"/g, '&quot;') + '">' + t + '</a>';
             }).join('');

@@ -121,6 +121,43 @@ INSERT INTO `concessions` (`category`, `name`, `description`, `price`, `image_pa
  3.00, 'images/concessions/candy-cotton.png', 1, 30);
 
 -- ----------------------------------------------------------------------------
+-- concession_options
+-- ----------------------------------------------------------------------------
+-- Large Fountain (id=7) and Medium Fountain (id=8) share the same flavors
+INSERT INTO `concession_options` (`concession_id`, `option_label`, `sort_order`) VALUES
+(7, 'Pepsi', 0), (7, 'Mtn Dew', 1), (7, 'Dr Pepper', 2), (7, 'Diet Mtn Dew', 3),
+(7, 'Tropicana', 4), (7, 'Crush', 5), (7, 'Sierra Mist', 6),
+(8, 'Pepsi', 0), (8, 'Mtn Dew', 1), (8, 'Dr Pepper', 2), (8, 'Diet Mtn Dew', 3),
+(8, 'Tropicana', 4), (8, 'Crush', 5), (8, 'Sierra Mist', 6);
+
+-- Bottle Drinks (id=9)
+INSERT INTO `concession_options` (`concession_id`, `option_label`, `sort_order`) VALUES
+(9, 'Water', 0), (9, 'Diet Pepsi', 1), (9, 'Sweet Tea', 2);
+
+-- Box Candy (id=10)
+INSERT INTO `concession_options` (`concession_id`, `option_label`, `sort_order`) VALUES
+(10, 'Reese''s Pieces', 0), (10, 'Skittles', 1), (10, 'M&M''s', 2),
+(10, 'Mike & Ike', 3), (10, 'Sour Patch', 4), (10, 'Whoppers', 5),
+(10, 'Junior Mints', 6), (10, 'Cookie Dough Bites', 7), (10, 'Milk Duds', 8),
+(10, 'Buncha Crunch', 9);
+
+-- ----------------------------------------------------------------------------
+-- concessions — starting stock quantities
+-- ----------------------------------------------------------------------------
+UPDATE `concessions` SET `stock_quantity` = 20, `reorder_point` = 5  WHERE `id` = 1;  -- Two Person Combo
+UPDATE `concessions` SET `stock_quantity` = 30, `reorder_point` = 5  WHERE `id` = 2;  -- One Person Combo
+UPDATE `concessions` SET `stock_quantity` = 20, `reorder_point` = 5  WHERE `id` = 3;  -- Kids Combo
+UPDATE `concessions` SET `stock_quantity` = 50, `reorder_point` = 10 WHERE `id` = 4;  -- Large Popcorn
+UPDATE `concessions` SET `stock_quantity` = 50, `reorder_point` = 10 WHERE `id` = 5;  -- Medium Popcorn
+UPDATE `concessions` SET `stock_quantity` = 50, `reorder_point` = 10 WHERE `id` = 6;  -- Small Popcorn
+UPDATE `concessions` SET `stock_quantity` = 100, `reorder_point` = 20 WHERE `id` = 7; -- Large Fountain
+UPDATE `concessions` SET `stock_quantity` = 100, `reorder_point` = 20 WHERE `id` = 8; -- Medium Fountain
+UPDATE `concessions` SET `stock_quantity` = 48, `reorder_point` = 12  WHERE `id` = 9; -- Bottle Drinks
+UPDATE `concessions` SET `stock_quantity` = 60, `reorder_point` = 15  WHERE `id` = 10; -- Box Candy
+UPDATE `concessions` SET `stock_quantity` = 30, `reorder_point` = 10  WHERE `id` = 11; -- Wrapper Candy
+UPDATE `concessions` SET `stock_quantity` = 20, `reorder_point` = 5   WHERE `id` = 12; -- Cotton Candy
+
+-- ----------------------------------------------------------------------------
 -- admin_users
 -- ----------------------------------------------------------------------------
 -- Default credentials: admin / changeme123

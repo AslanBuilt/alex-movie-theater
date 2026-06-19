@@ -29,7 +29,7 @@
       <li><a href="events.php" class="nav-link<?= ($currentPage ?? '') === 'events' ? ' active' : '' ?>">Events</a></li>
       <li><a href="private-screenings.php" class="nav-link<?= ($currentPage ?? '') === 'private-screenings' ? ' active' : '' ?>">Private Screenings</a></li>
       <li><a href="location.php" class="nav-link<?= in_array($currentPage ?? '', ['location','contact'], true) ? ' active' : '' ?>">Location &amp; Contact</a></li>
-      <li><a href="https://the-alexandria-theatre.square.site/" target="_blank" rel="noopener" class="nav-link nav-cta">Buy Tickets</a></li>
+      <li><a href="tickets.php" class="nav-link nav-cta">Buy Tickets</a></li>
     </ul>
   </div>
 </header>

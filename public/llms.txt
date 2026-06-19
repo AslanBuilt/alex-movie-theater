@@ -13,7 +13,7 @@ affordable ticket prices and a variety of programming.
 
 ## Services
 - Current movie screenings (large and small screen)
-- Online ticket purchasing via Square (required for small screen)
+- Online ticket purchasing via internal purchase system (required for small screen)
 - Free senior movie program (ages 55+, sponsored by Senior Essential Connections)
 - Concession stand
 - Private screenings and birthday rentals

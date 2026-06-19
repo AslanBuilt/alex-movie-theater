@@ -24,6 +24,7 @@ CREATE TABLE `movies` (
     `poster_path` VARCHAR(500) NOT NULL DEFAULT '',
     `description` TEXT NULL,
     `status` ENUM('now_showing', 'coming_soon', 'archived') NOT NULL DEFAULT 'now_showing',
+    `is_active` TINYINT(1) NOT NULL DEFAULT 1,
     `online_only` TINYINT(1) NOT NULL DEFAULT 0,
     `sort_order` INT NOT NULL DEFAULT 0,
     `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -40,9 +41,13 @@ DROP TABLE IF EXISTS `showtimes`;
 CREATE TABLE `showtimes` (
     `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
     `movie_id` INT UNSIGNED NOT NULL,
-    `label` VARCHAR(100) NOT NULL,
-    `times` VARCHAR(255) NOT NULL,
+    `label` VARCHAR(100) NOT NULL DEFAULT '',
+    `times` VARCHAR(255) NOT NULL DEFAULT '',
     `showtime_date` DATE NULL,
+    `showtime_time` TIME NULL,
+    `available_tickets` INT NOT NULL DEFAULT 50,
+    `tickets_sold` INT NOT NULL DEFAULT 0,
+    `is_active` TINYINT(1) NOT NULL DEFAULT 1,
     `sort_order` INT NOT NULL DEFAULT 0,
     `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (`id`),
@@ -117,6 +122,9 @@ CREATE TABLE `concessions` (
     `name` VARCHAR(255) NOT NULL,
     `description` TEXT NULL,
     `price` DECIMAL(6,2) NOT NULL DEFAULT 0.00,
+    `cost` DECIMAL(6,2) NULL,
+    `reorder_point` INT NULL,
+    `stock_quantity` INT NOT NULL DEFAULT 0,
     `image_path` VARCHAR(500) NOT NULL DEFAULT '',
     `is_available` TINYINT(1) NOT NULL DEFAULT 1,
     `sort_order` INT NOT NULL DEFAULT 0,
@@ -128,7 +136,24 @@ CREATE TABLE `concessions` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ----------------------------------------------------------------------------
--- concession_orders
+-- concession_options
+-- ----------------------------------------------------------------------------
+DROP TABLE IF EXISTS `concession_options`;
+CREATE TABLE `concession_options` (
+    `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+    `concession_id` INT UNSIGNED NOT NULL,
+    `option_label` VARCHAR(100) NOT NULL,
+    `is_available` TINYINT(1) NOT NULL DEFAULT 1,
+    `sort_order` INT NOT NULL DEFAULT 0,
+    PRIMARY KEY (`id`),
+    KEY `idx_options_concession` (`concession_id`),
+    CONSTRAINT `fk_options_concession`
+        FOREIGN KEY (`concession_id`) REFERENCES `concessions` (`id`)
+        ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ----------------------------------------------------------------------------
+-- concession_orders  (legacy — kept for backward compat)
 -- ----------------------------------------------------------------------------
 DROP TABLE IF EXISTS `concession_orders`;
 CREATE TABLE `concession_orders` (
@@ -147,6 +172,69 @@ CREATE TABLE `concession_orders` (
     UNIQUE KEY `uq_order_number` (`order_number`),
     KEY `idx_orders_status` (`status`),
     KEY `idx_orders_created` (`created_at`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ----------------------------------------------------------------------------
+-- transactions
+-- ----------------------------------------------------------------------------
+DROP TABLE IF EXISTS `transactions`;
+CREATE TABLE `transactions` (
+    `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+    `transaction_ref` VARCHAR(20) NOT NULL,
+    `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `type` ENUM('ticket','concession','combo') NOT NULL,
+    `source_channel` ENUM('website','kiosk','staff') NOT NULL DEFAULT 'website',
+    `total_amount` DECIMAL(8,2) NOT NULL,
+    `payment_status` ENUM('paid','pending','failed') NOT NULL DEFAULT 'pending',
+    `payment_method` VARCHAR(50) NOT NULL DEFAULT 'mock',
+    `gateway_ref` VARCHAR(100) NULL,
+    `customer_name` VARCHAR(100) NULL,
+    `customer_email` VARCHAR(150) NULL,
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `uq_transaction_ref` (`transaction_ref`),
+    KEY `idx_transactions_created` (`created_at`),
+    KEY `idx_transactions_status` (`payment_status`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ----------------------------------------------------------------------------
+-- transaction_items
+-- ----------------------------------------------------------------------------
+DROP TABLE IF EXISTS `transaction_items`;
+CREATE TABLE `transaction_items` (
+    `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+    `transaction_id` INT UNSIGNED NOT NULL,
+    `item_type` ENUM('ticket','concession') NOT NULL,
+    `item_id` INT NOT NULL,
+    `item_name` VARCHAR(200) NOT NULL,
+    `quantity` INT NOT NULL,
+    `unit_price` DECIMAL(6,2) NOT NULL,
+    `selected_option` VARCHAR(100) NULL,
+    `subtotal` DECIMAL(8,2) NOT NULL,
+    PRIMARY KEY (`id`),
+    KEY `idx_items_transaction` (`transaction_id`),
+    CONSTRAINT `fk_items_transaction`
+        FOREIGN KEY (`transaction_id`) REFERENCES `transactions` (`id`)
+        ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ----------------------------------------------------------------------------
+-- inventory_log
+-- ----------------------------------------------------------------------------
+DROP TABLE IF EXISTS `inventory_log`;
+CREATE TABLE `inventory_log` (
+    `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+    `concession_id` INT UNSIGNED NOT NULL,
+    `change_type` ENUM('sale','restock','adjustment') NOT NULL,
+    `qty_change` INT NOT NULL,
+    `new_quantity` INT NOT NULL,
+    `source` ENUM('website','admin','kiosk','staff') NOT NULL DEFAULT 'website',
+    `note` VARCHAR(200) NULL,
+    `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (`id`),
+    KEY `idx_invlog_concession` (`concession_id`),
+    KEY `idx_invlog_created` (`created_at`),
+    CONSTRAINT `fk_invlog_concession`
+        FOREIGN KEY (`concession_id`) REFERENCES `concessions` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 SET FOREIGN_KEY_CHECKS = 1;

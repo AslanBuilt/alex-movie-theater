@@ -160,6 +160,24 @@ jobs:
             "ftp://${{ secrets.FTP_HOST }}"
           echo "Removed db-init.php from server"
 
+      - name: Run DB migration
+        run: |
+          curl -s --ftp-create-dirs \
+            -T "./scripts/db-migrate.php" \
+            -u "${{ secrets.FTP_USERNAME }}:${{ secrets.FTP_PASSWORD }}" \
+            "ftp://${{ secrets.FTP_HOST }}/cs/alex-movie-theater/db-migrate.php"
+          echo "Uploaded db-migrate.php — running..."
+          curl -s --max-time 60 \
+            "https://parityrfp.com/cs/alex-movie-theater/db-migrate.php" \
+            -o /tmp/migrate-result.json
+          echo "DB migration result:"
+          cat /tmp/migrate-result.json
+          curl -s \
+            -u "${{ secrets.FTP_USERNAME }}:${{ secrets.FTP_PASSWORD }}" \
+            -Q "DELE /cs/alex-movie-theater/db-migrate.php" \
+            "ftp://${{ secrets.FTP_HOST }}"
+          echo "Removed db-migrate.php from server"
+
       - name: Deployment summary
         run: |
           echo "Deploy complete: https://parityrfp.com/cs/alex-movie-theater/"
