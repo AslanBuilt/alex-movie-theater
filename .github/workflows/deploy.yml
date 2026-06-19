@@ -25,7 +25,7 @@ jobs:
           DB_PASS: ${{ secrets.DB_PASSWORD }}
         run: |
           python3 - << 'PYEOF'
-          import os, sys
+          import os, sys, shutil
 
           def esc(v):
               return v.replace('\\', '\\\\').replace("'", "\\'")
@@ -35,20 +35,30 @@ jobs:
           user = esc(os.environ.get('DB_USER', ''))
           pwd  = esc(os.environ.get('DB_PASS', ''))
 
-          php = (
-              "<?php\n"
-              "declare(strict_types=1);\n"
-              "return [\n"
-              "    'host'     => '" + host + "',\n"
-              "    'database' => '" + db   + "',\n"
-              "    'username' => '" + user + "',\n"
-              "    'password' => '" + pwd  + "',\n"
-              "    'charset'  => 'utf8mb4',\n"
-              "];\n"
-          )
-          with open('./config/database.php', 'w') as f:
-              f.write(php)
-          sys.stdout.write("Generated config/database.php\n")
+          if not host:
+              # Secrets not set — fall back to the pre-existing public/config/database.php
+              fallback = './public/config/database.php'
+              if os.path.exists(fallback):
+                  shutil.copy(fallback, './config/database.php')
+                  sys.stdout.write("WARNING: DB_HOST secret empty — using public/config/database.php fallback\n")
+              else:
+                  sys.stdout.write("ERROR: DB_HOST secret empty and no fallback file found\n")
+                  sys.exit(1)
+          else:
+              php = (
+                  "<?php\n"
+                  "declare(strict_types=1);\n"
+                  "return [\n"
+                  "    'host'     => '" + host + "',\n"
+                  "    'database' => '" + db   + "',\n"
+                  "    'username' => '" + user + "',\n"
+                  "    'password' => '" + pwd  + "',\n"
+                  "    'charset'  => 'utf8mb4',\n"
+                  "];\n"
+              )
+              with open('./config/database.php', 'w') as f:
+                  f.write(php)
+              sys.stdout.write("Generated config/database.php from secrets\n")
           PYEOF
 
       - name: Deploy public/ to web root

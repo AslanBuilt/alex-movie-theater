@@ -9,4 +9,5 @@ Thumbs.db
 
 # Local DB config & generated seeds (never commit credentials)
 config/database.php
+public/config/database.php
 database/seed-with-passwords.sql

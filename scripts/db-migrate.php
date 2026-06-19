@@ -2,7 +2,7 @@
 // Task 2 migration — idempotent. Checks column/table existence before every ALTER/CREATE.
 declare(strict_types=1);
 
-require_once __DIR__ . '/../config/config.php';
+require_once __DIR__ . '/config/config.php';
 
 header('Content-Type: application/json');
 
