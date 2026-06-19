@@ -18,6 +18,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Generate database.php from secrets
+        id: gen_db
         env:
           DB_HOST: ${{ secrets.DB_HOST }}
           DB_NAME: ${{ secrets.DB_NAME }}
@@ -25,7 +26,7 @@ jobs:
           DB_PASS: ${{ secrets.DB_PASSWORD }}
         run: |
           python3 - << 'PYEOF'
-          import os, sys, shutil
+          import os, sys
 
           def esc(v):
               return v.replace('\\', '\\\\').replace("'", "\\'")
@@ -36,14 +37,12 @@ jobs:
           pwd  = esc(os.environ.get('DB_PASS', ''))
 
           if not host:
-              # Secrets not set — fall back to the pre-existing public/config/database.php
-              fallback = './public/config/database.php'
-              if os.path.exists(fallback):
-                  shutil.copy(fallback, './config/database.php')
-                  sys.stdout.write("WARNING: DB_HOST secret empty — using public/config/database.php fallback\n")
-              else:
-                  sys.stdout.write("ERROR: DB_HOST secret empty and no fallback file found\n")
-                  sys.exit(1)
+              sys.stdout.write("WARNING: DB secrets not configured — skipping database.php generation.\n")
+              sys.stdout.write("Server will keep its existing database.php unchanged.\n")
+              sys.stdout.write("Fix: set DB_HOST, DB_NAME, DB_USER, DB_PASSWORD in repo secrets.\n")
+              # Write sentinel so the upload step knows to skip
+              with open('./config/.skip_db_upload', 'w') as f:
+                  f.write('1')
           else:
               php = (
                   "<?php\n"
@@ -77,6 +76,7 @@ jobs:
             **/.DS_Store
             **/Thumbs.db
             **/.htaccess.bak
+            **/config/database.php
 
       - name: Deploy includes/
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
@@ -126,6 +126,7 @@ jobs:
             **/.DS_Store
             **/Thumbs.db
             **/database.php
+            **/.skip_db_upload
 
       - name: Deploy database/ (excluding seed.sql)
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
@@ -146,11 +147,16 @@ jobs:
 
       - name: Deploy database.php via FTP
         run: |
-          curl -s --ftp-create-dirs \
-            -T "./config/database.php" \
-            -u "${{ secrets.FTP_USERNAME }}:${{ secrets.FTP_PASSWORD }}" \
-            "ftp://${{ secrets.FTP_HOST }}/cs/alex-movie-theater/config/database.php"
-          echo "Uploaded database.php"
+          if [ -f "./config/.skip_db_upload" ]; then
+            echo "Skipping database.php upload — DB secrets not configured."
+            echo "Server retains its existing database.php."
+          else
+            curl -s --ftp-create-dirs \
+              -T "./config/database.php" \
+              -u "${{ secrets.FTP_USERNAME }}:${{ secrets.FTP_PASSWORD }}" \
+              "ftp://${{ secrets.FTP_HOST }}/cs/alex-movie-theater/config/database.php"
+            echo "Uploaded database.php"
+          fi
 
       - name: Run DB init and cleanup
         run: |
