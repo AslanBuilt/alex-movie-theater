@@ -1299,12 +1299,13 @@ section { padding: 4rem 0; }
 
 .hero-eyebrow-split {
     font-size: 0.75rem;
-    letter-spacing: 0.25em;
+    letter-spacing: 0.12em;
     text-transform: uppercase;
     color: rgba(247,243,238,0.6);
     margin-bottom: 1rem;
     font-family: var(--font-body);
     font-weight: 700;
+    white-space: nowrap;
 }
 
 .hero-headline {
