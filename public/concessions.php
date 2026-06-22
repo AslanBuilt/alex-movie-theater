@@ -51,7 +51,7 @@ require __DIR__ . '/templates/header.php';
             <div class="concession-db-card">
               <?php if (!empty($item['image_path'])): ?>
                 <div class="concession-db-img">
-                  <img src="assets/<?= htmlspecialchars($item['image_path']) ?>" alt="<?= htmlspecialchars($item['name']) ?>" loading="lazy">
+                  <img src="<?= htmlspecialchars($item['image_path']) ?>" alt="<?= htmlspecialchars($item['name']) ?>" loading="lazy">
                 </div>
               <?php endif; ?>
               <div class="concession-db-body">
