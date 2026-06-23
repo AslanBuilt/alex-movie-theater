@@ -629,14 +629,14 @@ section { padding: 4rem 0; }
     padding: 4.5rem 0;
 }
 
-.page-hero--photo h1 { color: #fff; }
+.page-hero--photo h1 { color: var(--text-primary); }
 
-.page-hero--photo .subtitle { color: rgba(255,255,255,0.82); }
+.page-hero--photo .subtitle { color: var(--text-secondary); }
 
 .page-hero--photo .breadcrumb,
-.page-hero--photo .breadcrumb a { color: rgba(255,255,255,0.65); }
+.page-hero--photo .breadcrumb a { color: var(--text-secondary); }
 
-.page-hero--photo .breadcrumb a:hover { color: #fff; }
+.page-hero--photo .breadcrumb a:hover { color: var(--crimson); }
 
 .page-hero h1 {
     font-family: var(--font-display);
