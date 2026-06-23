@@ -43,9 +43,8 @@ require __DIR__ . '/templates/header.php';
           $visibleItems = array_values(array_filter($catItems, fn($i) => !empty($i['image_path'])));
           if (empty($visibleItems)) continue;
       ?>
-        <div class="section-header" style="margin-top:2.5rem;">
-          <p class="section-label">Concession Stand</p>
-          <h2 class="section-title"><?= htmlspecialchars($cat) ?></h2>
+        <div class="section-header" style="margin-top:1.75rem;">
+          <h2 class="section-title" style="font-size:1.4rem;"><?= htmlspecialchars($cat) ?></h2>
           <div class="section-divider"></div>
         </div>
 
@@ -94,9 +93,8 @@ require __DIR__ . '/templates/header.php';
         ],
       ];
       foreach ($staticMenu as $cat => $items): ?>
-        <div class="section-header" style="margin-top:2.5rem;">
-          <p class="section-label">Concession Stand</p>
-          <h2 class="section-title"><?= htmlspecialchars($cat) ?></h2>
+        <div class="section-header" style="margin-top:1.75rem;">
+          <h2 class="section-title" style="font-size:1.4rem;"><?= htmlspecialchars($cat) ?></h2>
           <div class="section-divider"></div>
         </div>
         <ul class="concession-row-list">
