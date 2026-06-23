@@ -39,32 +39,33 @@ require __DIR__ . '/templates/header.php';
 
     <?php if (!empty($categories)): ?>
 
-      <?php foreach ($categories as $cat => $catItems): ?>
+      <?php foreach ($categories as $cat => $catItems):
+          $visibleItems = array_values(array_filter($catItems, fn($i) => !empty($i['image_path'])));
+          if (empty($visibleItems)) continue;
+      ?>
         <div class="section-header" style="margin-top:2.5rem;">
           <p class="section-label">Concession Stand</p>
           <h2 class="section-title"><?= htmlspecialchars($cat) ?></h2>
           <div class="section-divider"></div>
         </div>
 
-        <div class="concession-db-grid">
-          <?php foreach ($catItems as $item): ?>
-            <div class="concession-db-card">
-              <?php if (!empty($item['image_path'])): ?>
-                <div class="concession-db-img">
-                  <img src="<?= htmlspecialchars($item['image_path']) ?>" alt="<?= htmlspecialchars($item['name']) ?>" loading="lazy">
-                </div>
-              <?php endif; ?>
-              <div class="concession-db-body">
-                <div class="concession-db-name"><?= htmlspecialchars($item['name']) ?></div>
+        <ul class="concession-row-list">
+          <?php foreach ($visibleItems as $item): ?>
+            <li class="concession-row-item">
+              <img class="concession-row-thumb" src="<?= htmlspecialchars($item['image_path']) ?>" alt="<?= htmlspecialchars($item['name']) ?>" loading="lazy">
+              <div class="concession-row-body">
+                <div class="concession-row-name"><?= htmlspecialchars($item['name']) ?></div>
                 <?php if (!empty($item['description'])): ?>
-                  <div class="concession-db-desc"><?= htmlspecialchars($item['description']) ?></div>
+                  <div class="concession-row-desc"><?= htmlspecialchars($item['description']) ?></div>
                 <?php endif; ?>
+              </div>
+              <div class="concession-row-right">
                 <div class="concession-db-price">$<?= number_format((float)$item['price'], 2) ?></div>
                 <button class="btn btn-crimson btn-add-cart" data-id="<?= (int)$item['id'] ?>">Add to Cart</button>
               </div>
-            </div>
+            </li>
           <?php endforeach; ?>
-        </div>
+        </ul>
       <?php endforeach; ?>
 
     <?php else: ?>
@@ -98,20 +99,20 @@ require __DIR__ . '/templates/header.php';
           <h2 class="section-title"><?= htmlspecialchars($cat) ?></h2>
           <div class="section-divider"></div>
         </div>
-        <div class="concession-db-grid">
+        <ul class="concession-row-list">
           <?php foreach ($items as $item): ?>
-            <div class="concession-db-card">
-              <div class="concession-db-img">
-                <img src="assets/<?= htmlspecialchars($item['img']) ?>" alt="<?= htmlspecialchars($item['name']) ?>" loading="lazy">
+            <li class="concession-row-item">
+              <img class="concession-row-thumb" src="assets/<?= htmlspecialchars($item['img']) ?>" alt="<?= htmlspecialchars($item['name']) ?>" loading="lazy">
+              <div class="concession-row-body">
+                <div class="concession-row-name"><?= htmlspecialchars($item['name']) ?></div>
+                <div class="concession-row-desc"><?= $item['desc'] ?></div>
               </div>
-              <div class="concession-db-body">
-                <div class="concession-db-name"><?= htmlspecialchars($item['name']) ?></div>
-                <div class="concession-db-desc"><?= $item['desc'] ?></div>
+              <div class="concession-row-right">
                 <div class="concession-db-price">$<?= $item['price'] ?></div>
               </div>
-            </div>
+            </li>
           <?php endforeach; ?>
-        </div>
+        </ul>
       <?php endforeach; ?>
     <?php endif; ?>
 
