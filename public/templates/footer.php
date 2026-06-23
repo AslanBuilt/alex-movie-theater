@@ -38,6 +38,34 @@
   </div>
 </footer>
 
+<!-- Cart overlay + drawer -->
+<div class="cart-overlay" id="cartOverlay" aria-hidden="true"></div>
+
+<aside class="cart-drawer" id="cartDrawer" aria-label="Shopping cart" aria-hidden="true">
+  <div class="cart-drawer-header">
+    <h2 class="cart-drawer-title">Your Order</h2>
+    <button class="cart-drawer-close" id="cartClose" aria-label="Close cart">&times;</button>
+  </div>
+  <div class="cart-drawer-body" id="cartBody">
+    <p class="cart-empty">Your cart is empty.</p>
+  </div>
+  <div class="cart-drawer-footer" id="cartFooter" style="display:none">
+    <div class="cart-total-row">
+      <span>Total</span>
+      <span id="cartTotalDisplay">$0.00</span>
+    </div>
+    <a href="checkout.php" class="btn btn-crimson" style="width:100%;display:block;text-align:center;">Proceed to Checkout</a>
+  </div>
+</aside>
+
+<!-- Mobile sticky cart bar -->
+<div class="cart-mobile-bar" id="cartMobileBar" style="display:none">
+  <button class="cart-mobile-bar-btn" id="cartMobileBarBtn">
+    <span id="cartMobileCount">0</span> item(s) &bull; <span id="cartMobileTotalDisplay">$0.00</span> &bull; <strong>View Order</strong>
+  </button>
+</div>
+
 <script src="assets/js/main.js"></script>
+<script src="assets/js/cart.js"></script>
 </body>
 </html>
