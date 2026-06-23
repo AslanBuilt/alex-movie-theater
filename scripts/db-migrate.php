@@ -247,5 +247,10 @@ if ((int)$r->fetch_row()[0] === 0) {
     $log[] = 'skip concession_options seed (has data)';
 }
 
+// ── fix concession image_path prefix ─────────────────────────────────────────
+$r = $conn->query("UPDATE concessions SET image_path = CONCAT('assets/', image_path) WHERE image_path LIKE 'images/%'");
+$fixed = $conn->affected_rows;
+$log[] = $fixed > 0 ? "fixed $fixed concession image paths" : 'skip image path fix (already correct)';
+
 $conn->close();
 echo json_encode(['status' => 'success', 'log' => $log]);
