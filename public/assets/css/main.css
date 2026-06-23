@@ -623,7 +623,6 @@ section { padding: 4rem 0; }
 }
 
 .page-hero--photo {
-    background-image: linear-gradient(rgba(0,0,0,0.52), rgba(0,0,0,0.52)), var(--hero-img);
     background-size: cover;
     background-position: center;
     border-bottom: none;

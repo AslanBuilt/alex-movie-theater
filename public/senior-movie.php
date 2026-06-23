@@ -1,11 +1,11 @@
-<?php
+﻿<?php
 $pageTitle = 'Free Senior Movie | The Alex — Alexandria, Indiana';
 $pageDescription = 'Free monthly movie screenings for seniors 55 and up at The Alex in Alexandria, Indiana. No reservation needed. Sponsored by Senior Essential Connections.';
 $currentPage = 'senior-movie';
 require __DIR__ . '/templates/header.php';
 ?>
 
-<section class="page-hero page-hero--photo" style="--hero-img: url('assets/images/hero-3.png')">
+<section class="page-hero page-hero--photo" style="background-image: linear-gradient(rgba(0,0,0,0.52),rgba(0,0,0,0.52)), url('assets/images/hero-3.png')">
   <div class="container">
     <p class="breadcrumb"><a href="index.php">Home</a><span class="sep">/</span>Senior Movie</p>
     <h1>Free Senior Movie</h1>

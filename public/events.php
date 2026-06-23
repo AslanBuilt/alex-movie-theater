@@ -1,11 +1,11 @@
-<?php
+﻿<?php
 $pageTitle = 'Events | The Alex — Alexandria, Indiana';
 $pageDescription = 'Special events at The Alex in Alexandria, Indiana. Escape room experiences, special screenings, and more.';
 $currentPage = 'events';
 require __DIR__ . '/templates/header.php';
 ?>
 
-<section class="page-hero page-hero--photo" style="--hero-img: url('assets/images/hero-2.png')">
+<section class="page-hero page-hero--photo" style="background-image: linear-gradient(rgba(0,0,0,0.52),rgba(0,0,0,0.52)), url('assets/images/hero-2.png')">
   <div class="container">
     <p class="breadcrumb"><a href="index.php">Home</a><span class="sep">/</span>Events</p>
     <h1>Events</h1>

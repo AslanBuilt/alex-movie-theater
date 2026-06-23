@@ -1,11 +1,11 @@
-<?php
+﻿<?php
 $pageTitle = 'Private Screenings & Birthday Rentals | The Alex — Alexandria, Indiana';
 $pageDescription = 'Book a private movie screening or birthday party at The Alex in Alexandria, Indiana. Affordable rental packages starting at $75.';
 $currentPage = 'private-screenings';
 require __DIR__ . '/templates/header.php';
 ?>
 
-<section class="page-hero page-hero--photo" style="--hero-img: url('assets/images/hero-3.png')">
+<section class="page-hero page-hero--photo" style="background-image: linear-gradient(rgba(0,0,0,0.52),rgba(0,0,0,0.52)), url('assets/images/hero-3.png')">
   <div class="container">
     <p class="breadcrumb"><a href="index.php">Home</a><span class="sep">/</span>Private Screenings</p>
     <h1>Private Screenings &amp; Rentals</h1>

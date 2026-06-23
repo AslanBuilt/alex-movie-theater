@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 $pageTitle = 'Concessions | The Alex — Alexandria, Indiana';
 $pageDescription = 'Enjoy concessions at The Alex. Popcorn, drinks, candy, kids\' combos and more — pre-order online or grab them at the stand.';
 $currentPage = 'concessions';
@@ -17,7 +17,7 @@ foreach ($items as $item) {
 require __DIR__ . '/templates/header.php';
 ?>
 
-<section class="page-hero page-hero--photo" style="--hero-img: url('assets/images/hero-1.png')">
+<section class="page-hero page-hero--photo" style="background-image: linear-gradient(rgba(0,0,0,0.52),rgba(0,0,0,0.52)), url('assets/images/hero-1.png')">
   <div class="container">
     <p class="breadcrumb"><a href="index.php">Home</a><span class="sep">/</span>Concessions</p>
     <h1>Concession Stand</h1>
