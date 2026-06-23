@@ -1,4 +1,4 @@
--- ============================================================================
+﻿-- ============================================================================
 -- Alex Movie Theatre — Seed Data
 -- ----------------------------------------------------------------------------
 -- Run AFTER schema.sql.
@@ -82,43 +82,43 @@ INSERT INTO `concessions` (`category`, `name`, `description`, `price`, `image_pa
 -- Combos
 ('Combos', 'Two Person Combo',
  'Large Popcorn + Two Large Drinks. Best value for two.',
- 15.50, 'images/concessions/combo-two.png', 1, 10),
+ 15.50, 'assets/images/concessions/combo-two.png', 1, 10),
 ('Combos', 'One Person Combo',
  'Medium Popcorn + Large Drink.',
- 9.50, 'images/concessions/combo-one.png', 1, 20),
+ 9.50, 'assets/images/concessions/combo-one.png', 1, 20),
 ('Combos', 'Kids Combo',
  'Popcorn + Kids Drink + Small Gummy.',
- 4.00, 'images/concessions/combo-kids.png', 1, 30),
+ 4.00, 'assets/images/concessions/combo-kids.png', 1, 30),
 -- Popcorn
 ('Popcorn', 'Large Popcorn (170oz)',
  'Fresh-popped buttered popcorn — our biggest size.',
- 7.50, 'images/concessions/popcorn-large.png', 1, 10),
+ 7.50, 'assets/images/concessions/popcorn-large.png', 1, 10),
 ('Popcorn', 'Medium Popcorn (130oz)',
  'Fresh-popped buttered popcorn — medium size.',
- 5.50, 'images/concessions/popcorn-medium.png', 1, 20),
+ 5.50, 'assets/images/concessions/popcorn-medium.png', 1, 20),
 ('Popcorn', 'Small Popcorn (85oz)',
  'Fresh-popped buttered popcorn — small size.',
- 3.50, 'images/concessions/popcorn-small.png', 1, 30),
+ 3.50, 'assets/images/concessions/popcorn-small.png', 1, 30),
 -- Drinks
 ('Drinks', 'Large Fountain (32oz)',
  'Pepsi, Mtn Dew, Dr Pepper, Diet Mtn Dew, Tropicana, Crush, Sierra Mist.',
- 4.00, 'images/concessions/drink-fountain.png', 1, 10),
+ 4.00, 'assets/images/concessions/drink-fountain.png', 1, 10),
 ('Drinks', 'Medium Fountain (20oz)',
  'Pepsi, Mtn Dew, Dr Pepper, Diet Mtn Dew, Tropicana, Crush, Sierra Mist.',
- 3.00, 'images/concessions/drink-fountain.png', 1, 20),
+ 3.00, 'assets/images/concessions/drink-fountain.png', 1, 20),
 ('Drinks', 'Bottle Drinks',
  'Water, Diet Pepsi, or Sweet Tea.',
- 2.00, 'images/concessions/drink-bottle.png', 1, 30),
+ 2.00, 'assets/images/concessions/drink-bottle.png', 1, 30),
 -- Candy
 ('Candy', 'Box Candy',
  'Reese''s Pieces, Skittles, M&M''s, Mike & Ike, Sour Patch, Whoppers, Junior Mints, Cookie Dough Bites, Milk Duds, Buncha Crunch.',
- 2.50, 'images/concessions/candy-box.png', 1, 10),
+ 2.50, 'assets/images/concessions/candy-box.png', 1, 10),
 ('Candy', 'Wrapper Candy',
  'Single-wrapper candy bars and treats.',
- 1.50, 'images/concessions/candy-box.png', 1, 20),
+ 1.50, 'assets/images/concessions/candy-box.png', 1, 20),
 ('Candy', 'Cotton Candy',
  'Classic spun cotton candy — pink & blue.',
- 3.00, 'images/concessions/candy-cotton.png', 1, 30);
+ 3.00, 'assets/images/concessions/candy-cotton.png', 1, 30);
 
 -- ----------------------------------------------------------------------------
 -- concession_options
@@ -166,7 +166,7 @@ INSERT INTO `admin_users`
     (`username`, `password_hash`, `email`, `role`, `is_active`)
 VALUES
     ('admin',
-     '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi',
+     '$2y$12$JCVY0IFPSzBgctTNI6l7dui6GxWi1IXmPw1bx9zDVZp..5MEBOtxS', /* changeme123 */
      NULL,
      'admin',
      1);
