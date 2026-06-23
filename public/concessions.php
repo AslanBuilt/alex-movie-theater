@@ -17,7 +17,7 @@ foreach ($items as $item) {
 require __DIR__ . '/templates/header.php';
 ?>
 
-<section class="page-hero page-hero--photo" style="background-image: linear-gradient(rgba(250,245,235,0.87),rgba(250,245,235,0.87)), url('assets/images/hero-1.png')">
+<section class="page-hero page-hero--utility">
   <div class="container">
     <p class="breadcrumb"><a href="index.php">Home</a><span class="sep">/</span>Concessions</p>
     <h1>Concession Stand</h1>
@@ -43,8 +43,8 @@ require __DIR__ . '/templates/header.php';
           $visibleItems = array_values(array_filter($catItems, fn($i) => !empty($i['image_path'])));
           if (empty($visibleItems)) continue;
       ?>
-        <div class="section-header" style="margin-top:1.75rem;">
-          <h2 class="section-title" style="font-size:1.4rem;"><?= htmlspecialchars($cat) ?></h2>
+        <div class="section-header concession-cat-header" style="margin-top:2rem;">
+          <h2 class="section-title"><?= htmlspecialchars($cat) ?></h2>
           <div class="section-divider"></div>
         </div>
 
@@ -93,8 +93,8 @@ require __DIR__ . '/templates/header.php';
         ],
       ];
       foreach ($staticMenu as $cat => $items): ?>
-        <div class="section-header" style="margin-top:1.75rem;">
-          <h2 class="section-title" style="font-size:1.4rem;"><?= htmlspecialchars($cat) ?></h2>
+        <div class="section-header concession-cat-header" style="margin-top:2rem;">
+          <h2 class="section-title"><?= htmlspecialchars($cat) ?></h2>
           <div class="section-divider"></div>
         </div>
         <ul class="concession-row-list">

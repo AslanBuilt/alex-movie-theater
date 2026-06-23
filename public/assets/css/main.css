@@ -622,14 +622,50 @@ section { padding: 4rem 0; }
     padding: 3rem 0;
 }
 
+/* Utility header — transactional/menu pages (no photo, compact) */
+.page-hero--utility {
+    background: var(--cream);
+    border-bottom: 2px solid var(--crimson);
+    padding: 2rem 0 1.75rem;
+}
+
+.page-hero--utility h1 {
+    font-size: clamp(1.6rem, 4vw, 2.4rem);
+}
+
+/* Photo hero — marketing/event pages */
 .page-hero--photo {
+    position: relative;
     background-size: cover;
     background-position: center;
     border-bottom: none;
-    padding: 4.5rem 0;
+    padding: 5rem 0;
+    overflow: hidden;
 }
 
-.page-hero--photo h1 { color: var(--text-primary); }
+/* Full-cover gradient scrim — darker at base for text, lighter at top for photo */
+.page-hero--photo::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+        to bottom,
+        rgba(252, 247, 238, 0.45) 0%,
+        rgba(252, 247, 238, 0.88) 50%,
+        rgba(252, 247, 238, 0.97) 100%
+    );
+    pointer-events: none;
+}
+
+.page-hero--photo .container {
+    position: relative;
+    z-index: 1;
+}
+
+.page-hero--photo h1 {
+    color: var(--text-primary);
+    text-shadow: 0 1px 2px rgba(255,255,255,0.6);
+}
 
 .page-hero--photo .subtitle { color: var(--text-secondary); }
 
@@ -2113,6 +2149,23 @@ section { padding: 4rem 0; }
     line-height: 1;
 }
 
+/* ── Concessions category accent header ── */
+.concession-cat-header {
+    border-left: 4px solid var(--crimson);
+    padding-left: 0.75rem;
+    margin-bottom: 0.25rem;
+}
+
+.concession-cat-header .section-title {
+    font-size: 1.35rem;
+    margin-bottom: 0;
+}
+
+.concession-cat-header .section-divider {
+    margin-bottom: 0.75rem;
+    margin-top: 0.4rem;
+}
+
 /* ── Concessions row list ── */
 .concession-row-list {
     list-style: none;
@@ -2125,8 +2178,14 @@ section { padding: 4rem 0; }
     display: flex;
     align-items: center;
     gap: 1.25rem;
-    padding: 1rem 0.5rem;
+    padding: 1rem 0.75rem;
     border-bottom: 1px solid var(--border);
+    border-radius: 6px;
+    transition: background-color 0.15s ease;
+}
+
+.concession-row-item:hover {
+    background-color: rgba(155, 17, 30, 0.04);
 }
 
 .concession-row-item:last-child { border-bottom: none; }
