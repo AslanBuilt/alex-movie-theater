@@ -1,4 +1,5 @@
 ﻿<?php
+require_once __DIR__ . '/config/config.php';
 $pageTitle = 'Location & Contact | The Alex — Alexandria, Indiana';
 $pageDescription = 'Find The Alex at 407 N. Harrison Street, Alexandria, Indiana 46001. Directions, parking, phone, and contact form.';
 $currentPage = 'location';

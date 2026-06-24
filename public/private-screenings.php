@@ -1,4 +1,5 @@
 ﻿<?php
+require_once __DIR__ . '/config/config.php';
 $pageTitle = 'Private Screenings & Birthday Rentals | The Alex — Alexandria, Indiana';
 $pageDescription = 'Book a private movie screening or birthday party at The Alex in Alexandria, Indiana. Affordable rental packages starting at $75.';
 $currentPage = 'private-screenings';

@@ -1,4 +1,5 @@
 ﻿<?php
+require_once __DIR__ . '/config/config.php';
 $pageTitle = 'Events | The Alex — Alexandria, Indiana';
 $pageDescription = 'Special events at The Alex in Alexandria, Indiana. Escape room experiences, special screenings, and more.';
 $currentPage = 'events';

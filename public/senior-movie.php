@@ -1,4 +1,5 @@
 ﻿<?php
+require_once __DIR__ . '/config/config.php';
 $pageTitle = 'Free Senior Movie | The Alex — Alexandria, Indiana';
 $pageDescription = 'Free monthly movie screenings for seniors 55 and up at The Alex in Alexandria, Indiana. No reservation needed. Sponsored by Senior Essential Connections.';
 $currentPage = 'senior-movie';

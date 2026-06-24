@@ -16,7 +16,27 @@
     var mobileTotalEl = document.getElementById('cartMobileTotalDisplay');
     var totalEl     = document.getElementById('cartTotalDisplay');
 
+    var toast       = document.getElementById('cartToast');
+    var toastText   = document.getElementById('cartToastText');
+    var toastView   = document.getElementById('cartToastView');
+    var toastTimer  = null;
+
     if (!drawer) return;
+
+    // ── Toast ─────────────────────────────────────────────────────
+    function showToast(name) {
+        if (!toast) return;
+        if (toastText) toastText.textContent = '“' + name + '” added to cart';
+        toast.classList.add('show');
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(function () { toast.classList.remove('show'); }, 3000);
+    }
+    if (toastView) {
+        toastView.addEventListener('click', function () {
+            toast.classList.remove('show');
+            openDrawer();
+        });
+    }
 
     // ── Open / close ──────────────────────────────────────────────
     function openDrawer() {
@@ -121,13 +141,16 @@
         fd.append('id', btn.dataset.id);
         fd.append('qty', '1');
 
+        var itemName = btn.dataset.name || btn.closest('[data-name]')
+                        && btn.closest('[data-name]').dataset.name || 'Item';
+
         fetch(API, { method: 'POST', body: fd })
             .then(function (r) { return r.json(); })
             .then(function (data) {
                 renderCart(data);
                 btn.textContent = '✓ Added';
                 btn.classList.add('added');
-                openDrawer();
+                showToast(itemName);
                 setTimeout(function () {
                     btn.textContent = origText;
                     btn.classList.remove('added');

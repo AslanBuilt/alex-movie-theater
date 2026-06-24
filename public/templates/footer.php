@@ -1,5 +1,12 @@
 </main>
 
+<!-- Cart toast -->
+<div class="cart-toast" id="cartToast" role="status" aria-live="polite">
+  <span class="cart-toast-icon">🛒</span>
+  <span class="cart-toast-text" id="cartToastText">Added to cart</span>
+  <button class="cart-toast-action" id="cartToastView">View cart</button>
+</div>
+
 <footer class="footer">
   <div class="container">
     <div class="footer-grid">

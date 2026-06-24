@@ -60,7 +60,7 @@ require __DIR__ . '/templates/header.php';
               </div>
               <div class="concession-row-right">
                 <div class="concession-db-price">$<?= number_format((float)$item['price'], 2) ?></div>
-                <button class="btn btn-crimson btn-add-cart" data-id="<?= (int)$item['id'] ?>">Add to Cart</button>
+                <button class="btn btn-crimson btn-add-cart" data-id="<?= (int)$item['id'] ?>" data-name="<?= htmlspecialchars($item['name']) ?>">Add to Cart</button>
               </div>
             </li>
           <?php endforeach; ?>
