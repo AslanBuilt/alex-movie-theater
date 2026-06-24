@@ -30,9 +30,11 @@ RewriteRule ^([^\.]+)$ $1.php [NC,L]
     Require all denied
 </Files>
 
-# Block direct access to includes
+# Block direct access to sensitive directories
 RewriteRule ^includes/ - [F,L]
 RewriteRule ^database/ - [F,L]
+RewriteRule ^config/ - [F,L]
+RewriteRule ^logs/ - [F,L]
 
 <IfModule mod_headers.c>
     Header always set X-Frame-Options "SAMEORIGIN"

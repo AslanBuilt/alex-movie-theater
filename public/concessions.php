@@ -40,19 +40,20 @@ require __DIR__ . '/templates/header.php';
 
     <?php if (!empty($categories)): ?>
 
-      <?php foreach ($categories as $cat => $catItems):
-          $visibleItems = array_values(array_filter($catItems, fn($i) => !empty($i['image_path'])));
-          if (empty($visibleItems)) continue;
-      ?>
+      <?php foreach ($categories as $cat => $catItems): ?>
         <div class="section-header concession-cat-header" style="margin-top:2rem;">
           <h2 class="section-title"><?= htmlspecialchars($cat) ?></h2>
           <div class="section-divider"></div>
         </div>
 
         <ul class="concession-row-list">
-          <?php foreach ($visibleItems as $item): ?>
+          <?php foreach ($catItems as $item): ?>
             <li class="concession-row-item">
-              <img class="concession-row-thumb" src="<?= htmlspecialchars($item['image_path']) ?>" alt="<?= htmlspecialchars($item['name']) ?>" loading="lazy">
+              <?php if (!empty($item['image_path'])): ?>
+                <img class="concession-row-thumb" src="assets/<?= htmlspecialchars($item['image_path']) ?>" alt="<?= htmlspecialchars($item['name']) ?>" loading="lazy">
+              <?php else: ?>
+                <div class="concession-row-thumb concession-row-thumb--placeholder"></div>
+              <?php endif; ?>
               <div class="concession-row-body">
                 <div class="concession-row-name"><?= htmlspecialchars($item['name']) ?></div>
                 <?php if (!empty($item['description'])): ?>
