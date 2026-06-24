@@ -5,6 +5,29 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title><?= htmlspecialchars($pageTitle ?? 'The Alex — Alexandria, Indiana') ?></title>
 <meta name="description" content="<?= htmlspecialchars($pageDescription ?? '') ?>">
+<?php
+$_ogTitle = $pageTitle       ?? 'The Alex — Alexandria, Indiana';
+$_ogDesc  = $pageDescription ?? 'Your neighborhood two-screen movie theater in Alexandria, Indiana. Adults $5, Children $3.';
+$_ogImg   = $ogImage         ?? SITE_URL . 'assets/images/hero-1.webp';
+$_ogUrl   = SITE_URL . basename($_SERVER['PHP_SELF'] ?? 'index.php');
+?>
+<meta property="og:type"        content="website">
+<meta property="og:site_name"   content="<?= htmlspecialchars(SITE_NAME) ?>">
+<meta property="og:title"       content="<?= htmlspecialchars($_ogTitle) ?>">
+<meta property="og:description" content="<?= htmlspecialchars($_ogDesc) ?>">
+<meta property="og:url"         content="<?= htmlspecialchars($_ogUrl) ?>">
+<meta property="og:image"       content="<?= htmlspecialchars($_ogImg) ?>">
+<meta name="twitter:card"       content="summary_large_image">
+<meta name="twitter:title"      content="<?= htmlspecialchars($_ogTitle) ?>">
+<meta name="twitter:description" content="<?= htmlspecialchars($_ogDesc) ?>">
+<meta name="twitter:image"      content="<?= htmlspecialchars($_ogImg) ?>">
+<?php if (defined('GA_MEASUREMENT_ID') && GA_MEASUREMENT_ID !== ''): ?>
+<script async src="https://www.googletagmanager.com/gtag/js?id=<?= GA_MEASUREMENT_ID ?>"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','<?= GA_MEASUREMENT_ID ?>');</script>
+<?php endif; ?>
+<?php if (defined('FB_PIXEL_ID') && FB_PIXEL_ID !== ''): ?>
+<script>!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');fbq('init','<?= FB_PIXEL_ID ?>');fbq('track','PageView');</script>
+<?php endif; ?>
 <link rel="icon" type="image/svg+xml" href="assets/images/favicon.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>

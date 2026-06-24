@@ -21,6 +21,9 @@ if ($movie === null) {
     $pageDescription = $movie['description']
         ? htmlspecialchars(substr($movie['description'], 0, 155))
         : 'Now showing at The Alex in Alexandria, Indiana.';
+    $ogImage = !empty($movie['poster_path'])
+        ? SITE_URL . 'assets/' . ltrim($movie['poster_path'], '/')
+        : null;
 }
 
 require __DIR__ . '/templates/header.php';
