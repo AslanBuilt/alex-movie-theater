@@ -2552,35 +2552,41 @@ section { padding: 4rem 0; }
 
 .cart-icon-btn {
     position: relative;
-    background: none;
+    background: var(--crimson);
     border: none;
     cursor: pointer;
-    padding: 0.35rem 0.5rem;
+    padding: 0.38rem 0.85rem 0.38rem 0.65rem;
     display: flex;
     align-items: center;
-    color: var(--text-secondary);
-    border-radius: 3px;
-    transition: color 0.2s;
+    gap: 0.4rem;
+    color: #fff;
+    border-radius: 20px;
+    font-family: var(--font-body);
+    font-size: 0.82rem;
+    font-weight: 700;
+    letter-spacing: 0.01em;
+    transition: background 0.2s, transform 0.15s;
+    white-space: nowrap;
 }
-.cart-icon-btn:hover { color: var(--crimson); }
+.cart-icon-btn:hover { background: var(--crimson-dark); }
+.cart-icon-btn:active { transform: scale(0.97); }
 .cart-icon-btn svg {
     display: block;
-    width: 22px;
-    height: 22px;
+    width: 17px;
+    height: 17px;
     stroke: currentColor;
     fill: none;
-    stroke-width: 1.8;
+    stroke-width: 2;
     stroke-linecap: round;
     stroke-linejoin: round;
+    flex-shrink: 0;
 }
+.cart-icon-btn .cart-btn-label { display: inline; }
 .cart-badge {
-    position: absolute;
-    top: -2px;
-    right: -4px;
-    background: var(--crimson);
-    color: #fff;
-    font-size: 0.62rem;
-    font-weight: 700;
+    background: #fff;
+    color: var(--crimson);
+    font-size: 0.65rem;
+    font-weight: 900;
     font-family: var(--font-body);
     line-height: 1;
     min-width: 16px;

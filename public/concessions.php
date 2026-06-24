@@ -2,6 +2,7 @@
 $pageTitle = 'Concessions | The Alex — Alexandria, Indiana';
 $pageDescription = 'Enjoy concessions at The Alex. Popcorn, drinks, candy, kids\' combos and more — pre-order online or grab them at the stand.';
 $currentPage = 'concessions';
+$showCart = true;
 require_once __DIR__ . '/config/config.php';
 require_once INCLUDES_PATH . '/Database.php';
 require_once INCLUDES_PATH . '/ConcessionRepo.php';

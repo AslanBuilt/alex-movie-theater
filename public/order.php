@@ -2,6 +2,7 @@
 declare(strict_types=1);
 
 $currentPage = 'concessions';
+$showCart = true;
 require_once __DIR__ . '/config/config.php';
 require_once INCLUDES_PATH . '/Database.php';
 require_once INCLUDES_PATH . '/ConcessionRepo.php';
