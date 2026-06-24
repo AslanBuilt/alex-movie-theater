@@ -1859,11 +1859,12 @@ section { padding: 4rem 0; }
     object-fit: cover;
     object-position: center top;
     display: block;
+    transform: translateZ(0);
     transition: transform 0.35s ease;
 }
 
 .poster-card:hover .poster-img-wrap img {
-    transform: scale(1.04);
+    transform: translateZ(0) scale(1.04);
 }
 
 .poster-img-wrap .screen-badge {
