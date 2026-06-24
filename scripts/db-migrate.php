@@ -258,7 +258,7 @@ $fixed = $conn->affected_rows;
 $log[] = $fixed > 0 ? "converted $fixed concession image paths to .webp" : 'skip concession .webp conversion (already done)';
 
 // ── convert movie poster_path from .jpg to .webp (skip sheep) ────────────────
-$r = $conn->query("UPDATE movies SET poster_path = REPLACE(poster_path, '.jpg', '.webp') WHERE poster_path LIKE '%.jpg' AND poster_path NOT LIKE '%sheep%'");
+$r = $conn->query("UPDATE movies SET poster_path = REPLACE(poster_path, '.jpg', '.webp') WHERE poster_path LIKE '%.jpg'");
 $fixed = $conn->affected_rows;
 $log[] = $fixed > 0 ? "converted $fixed movie poster paths to .webp" : 'skip movie .webp conversion (already done or no .jpg paths)';
 

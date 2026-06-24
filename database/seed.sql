@@ -20,7 +20,7 @@ VALUES
     (1, 'Star Wars: The Mandalorian & Grogu', 'PG-13', 'large', 'images/starwars.webp',
      'The Mandalorian and Grogu return for a new big-screen adventure.',
      'now_showing', 0, 10),
-    (2, 'The Sheep Detectives', 'PG', 'small', 'images/sheep.jpg',
+    (2, 'The Sheep Detectives', 'PG', 'small', 'images/sheep.webp',
      'A family-friendly animated mystery — small screen only, tickets must be purchased online.',
      'now_showing', 1, 20);
 

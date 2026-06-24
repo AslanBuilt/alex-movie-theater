@@ -110,7 +110,7 @@ require __DIR__ . '/templates/header.php';
               <a href="movie.php?id=2" class="poster-link">
                 <div class="poster-img-wrap">
                   <span class="screen-badge">Small Screen</span>
-                  <img src="assets/images/sheep.jpg" alt="The Sheep Detectives" loading="lazy">
+                  <img src="assets/images/sheep.webp" alt="The Sheep Detectives" loading="lazy">
                   <div class="poster-overlay">
                     <span class="poster-rating-badge">PG</span>
                     <h3 class="poster-title">The Sheep Detectives</h3>
