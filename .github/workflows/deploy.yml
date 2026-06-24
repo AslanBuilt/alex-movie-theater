@@ -59,6 +59,13 @@ jobs:
               sys.stdout.write("Generated public/config/database.php from secrets\n")
           PYEOF
 
+      - name: Clear FTP deploy cache (force full re-upload)
+        run: |
+          curl -s \
+            -u "${{ secrets.FTP_USERNAME }}:${{ secrets.FTP_PASSWORD }}" \
+            -Q "DELE /cs/alex-movie-theater/.ftp-deploy-sync-state.json" \
+            "ftp://${{ secrets.FTP_HOST }}" || true
+
       - name: Deploy public/ to web root
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
