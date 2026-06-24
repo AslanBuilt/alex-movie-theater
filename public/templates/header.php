@@ -16,7 +16,7 @@
 <header class="navbar">
   <div class="container">
     <a href="index.php" class="navbar-brand">
-      <img src="assets/images/logo.jpg" alt="The Alex logo" class="brand-logo" width="44" height="44">
+      <img src="assets/images/logo.webp" alt="The Alex logo" class="brand-logo" width="44" height="44">
       <span class="brand-name">The Alex</span>
     </a>
     <button class="nav-toggle" aria-label="Toggle navigation" aria-expanded="false">

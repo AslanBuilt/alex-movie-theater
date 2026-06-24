@@ -6,18 +6,18 @@ require_once INCLUDES_PATH . '/Database.php';
 AdminAuth::requireLogin();
 
 $updates = [
-    'Two Person Combo'       => 'assets/images/concessions/combo-two.png',
-    'One Person Combo'       => 'assets/images/concessions/combo-one.png',
-    'Kids Combo'             => 'assets/images/concessions/combo-kids.png',
-    'Large Popcorn (170oz)'  => 'assets/images/concessions/popcorn-large.png',
-    'Medium Popcorn (130oz)' => 'assets/images/concessions/popcorn-medium.png',
-    'Small Popcorn (85oz)'   => 'assets/images/concessions/popcorn-small.png',
-    'Large Fountain (32oz)'  => 'assets/images/concessions/drink-fountain.png',
-    'Medium Fountain (20oz)' => 'assets/images/concessions/drink-fountain.png',
-    'Bottle Drinks'          => 'assets/images/concessions/drink-bottle.png',
-    'Box Candy'              => 'assets/images/concessions/candy-box.png',
-    'Wrapper Candy'          => 'assets/images/concessions/candy-box.png',
-    'Cotton Candy'           => 'assets/images/concessions/candy-cotton.png',
+    'Two Person Combo'       => 'assets/images/concessions/combo-two.webp',
+    'One Person Combo'       => 'assets/images/concessions/combo-one.webp',
+    'Kids Combo'             => 'assets/images/concessions/combo-kids.webp',
+    'Large Popcorn (170oz)'  => 'assets/images/concessions/popcorn-large.webp',
+    'Medium Popcorn (130oz)' => 'assets/images/concessions/popcorn-medium.webp',
+    'Small Popcorn (85oz)'   => 'assets/images/concessions/popcorn-small.webp',
+    'Large Fountain (32oz)'  => 'assets/images/concessions/drink-fountain.webp',
+    'Medium Fountain (20oz)' => 'assets/images/concessions/drink-fountain.webp',
+    'Bottle Drinks'          => 'assets/images/concessions/drink-bottle.webp',
+    'Box Candy'              => 'assets/images/concessions/candy-box.webp',
+    'Wrapper Candy'          => 'assets/images/concessions/candy-box.webp',
+    'Cotton Candy'           => 'assets/images/concessions/candy-cotton.webp',
 ];
 
 $db = Database::getInstance();

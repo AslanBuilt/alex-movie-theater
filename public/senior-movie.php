@@ -5,7 +5,7 @@ $currentPage = 'senior-movie';
 require __DIR__ . '/templates/header.php';
 ?>
 
-<section class="page-hero page-hero--photo" style="background-image: linear-gradient(rgba(250,245,235,0.87),rgba(250,245,235,0.87)), url('assets/images/hero-3.png')">
+<section class="page-hero page-hero--photo" style="background-image: linear-gradient(rgba(250,245,235,0.87),rgba(250,245,235,0.87)), url('assets/images/hero-3.webp')">
   <div class="container">
     <p class="breadcrumb"><a href="index.php">Home</a><span class="sep">/</span>Senior Movie</p>
     <h1>Free Senior Movie</h1>
@@ -19,7 +19,7 @@ require __DIR__ . '/templates/header.php';
     <div class="senior-badge">Free Admission &bull; Ages 55 &amp; Up &bull; Sponsored by Senior Essential Connections</div>
 
     <div class="senior-banner">
-      <img src="assets/images/hero-3.png" alt="The Alex auditorium interior" loading="lazy">
+      <img src="assets/images/hero-3.webp" alt="The Alex auditorium interior" loading="lazy">
     </div>
 
     <div class="section-header">

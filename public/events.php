@@ -5,7 +5,7 @@ $currentPage = 'events';
 require __DIR__ . '/templates/header.php';
 ?>
 
-<section class="page-hero page-hero--photo" style="background-image: linear-gradient(rgba(250,245,235,0.87),rgba(250,245,235,0.87)), url('assets/images/hero-2.png')">
+<section class="page-hero page-hero--photo" style="background-image: linear-gradient(rgba(250,245,235,0.87),rgba(250,245,235,0.87)), url('assets/images/hero-2.webp')">
   <div class="container">
     <p class="breadcrumb"><a href="index.php">Home</a><span class="sep">/</span>Events</p>
     <h1>Events</h1>
@@ -25,7 +25,7 @@ require __DIR__ . '/templates/header.php';
     <div class="event-feature-card">
       <div class="event-feature-img">
         <span class="screen-badge" style="background:var(--crimson-dark); z-index:2; top:0.75rem; left:0.75rem; right:auto;">Coming Soon</span>
-        <img src="assets/images/escape-room.png" alt="Escape From The Lockdown Theatre" loading="lazy">
+        <img src="assets/images/escape-room.webp" alt="Escape From The Lockdown Theatre" loading="lazy">
       </div>
       <div class="event-feature-body">
         <h2>Escape From The &ldquo;Lockdown Theatre&rdquo;</h2>

@@ -16,16 +16,16 @@ require __DIR__ . '/templates/header.php';
   <div class="photo-slideshow hero-slideshow">
     <div class="slideshow-track">
       <div class="slideshow-slide active">
-        <img src="assets/images/hero-4.png" alt="Classic white Chevelle outside the The Alex" loading="eager">
+        <img src="assets/images/hero-4.webp" alt="Classic white Chevelle outside the The Alex" loading="eager">
       </div>
       <div class="slideshow-slide">
-        <img src="assets/images/hero-1.png" alt="The Alex exterior, daytime" loading="eager">
+        <img src="assets/images/hero-1.webp" alt="The Alex exterior, daytime" loading="eager">
       </div>
       <div class="slideshow-slide">
-        <img src="assets/images/hero-2.png" alt="The Alex at night with neon sign" loading="lazy">
+        <img src="assets/images/hero-2.webp" alt="The Alex at night with neon sign" loading="lazy">
       </div>
       <div class="slideshow-slide">
-        <img src="assets/images/hero-3.png" alt="The Alex auditorium interior" loading="lazy">
+        <img src="assets/images/hero-3.webp" alt="The Alex auditorium interior" loading="lazy">
       </div>
     </div>
     <button class="slideshow-btn slideshow-btn-prev" aria-label="Previous photo">&#8249;</button>
@@ -98,7 +98,7 @@ require __DIR__ . '/templates/header.php';
               <a href="movie.php?id=1" class="poster-link">
                 <div class="poster-img-wrap">
                   <span class="screen-badge">Large Screen</span>
-                  <img src="assets/images/starwars.jpg" alt="Star Wars: The Mandalorian &amp; Grogu" loading="eager">
+                  <img src="assets/images/starwars.webp" alt="Star Wars: The Mandalorian &amp; Grogu" loading="eager">
                   <div class="poster-overlay">
                     <span class="poster-rating-badge">PG-13</span>
                     <h3 class="poster-title">Star Wars: The Mandalorian &amp; Grogu</h3>
