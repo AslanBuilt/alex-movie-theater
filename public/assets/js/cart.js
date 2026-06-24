@@ -18,25 +18,23 @@
 
     var toast       = document.getElementById('cartToast');
     var toastText   = document.getElementById('cartToastText');
-    var toastView   = document.getElementById('cartToastView');
+    var fab         = document.getElementById('cartFab');
+    var fabCount    = document.getElementById('cartFabCount');
     var toastTimer  = null;
 
     if (!drawer) return;
 
     // ── Toast ─────────────────────────────────────────────────────
-    function showToast(name) {
+    function showToast(name, totalCount) {
         if (!toast) return;
-        if (toastText) toastText.textContent = '“' + name + '” added to cart';
+        var countStr = totalCount > 0 ? ' · ' + totalCount + ' in cart' : '';
+        if (toastText) toastText.textContent = name + ' added' + countStr;
         toast.classList.add('show');
         clearTimeout(toastTimer);
-        toastTimer = setTimeout(function () { toast.classList.remove('show'); }, 3000);
+        toastTimer = setTimeout(function () { toast.classList.remove('show'); }, 2500);
     }
-    if (toastView) {
-        toastView.addEventListener('click', function () {
-            toast.classList.remove('show');
-            openDrawer();
-        });
-    }
+
+    if (fab) fab.addEventListener('click', openDrawer);
 
     // ── Open / close ──────────────────────────────────────────────
     function openDrawer() {
@@ -78,6 +76,10 @@
         if (badge) {
             badge.textContent = count;
             badge.style.display = count > 0 ? 'flex' : 'none';
+        }
+        if (fab) {
+            fab.style.display = count > 0 ? 'flex' : 'none';
+            if (fabCount) fabCount.textContent = count;
         }
         if (mobileBar)     mobileBar.style.display = count > 0 ? 'block' : 'none';
         if (mobileCount)   mobileCount.textContent = count;
@@ -150,7 +152,7 @@
                 renderCart(data);
                 btn.textContent = '✓ Added';
                 btn.classList.add('added');
-                showToast(itemName);
+                showToast(itemName, data.count || 0);
                 setTimeout(function () {
                     btn.textContent = origText;
                     btn.classList.remove('added');

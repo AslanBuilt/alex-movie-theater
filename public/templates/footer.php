@@ -2,10 +2,15 @@
 
 <!-- Cart toast -->
 <div class="cart-toast" id="cartToast" role="status" aria-live="polite">
-  <span class="cart-toast-icon">🛒</span>
+  <span class="cart-toast-icon">✓</span>
   <span class="cart-toast-text" id="cartToastText">Added to cart</span>
-  <button class="cart-toast-action" id="cartToastView">View cart</button>
 </div>
+
+<!-- Mobile floating cart button (fixed, only on purchase pages) -->
+<button class="cart-fab" id="cartFab" aria-label="View cart" style="display:none">
+  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+  <span class="cart-fab-count" id="cartFabCount">0</span>
+</button>
 
 <footer class="footer">
   <div class="container">
