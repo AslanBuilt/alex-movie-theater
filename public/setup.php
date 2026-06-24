@@ -20,10 +20,11 @@ $pdo = new PDO(
 
 $log = [];
 
-// 1. Fix admin password to "changeme123"
-$hash = password_hash('changeme123', PASSWORD_BCRYPT);
+// 1. Generate a random admin password and set it
+$generatedPassword = bin2hex(random_bytes(10));
+$hash = password_hash($generatedPassword, PASSWORD_BCRYPT, ['cost' => 12]);
 $pdo->prepare("UPDATE admin_users SET password_hash = ? WHERE username = 'admin'")->execute([$hash]);
-$log[] = "Admin password reset to: changeme123";
+$log[] = "Admin password reset — see credentials below";
 
 // 2. Fix concession image paths (images/ -> assets/images/)
 $images = [
@@ -66,7 +67,7 @@ $log[] = "Image paths updated: $total rows";
 </ul>
 <p><em>This script has deleted itself.</em></p>
 <p>
-  <a href="admin/">Go to admin login</a> &mdash; use <strong>admin / changeme123</strong><br>
+  <a href="admin/">Go to admin login</a> &mdash; use <strong>admin / <?= htmlspecialchars($generatedPassword) ?></strong> (copy this now — it won't be shown again)<br>
   <a href="concessions.php">Check concessions page</a>
 </p>
 </body></html>

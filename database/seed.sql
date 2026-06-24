@@ -4,9 +4,9 @@
 -- Run AFTER schema.sql.
 --
 -- !!! IMPORTANT !!!
--- The default admin user below has username "admin" and password "changeme123"
--- (bcrypt hash included). You MUST log in and change this password on first
--- login. Do not deploy this seed to production without rotating the password.
+-- The default admin user below has username "admin" and a random seed password.
+-- Run public/setup.php on first deploy to reset the admin password and get
+-- the generated credentials. NEVER use this seed hash as a permanent password.
 -- ============================================================================
 
 SET NAMES utf8mb4;
@@ -160,13 +160,13 @@ UPDATE `concessions` SET `stock_quantity` = 20, `reorder_point` = 5   WHERE `id`
 -- ----------------------------------------------------------------------------
 -- admin_users
 -- ----------------------------------------------------------------------------
--- Default credentials: admin / changeme123
+-- Default credentials: admin / (see setup.php output on first deploy)
 -- CHANGE THIS PASSWORD ON FIRST LOGIN.
 INSERT INTO `admin_users`
     (`username`, `password_hash`, `email`, `role`, `is_active`)
 VALUES
     ('admin',
-     '$2y$12$JCVY0IFPSzBgctTNI6l7dui6GxWi1IXmPw1bx9zDVZp..5MEBOtxS', /* changeme123 */
+     '$2y$12$db5eLerfIdvCnf1tRZuE5.Tf1bjOJi5ivTTy88bj3Cg6TsGws9X92', /* run setup.php to get credentials */
      NULL,
      'admin',
      1);
