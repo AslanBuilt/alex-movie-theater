@@ -1,7 +1,7 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://parityrfp.com/cs/alex-movie-theater/sitemap.xml
+Sitemap: https://parityrfp.com/cs/alex-movie-theater/sitemap.php
 
 User-agent: GPTBot
 Allow: /
