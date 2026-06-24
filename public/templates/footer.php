@@ -55,18 +55,28 @@
 
 <aside class="cart-drawer" id="cartDrawer" aria-label="Shopping cart" aria-hidden="true">
   <div class="cart-drawer-header">
-    <h2 class="cart-drawer-title">Your Order</h2>
-    <button class="cart-drawer-close" id="cartClose" aria-label="Close cart">&times;</button>
+    <div class="cart-drawer-title-group">
+      <h2 class="cart-drawer-title">Your Order</h2>
+      <span class="cart-drawer-count" id="cartItemCount">0 items</span>
+    </div>
+    <button class="cart-drawer-close" id="cartClose" aria-label="Close cart">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
   </div>
   <div class="cart-drawer-body" id="cartBody">
-    <p class="cart-empty">Your cart is empty.</p>
+    <div class="cart-empty">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+      <p>Your cart is empty</p>
+      <span>Add something from the concessions menu</span>
+    </div>
   </div>
   <div class="cart-drawer-footer" id="cartFooter" style="display:none">
     <div class="cart-total-row">
-      <span>Total</span>
+      <span>Subtotal</span>
       <span id="cartTotalDisplay">$0.00</span>
     </div>
-    <a href="checkout.php" class="btn btn-crimson" style="width:100%;display:block;text-align:center;">Proceed to Checkout</a>
+    <a href="checkout.php" class="btn btn-crimson cart-checkout-btn">Proceed to Checkout</a>
+    <button class="cart-continue-btn" id="cartContinue">Continue Shopping</button>
   </div>
 </aside>
 

@@ -93,6 +93,23 @@ switch ($action) {
         echo json_encode(cartPayload());
         break;
 
+    case 'update':
+        $id  = (int)($_POST['id'] ?? 0);
+        $qty = max(0, (int)($_POST['qty'] ?? 0));
+        $opt = isset($_POST['option']) && $_POST['option'] !== '' ? $_POST['option'] : null;
+        $cart = $_SESSION['cart'] ?? [];
+        if ($qty === 0) {
+            $cart = array_values(array_filter($cart, fn($e) => !((int)$e['id'] === $id && ($e['option'] ?? null) === $opt)));
+        } else {
+            foreach ($cart as &$e) {
+                if ((int)$e['id'] === $id && ($e['option'] ?? null) === $opt) { $e['qty'] = $qty; break; }
+            }
+            unset($e);
+        }
+        $_SESSION['cart'] = $cart;
+        echo json_encode(cartPayload());
+        break;
+
     case 'remove':
         $id  = (int)($_POST['id'] ?? 0);
         $opt = isset($_POST['option']) && $_POST['option'] !== '' ? $_POST['option'] : null;
