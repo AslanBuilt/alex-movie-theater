@@ -40,8 +40,7 @@ jobs:
               sys.stdout.write("WARNING: DB secrets not configured — skipping database.php generation.\n")
               sys.stdout.write("Server will keep its existing database.php unchanged.\n")
               sys.stdout.write("Fix: set DB_HOST, DB_NAME, DB_USER, DB_PASSWORD in repo secrets.\n")
-              # Write sentinel so the upload step knows to skip
-              with open('./config/.skip_db_upload', 'w') as f:
+              with open('/tmp/.skip_db_upload', 'w') as f:
                   f.write('1')
           else:
               php = (
@@ -55,9 +54,9 @@ jobs:
                   "    'charset'  => 'utf8mb4',\n"
                   "];\n"
               )
-              with open('./config/database.php', 'w') as f:
+              with open('./public/config/database.php', 'w') as f:
                   f.write(php)
-              sys.stdout.write("Generated config/database.php from secrets\n")
+              sys.stdout.write("Generated public/config/database.php from secrets\n")
           PYEOF
 
       - name: Deploy public/ to web root
@@ -78,56 +77,6 @@ jobs:
             **/.htaccess.bak
             **/config/database.php
 
-      - name: Deploy includes/
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
-        with:
-          server: ${{ secrets.FTP_HOST }}
-          username: ${{ secrets.FTP_USERNAME }}
-          password: ${{ secrets.FTP_PASSWORD }}
-          protocol: ftp
-          port: 21
-          local-dir: ./includes/
-          server-dir: /cs/alex-movie-theater/includes/
-          exclude: |
-            **/.git*
-            **/.git*/**
-            **/.DS_Store
-            **/Thumbs.db
-
-      - name: Deploy templates/
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
-        with:
-          server: ${{ secrets.FTP_HOST }}
-          username: ${{ secrets.FTP_USERNAME }}
-          password: ${{ secrets.FTP_PASSWORD }}
-          protocol: ftp
-          port: 21
-          local-dir: ./templates/
-          server-dir: /cs/alex-movie-theater/templates/
-          exclude: |
-            **/.git*
-            **/.git*/**
-            **/.DS_Store
-            **/Thumbs.db
-
-      - name: Deploy config/ (excluding database.php)
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
-        with:
-          server: ${{ secrets.FTP_HOST }}
-          username: ${{ secrets.FTP_USERNAME }}
-          password: ${{ secrets.FTP_PASSWORD }}
-          protocol: ftp
-          port: 21
-          local-dir: ./config/
-          server-dir: /cs/alex-movie-theater/config/
-          exclude: |
-            **/.git*
-            **/.git*/**
-            **/.DS_Store
-            **/Thumbs.db
-            **/database.php
-            **/.skip_db_upload
-
       - name: Deploy database/ (excluding seed.sql)
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
@@ -147,12 +96,12 @@ jobs:
 
       - name: Deploy database.php via FTP
         run: |
-          if [ -f "./config/.skip_db_upload" ]; then
+          if [ -f "/tmp/.skip_db_upload" ]; then
             echo "Skipping database.php upload — DB secrets not configured."
             echo "Server retains its existing database.php."
           else
             curl -s --ftp-create-dirs \
-              -T "./config/database.php" \
+              -T "./public/config/database.php" \
               -u "${{ secrets.FTP_USERNAME }}:${{ secrets.FTP_PASSWORD }}" \
               "ftp://${{ secrets.FTP_HOST }}/cs/alex-movie-theater/config/database.php"
             echo "Uploaded database.php"
