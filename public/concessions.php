@@ -34,8 +34,8 @@ require __DIR__ . '/templates/header.php';
     </div>
 
     <div style="text-align:center; margin-bottom:3rem;">
-      <a href="order.php" class="btn btn-crimson" style="font-size:1rem;">Pre-Order for Pick-Up</a>
-      <p class="text-secondary" style="margin-top:0.75rem; font-size:0.9rem;">Order now, pay and collect at the stand &mdash; no wait.</p>
+      <button type="button" class="btn btn-crimson js-open-cart" style="font-size:1rem;">Add Items &amp; Order Online</button>
+      <p class="text-secondary" style="margin-top:0.75rem; font-size:0.9rem;">Add anything below to your cart, pay securely online, and pick it up ready at the stand.</p>
     </div>
 
     <?php if (!empty($categories)): ?>
@@ -50,7 +50,7 @@ require __DIR__ . '/templates/header.php';
           <?php foreach ($catItems as $item): ?>
             <li class="concession-row-item">
               <?php if (!empty($item['image_path'])): ?>
-                <img class="concession-row-thumb" src="assets/<?= htmlspecialchars($item['image_path']) ?>" alt="<?= htmlspecialchars($item['name']) ?>" loading="lazy">
+                <img class="concession-row-thumb" src="assets/<?= htmlspecialchars(assetRel($item['image_path'])) ?>" alt="<?= htmlspecialchars($item['name']) ?>" loading="lazy">
               <?php else: ?>
                 <div class="concession-row-thumb concession-row-thumb--placeholder"></div>
               <?php endif; ?>
@@ -124,7 +124,7 @@ require __DIR__ . '/templates/header.php';
     <div style="text-align:center; margin-top:3rem;">
       <p class="text-secondary mb-2">Ready to catch a show?</p>
       <a href="index.php#now-showing" class="btn btn-crimson">View Showtimes</a>
-      <a href="order.php" class="btn btn-outline" style="margin-left:1rem;">Pre-Order Concessions</a>
+      <button type="button" class="btn btn-outline js-open-cart" style="margin-left:1rem;">View Your Cart</button>
     </div>
 
   </div>

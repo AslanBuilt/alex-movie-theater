@@ -11,6 +11,25 @@ function asset(string $path): string
     return SITE_URL . 'assets/' . ltrim($path, '/');
 }
 
+/**
+ * Normalize a stored image_path to a path relative to assets/, tolerating values
+ * that already carry a leading 'assets/' prefix. Render sites prepend 'assets/'
+ * themselves, so this guarantees exactly one prefix and prevents 'assets/assets/…'
+ * 404s when seed data (which stored the prefix) and the admin uploader (which does
+ * not) disagree on the convention.
+ */
+function assetRel(?string $path): string
+{
+    $p = ltrim((string)$path, '/');
+    if ($p === '') {
+        return '';
+    }
+    if (strncasecmp($p, 'assets/', 7) === 0) {
+        $p = substr($p, 7);
+    }
+    return $p;
+}
+
 function url(string $path = ''): string
 {
     return SITE_URL . ltrim($path, '/');

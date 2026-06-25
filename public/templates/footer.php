@@ -87,6 +87,30 @@
   </button>
 </div>
 
+<?php
+// ── Structured data: the theater as a local business (site-wide) ──────────────
+// MovieTheater is a LocalBusiness subtype, so this powers Google's local/knowledge
+// panel. Built from SITE_* constants so it stays in sync with the footer above.
+$ldBusiness = [
+    '@context'    => 'https://schema.org',
+    '@type'       => 'MovieTheater',
+    'name'        => SITE_NAME,
+    'url'         => SITE_URL,
+    'telephone'   => '+1-' . SITE_PHONE,
+    'image'       => SITE_URL . 'assets/images/logo.webp',
+    'priceRange'  => '$',
+    'address'     => [
+        '@type'           => 'PostalAddress',
+        'streetAddress'   => '407 N. Harrison Street',
+        'addressLocality' => 'Alexandria',
+        'addressRegion'   => 'IN',
+        'postalCode'      => '46001',
+        'addressCountry'  => 'US',
+    ],
+    'sameAs'      => [FACEBOOK_URL, INSTAGRAM_URL],
+];
+?>
+<script type="application/ld+json"><?= json_encode($ldBusiness, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) ?></script>
 <script src="assets/js/main.js"></script>
 <script src="assets/js/cart.js"></script>
 </body>
