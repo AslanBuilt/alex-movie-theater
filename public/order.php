@@ -125,7 +125,7 @@ require __DIR__ . '/templates/header.php';
                   <?php foreach ($catItems as $item): ?>
                     <div class="order-item">
                       <?php if (!empty($item['image_path'])): ?>
-                        <img class="order-item-img" src="<?= e($item['image_path']) ?>" alt="<?= e($item['name']) ?>" loading="lazy">
+                        <img class="order-item-img" src="assets/<?= e(ltrim((string)$item['image_path'], '/')) ?>" alt="<?= e($item['name']) ?>" loading="lazy">
                       <?php endif; ?>
                       <div class="order-item-body">
                         <div class="order-item-name"><?= e($item['name']) ?></div>
