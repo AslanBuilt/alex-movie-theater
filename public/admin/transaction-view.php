@@ -95,7 +95,7 @@ $hasPaid   = $txn['payment_status'] === 'paid';
           onsubmit="return confirm('Void <?= e((string)$txn['transaction_ref']) ?>?<?= $hasPaid ? ' Concession stock and ticket counts from this order will be restored.' : '' ?> This cannot be undone.');">
       <input type="hidden" name="csrf_token" value="<?= e($csrf) ?>">
       <input type="hidden" name="id" value="<?= (int)$txn['id'] ?>">
-      <button type="submit" class="btn btn-sm" style="background:var(--color-crimson); color:#fff;">Void Transaction</button>
+      <button type="submit" class="btn btn-void btn-sm">Void Transaction</button>
       <span style="margin-left:0.75rem; font-size:0.82rem; color:var(--color-text-muted);">
         <?= $hasPaid
             ? 'Marks the transaction voided (drops it from reports) and restores inventory.'

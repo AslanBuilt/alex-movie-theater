@@ -497,6 +497,20 @@ h3 { font-size: 1.2rem; }
     color: var(--cream);
 }
 
+/* Void: a recoverable destructive action — amber/caution, distinct from the
+   crimson primary CTAs and the red delete (.btn-danger). */
+.btn-void {
+    background: #b07d2b;
+    color: #1c1207;
+    border-color: #b07d2b;
+}
+
+.btn-void:hover {
+    background: #c8923a;
+    border-color: #c8923a;
+    color: #1c1207;
+}
+
 .btn-outline {
     background: transparent;
     color: var(--cream);
