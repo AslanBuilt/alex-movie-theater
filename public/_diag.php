@@ -14,16 +14,12 @@ declare(strict_types=1);
 
 $TOKEN = 'diag-7Kq2mZ9xPv4tLn8';
 
-// Backstop: always remove this file when the script ends, however it ends.
-register_shutdown_function(static function (): void {
-    @unlink(__FILE__);
-});
-
 header('Content-Type: application/json');
 
+// Untokened requests are NON-destructive: they just report the probe is live,
+// so polling for deployment can't delete the file before the real run.
 if (($_GET['token'] ?? '') !== $TOKEN) {
-    http_response_code(404);
-    echo '{"error":"not found"}';
+    echo '{"diag":"alive"}';
     return;
 }
 
@@ -107,3 +103,6 @@ try {
 }
 
 echo json_encode($out, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+
+// Self-delete ONLY after a real (authenticated) run completes.
+@unlink(__FILE__);
