@@ -41,10 +41,13 @@ if (!$paid && !$failed && $piId !== '') {
     }
 }
 
-// Clear the cart once payment is in — but only for orders that came from it
-// (concession/combo). Ticket-only orders never touch the session cart.
-if ($paid && $txn && in_array($txn['type'], ['concession', 'combo'], true)) {
+// Clear the cart once payment is in — but only for the order that was actually
+// built from it. checkout.php stamps the cart-origin ref in the session, so a
+// direct "Buy Now" ticket purchase never wipes concessions a shopper left in
+// their cart, and a cart that held only a ticket still clears correctly.
+if ($paid && $ref !== '' && ($_SESSION['cart_pending_ref'] ?? '') === $ref) {
     $_SESSION['cart'] = [];
+    unset($_SESSION['cart_pending_ref']);
 }
 
 $pageTitle       = 'Order Confirmed | The Alex — Alexandria, Indiana';

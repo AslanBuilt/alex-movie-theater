@@ -155,14 +155,20 @@ require __DIR__ . '/templates/header.php';
               <span id="ticket-total" style="font-size:1.1rem; font-weight:700; color:var(--color-crimson);">$5.00</span>
             </div>
             <div style="display:flex; gap:1rem; flex-wrap:wrap;">
-              <a href="#" id="btn-proceed-checkout" class="btn btn-crimson"
+              <button type="button" id="btn-add-ticket-cart" class="btn btn-crimson btn-add-cart"
+                      data-type="ticket" data-open-cart="1"
+                      data-name="<?= e($movie['title']) ?> ticket"
+                      data-track="add-ticket-cart"
+                      data-track-label="<?= e($movie['title']) ?>">
+                Add to Cart
+              </button>
+              <a href="#" id="btn-proceed-checkout" class="btn btn-outline"
                  data-track="checkout-start"
                  data-track-label="<?= e($movie['title']) ?>">
-                Proceed to Checkout
+                Buy Now
               </a>
-              <a href="index.php#now-showing" class="btn btn-outline">All Movies</a>
             </div>
-            <p style="margin-top:0.75rem; font-size:0.8rem; color:var(--color-text-muted);">Adults $5 &bull; Children $3 &bull; Pay at door or online</p>
+            <p style="margin-top:0.75rem; font-size:0.8rem; color:var(--color-text-muted);">Add to cart to combine with concessions, or buy now for tickets only. Adults $5 &bull; Children $3.</p>
           </div>
 
         <?php elseif (!empty($legShowtimes)): ?>
@@ -244,6 +250,19 @@ require __DIR__ . '/templates/header.php';
   var btnDec    = document.getElementById('qty-dec');
   var btnInc    = document.getElementById('qty-inc');
   var btnCheckout = document.getElementById('btn-proceed-checkout');
+  var btnAddCart  = document.getElementById('btn-add-ticket-cart');
+
+  // Keep the Add-to-Cart button's data-* in sync with the current selection so
+  // cart.js (which reads them on click) adds the right showtime + quantity.
+  function syncAddCart() {
+    if (!btnAddCart) return;
+    if (selectedShowtimeId > 0) {
+      btnAddCart.dataset.id  = selectedShowtimeId;
+      btnAddCart.dataset.qty = qty;
+    } else {
+      delete btnAddCart.dataset.id;
+    }
+  }
 
   if (!dayTabs || !timeBtns) return;
 
@@ -295,6 +314,7 @@ require __DIR__ . '/templates/header.php';
     }
     if (purchBox) purchBox.style.display = 'none';
     selectedShowtimeId = 0;
+    syncAddCart();
   });
 
   // Time button clicks
@@ -312,6 +332,7 @@ require __DIR__ . '/templates/header.php';
     if (qtyDisp) qtyDisp.textContent = qty;
     if (totalDisp) totalDisp.textContent = '$' + (qty * TICKET_PRICE).toFixed(2);
     if (purchBox && selectedShowtimeId > 0) purchBox.style.display = 'block';
+    syncAddCart();
   });
 
   // Quantity controls
@@ -325,6 +346,7 @@ require __DIR__ . '/templates/header.php';
   function update() {
     if (qtyDisp) qtyDisp.textContent = qty;
     if (totalDisp) totalDisp.textContent = '$' + (qty * TICKET_PRICE).toFixed(2);
+    syncAddCart();
   }
 
   // Checkout button

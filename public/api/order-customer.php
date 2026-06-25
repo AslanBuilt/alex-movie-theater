@@ -14,11 +14,16 @@ header('Cache-Control: no-store');
 require_once __DIR__ . '/../config/config.php';
 require_once INCLUDES_PATH . '/Database.php';
 require_once INCLUDES_PATH . '/TransactionRepo.php';
+require_once INCLUDES_PATH . '/RateLimiter.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);
     echo '{"ok":false,"error":"Method not allowed"}';
     exit;
+}
+
+if (!RateLimiter::allow('checkout:' . RateLimiter::clientIp(), 10, 60)) {
+    RateLimiter::reject429();
 }
 
 $body = json_decode(file_get_contents('php://input') ?: '{}', true);

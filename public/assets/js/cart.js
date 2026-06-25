@@ -39,9 +39,14 @@
 
     // ── Toast ──────────────────────────────────────────────────────
     function showToast(name, count) {
-        if (!toast) return;
         var label = count > 1 ? count + ' items in cart' : '1 item in cart';
-        if (toastText) toastText.textContent = esc(name) + ' added — ' + label;
+        showMessage(esc(name) + ' added — ' + label);
+    }
+
+    // Raw-message toast (used for errors like "sold out").
+    function showMessage(msg) {
+        if (!toast) return;
+        if (toastText) toastText.textContent = msg;
         toast.classList.add('show');
         clearTimeout(toastTimer);
         toastTimer = setTimeout(function () { toast.classList.remove('show'); }, 2500);
@@ -78,6 +83,11 @@
     if (overlay)      overlay.addEventListener('click', closeDrawer);
     if (mobileBarBtn) mobileBarBtn.addEventListener('click', openDrawer);
     if (fab)          fab.addEventListener('click', openDrawer);
+    // Any element opting in with .js-open-cart opens the drawer (e.g. the
+    // "Add Items & Order Online" / "View Your Cart" CTAs on concessions.php).
+    document.querySelectorAll('.js-open-cart').forEach(function (el) {
+        el.addEventListener('click', openDrawer);
+    });
     document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeDrawer(); });
 
     // ── Render ─────────────────────────────────────────────────────
@@ -123,7 +133,7 @@
                 ? '<img class="cart-item-img" src="assets/' + esc(item.image) + '" alt="" loading="lazy">'
                 : '<div class="cart-item-img cart-item-img--placeholder"><svg viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/></svg></div>';
             html +=
-                '<li class="cart-item" data-id="' + item.id + '" data-option="' + esc(item.option || '') + '">' +
+                '<li class="cart-item" data-id="' + item.id + '" data-type="' + esc(item.type || 'concession') + '" data-option="' + esc(item.option || '') + '">' +
                   img +
                   '<div class="cart-item-info">' +
                     '<div class="cart-item-name">' + esc(item.name) + '</div>' +
@@ -151,13 +161,15 @@
         bodyEl.addEventListener('click', function (e) {
             var row = e.target.closest('.cart-item');
             if (!row) return;
-            var id  = row.dataset.id;
-            var opt = row.dataset.option || '';
-            var fd  = new FormData();
+            var id   = row.dataset.id;
+            var type = row.dataset.type || 'concession';
+            var opt  = row.dataset.option || '';
+            var fd   = new FormData();
 
             if (e.target.closest('.cart-item-remove')) {
                 fd.append('action', 'remove');
                 fd.append('id', id);
+                fd.append('type', type);
                 if (opt) fd.append('option', opt);
                 row.classList.add('removing');
                 setTimeout(function () {
@@ -176,6 +188,7 @@
             if (next < 0) return;
             fd.append('action', 'update');
             fd.append('id', id);
+            fd.append('type', type);
             fd.append('qty', next);
             if (opt) fd.append('option', opt);
             fetch(API, { method: 'POST', body: fd, headers: csrfHeaders() })
@@ -185,6 +198,9 @@
     }
 
     // ── Add to cart ────────────────────────────────────────────────
+    // Works for concessions (data-id) and tickets (data-type="ticket" +
+    // data-qty, set dynamically by movie.php). data-open-cart opens the drawer
+    // after a successful add.
     document.addEventListener('click', function (e) {
         var btn = e.target.closest('.btn-add-cart');
         if (!btn || !btn.dataset.id) return;
@@ -197,26 +213,34 @@
         var fd = new FormData();
         fd.append('action', 'add');
         fd.append('id', btn.dataset.id);
-        fd.append('qty', '1');
+        fd.append('qty', btn.dataset.qty || '1');
+        if (btn.dataset.type)   fd.append('type', btn.dataset.type);
+        if (btn.dataset.option) fd.append('option', btn.dataset.option);
+
+        function reset() {
+            btn.textContent = origText;
+            btn.classList.remove('added');
+            btn.disabled = false;
+        }
 
         fetch(API, { method: 'POST', body: fd, headers: csrfHeaders() })
             .then(function (r) { return r.json(); })
             .then(function (data) {
+                if (!data || data.ok === false) {
+                    // e.g. sold out — surface the message, leave the cart untouched.
+                    showMessage((data && data.error) || 'Sorry, that could not be added.');
+                    reset();
+                    return;
+                }
                 renderCart(data);
                 pulseBadge();
                 btn.textContent = '✓ Added';
                 btn.classList.add('added');
                 showToast(itemName, data.count || 0);
-                setTimeout(function () {
-                    btn.textContent = origText;
-                    btn.classList.remove('added');
-                    btn.disabled = false;
-                }, 1600);
+                if (btn.dataset.openCart) openDrawer();
+                setTimeout(reset, 1600);
             })
-            .catch(function () {
-                btn.textContent = origText;
-                btn.disabled = false;
-            });
+            .catch(function () { reset(); });
     });
 
     // ── Init ───────────────────────────────────────────────────────

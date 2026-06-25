@@ -6,9 +6,11 @@ $showCart = true;
 require_once __DIR__ . '/config/config.php';
 require_once INCLUDES_PATH . '/Database.php';
 require_once INCLUDES_PATH . '/ShowtimeRepo.php';
+require_once INCLUDES_PATH . '/MovieRepo.php';
 require_once INCLUDES_PATH . '/ConcessionRepo.php';
 require_once INCLUDES_PATH . '/TransactionRepo.php';
 require_once INCLUDES_PATH . '/StripeService.php';
+require_once INCLUDES_PATH . '/RateLimiter.php';
 
 session_name('ALEX_ADMIN_SESS');
 session_start();
@@ -21,94 +23,124 @@ $csrfToken = $_SESSION['csrf_token'];
 $stripeConfigPath = __DIR__ . '/config/stripe.php';
 $stripeConfig     = is_file($stripeConfigPath) ? require $stripeConfigPath : null;
 
-// ── Detect mode: ticket checkout vs concession cart ───────────────────────────
+// ── Detect mode ───────────────────────────────────────────────────────────────
+// 'ticket' = direct "Buy Now" for a single showtime (?showtime=&qty=).
+// 'cart'   = the session cart, which may hold tickets AND concessions together.
+$TICKET_PRICE = 5.00;
 $mode       = 'ticket';
 $showtimeId = isset($_GET['showtime']) ? (int)$_GET['showtime'] : 0;
 $qty        = isset($_GET['qty'])      ? max(1, (int)$_GET['qty']) : 1;
 $timeLabel  = isset($_GET['t'])        ? urldecode($_GET['t']) : '';
 
-$showtime = null;
+$showtime = null;   // populated in direct-ticket mode for the summary block
 $movie    = null;
-$concessionItems = [];
 
-if ($showtimeId > 0) {
-    $mode     = 'ticket';
-    $showtime = tryDb(fn() => ShowtimeRepo::getById($showtimeId), null);
-    if ($showtime) {
-        require_once INCLUDES_PATH . '/MovieRepo.php';
-        $movie = tryDb(fn() => MovieRepo::getById((int)$showtime['movie_id']), null);
-    }
-} else {
-    $mode = 'concession';
-    $cart = $_SESSION['cart'] ?? [];
-    if (!empty($cart)) {
-        $repo = new ConcessionRepo(Database::getInstance());
-        foreach ($cart as $entry) {
-            $item = $repo->getById((int)$entry['id']);
-            if ($item) {
-                $concessionItems[] = array_merge($item, [
-                    'qty'    => (int)$entry['qty'],
-                    'option' => $entry['option'] ?? null,
-                ]);
-            }
+/** Human label for a showtime row ("Mon, Jun 30 7:00 PM"), falling back to its label. */
+$showtimeWhen = function (array $st) use ($timeLabel): string {
+    if (!empty($st['showtime_date'])) {
+        $w = (new DateTime($st['showtime_date']))->format('D, M j');
+        if (!empty($st['showtime_time'])) {
+            $w .= ' ' . date('g:i A', strtotime((string)$st['showtime_time']));
         }
+        return $w;
     }
-}
-
-if ($mode === 'ticket' && $showtime === null) {
-    header('Location: index.php');
-    exit;
-}
+    return (string)($st['label'] ?? $timeLabel);
+};
 
 // ── Build authoritative, server-priced line items + validate availability ─────
-// Prices come from the DB, never the client. Mirrors the old api/checkout.php.
-$lineItems   = [];
-$totalAmount = 0.0;
-$hasTicket   = false;
+// Prices come from the DB, never the client.
+$lineItems     = [];
+$totalAmount   = 0.0;
+$hasTicket     = false;
 $hasConcession = false;
 $checkoutError = null;
 
-if ($mode === 'ticket') {
-    if (!$showtime['is_active']) {
+if ($showtimeId > 0) {
+    // ── Direct single-ticket purchase ──
+    $mode     = 'ticket';
+    $showtime = tryDb(fn() => ShowtimeRepo::getById($showtimeId), null);
+    if ($showtime === null) {
+        header('Location: index.php');
+        exit;
+    }
+    $movie = tryDb(fn() => MovieRepo::getById((int)$showtime['movie_id']), null);
+
+    if (empty($showtime['is_active'])) {
         $checkoutError = 'This showtime is no longer available.';
     } else {
         $available = (int)$showtime['available_tickets'] - (int)$showtime['tickets_sold'];
         if ($available < $qty) {
             $checkoutError = "Only $available ticket(s) remain for this showtime.";
         } else {
-            $unit = 5.00;
+            $name = 'Ticket: ' . ($movie['title'] ?? 'Movie');
+            $when = $showtimeWhen($showtime);
+            if ($when !== '') $name .= ' — ' . $when;
             $lineItems[] = [
                 'item_type' => 'ticket', 'item_id' => (int)$showtime['id'],
-                'item_name' => 'Ticket: ' . ($showtime['label'] ?? 'Showtime'),
-                'quantity'  => $qty, 'unit_price' => $unit, 'selected_option' => null,
-                'subtotal'  => round($unit * $qty, 2),
+                'item_name' => $name,
+                'quantity'  => $qty, 'unit_price' => $TICKET_PRICE, 'selected_option' => null,
+                'subtotal'  => round($TICKET_PRICE * $qty, 2),
             ];
-            $totalAmount += $unit * $qty;
+            $totalAmount += $TICKET_PRICE * $qty;
             $hasTicket = true;
         }
     }
 } else {
-    if (empty($concessionItems)) {
+    // ── Cart purchase: tickets and/or concessions in one transaction ──
+    $mode = 'cart';
+    $cart = $_SESSION['cart'] ?? [];
+    if (empty($cart)) {
         $checkoutError = 'Your cart is empty.';
-    }
-    foreach ($concessionItems as $ci) {
-        if (empty($ci['is_available'])) {
-            $checkoutError = 'An item in your cart is no longer available: ' . $ci['name'];
-            break;
+    } else {
+        $concRepo = new ConcessionRepo(Database::getInstance());
+        foreach ($cart as $entry) {
+            $eqty = max(0, (int)($entry['qty'] ?? 0));
+            if ($eqty < 1) continue;
+
+            if (($entry['type'] ?? 'concession') === 'ticket') {
+                $st = tryDb(fn() => ShowtimeRepo::getById((int)$entry['id']), null);
+                if (!$st || empty($st['is_active'])) {
+                    $checkoutError = 'A showtime in your cart is no longer available. Please review your cart.';
+                    break;
+                }
+                $available = (int)$st['available_tickets'] - (int)$st['tickets_sold'];
+                $mv = tryDb(fn() => MovieRepo::getById((int)$st['movie_id']), null);
+                if ($available < $eqty) {
+                    $checkoutError = 'Only ' . max(0, $available) . ' ticket(s) remain for ' . ($mv['title'] ?? 'a showtime') . '.';
+                    break;
+                }
+                $name = 'Ticket: ' . ($mv['title'] ?? 'Movie');
+                $when = $showtimeWhen($st);
+                if ($when !== '') $name .= ' — ' . $when;
+                $lineItems[] = [
+                    'item_type' => 'ticket', 'item_id' => (int)$st['id'],
+                    'item_name' => $name,
+                    'quantity'  => $eqty, 'unit_price' => $TICKET_PRICE, 'selected_option' => null,
+                    'subtotal'  => round($TICKET_PRICE * $eqty, 2),
+                ];
+                $totalAmount += $TICKET_PRICE * $eqty;
+                $hasTicket = true;
+            } else {
+                $ci = $concRepo->getById((int)$entry['id']);
+                if (!$ci || empty($ci['is_available'])) {
+                    $checkoutError = 'An item in your cart is no longer available. Please review your cart.';
+                    break;
+                }
+                if ((int)$ci['stock_quantity'] > 0 && $eqty > (int)$ci['stock_quantity']) {
+                    $checkoutError = 'Not enough stock for: ' . $ci['name'];
+                    break;
+                }
+                $unit = (float)$ci['price'];
+                $lineItems[] = [
+                    'item_type' => 'concession', 'item_id' => (int)$ci['id'],
+                    'item_name' => $ci['name'], 'quantity' => $eqty,
+                    'unit_price' => $unit, 'selected_option' => $entry['option'] ?? null,
+                    'subtotal'  => round($unit * $eqty, 2),
+                ];
+                $totalAmount += $unit * $eqty;
+                $hasConcession = true;
+            }
         }
-        if ((int)$ci['stock_quantity'] > 0 && (int)$ci['qty'] > (int)$ci['stock_quantity']) {
-            $checkoutError = 'Not enough stock for: ' . $ci['name'];
-            break;
-        }
-        $unit = (float)$ci['price'];
-        $lineItems[] = [
-            'item_type' => 'concession', 'item_id' => (int)$ci['id'],
-            'item_name' => $ci['name'], 'quantity' => (int)$ci['qty'],
-            'unit_price' => $unit, 'selected_option' => $ci['option'] ?? null,
-            'subtotal'  => round($unit * (int)$ci['qty'], 2),
-        ];
-        $totalAmount += $unit * (int)$ci['qty'];
-        $hasConcession = true;
     }
 }
 $totalAmount = round($totalAmount, 2);
@@ -119,7 +151,9 @@ $txnType = $hasTicket && $hasConcession ? 'combo' : ($hasTicket ? 'ticket' : 'co
 $clientSecret = null;
 $txnRef       = null;
 if ($checkoutError === null && !empty($lineItems)) {
-    if (!$stripeConfig) {
+    if (!RateLimiter::allow('checkout:' . RateLimiter::clientIp(), 10, 60)) {
+        $checkoutError = 'You are starting checkout too frequently. Please wait a moment and try again, or call us at ' . SITE_PHONE . '.';
+    } elseif (!$stripeConfig) {
         $checkoutError = 'Online payment is not configured yet. Please call us at ' . SITE_PHONE . ' to order.';
     } else {
         try {
@@ -149,6 +183,10 @@ if ($checkoutError === null && !empty($lineItems)) {
             }
             if (!$clientSecret) {
                 throw new RuntimeException('No client secret returned');
+            }
+            // Tag cart-origin orders so confirmation.php clears the right cart.
+            if ($mode === 'cart') {
+                $_SESSION['cart_pending_ref'] = $txnRef;
             }
         } catch (Throwable $e) {
             error_log('[checkout] PaymentIntent failed: ' . $e->getMessage());
@@ -195,13 +233,13 @@ require __DIR__ . '/templates/header.php';
           <strong style="color:var(--color-crimson);">$<?= number_format($qty * 5.00, 2) ?></strong>
         </p>
       </div>
-    <?php elseif ($mode === 'concession' && !empty($concessionItems)): ?>
+    <?php elseif ($mode === 'cart' && !empty($lineItems)): ?>
       <div class="policy-box" style="margin-bottom:2rem;">
         <h3 style="margin-bottom:0.75rem;">Order Summary</h3>
-        <?php foreach ($concessionItems as $ci): $sub = $ci['qty'] * (float)$ci['price']; ?>
+        <?php foreach ($lineItems as $li): ?>
           <div style="display:flex; justify-content:space-between; padding:0.35rem 0; border-bottom:1px solid rgba(0,0,0,0.06);">
-            <span><?= e($ci['name']) ?><?= $ci['option'] ? ' (' . e($ci['option']) . ')' : '' ?> &times; <?= $ci['qty'] ?></span>
-            <strong>$<?= number_format($sub, 2) ?></strong>
+            <span><?= e($li['item_name']) ?><?= $li['selected_option'] ? ' (' . e($li['selected_option']) . ')' : '' ?> &times; <?= (int)$li['quantity'] ?></span>
+            <strong>$<?= number_format((float)$li['subtotal'], 2) ?></strong>
           </div>
         <?php endforeach; ?>
         <p style="margin-top:0.75rem; text-align:right;">
