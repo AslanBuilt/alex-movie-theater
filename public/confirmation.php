@@ -5,12 +5,46 @@ $currentPage = '';
 require_once __DIR__ . '/config/config.php';
 require_once INCLUDES_PATH . '/Database.php';
 require_once INCLUDES_PATH . '/TransactionRepo.php';
+require_once INCLUDES_PATH . '/StripeService.php';
+
+session_name('ALEX_ADMIN_SESS');
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 
 $ref = isset($_GET['ref']) ? trim($_GET['ref']) : '';
-$txn = null;
+$piId = isset($_GET['payment_intent']) ? trim((string)$_GET['payment_intent']) : '';
 
-if ($ref !== '') {
-    $txn = tryDb(fn() => TransactionRepo::getByRef($ref), null);
+$txn = $ref !== '' ? tryDb(fn() => TransactionRepo::getByRef($ref), null) : null;
+
+// Authoritative paid state. The webhook flips the DB to 'paid', but it can lag
+// the redirect — so if the txn is still pending, ask Stripe directly about the
+// PaymentIntent. (redirect_status in the URL is client-supplied; don't trust it.)
+$paid   = $txn && $txn['payment_status'] === 'paid';
+$failed = $txn && $txn['payment_status'] === 'failed';
+
+if (!$paid && !$failed && $piId !== '') {
+    $stripeConfigPath = __DIR__ . '/config/stripe.php';
+    if (is_file($stripeConfigPath)) {
+        try {
+            $stripe = new StripeService(require $stripeConfigPath);
+            $pi = $stripe->getPaymentIntent($piId);
+            $status = (string)($pi['status'] ?? '');
+            if ($status === 'succeeded' || $status === 'processing') {
+                $paid = true;            // fulfillment is finalizing via webhook
+            } elseif ($status === 'requires_payment_method' || $status === 'canceled') {
+                $failed = true;
+            }
+        } catch (Throwable $e) {
+            error_log('[confirmation] PI lookup failed: ' . $e->getMessage());
+        }
+    }
+}
+
+// Clear the cart once payment is in — but only for orders that came from it
+// (concession/combo). Ticket-only orders never touch the session cart.
+if ($paid && $txn && in_array($txn['type'], ['concession', 'combo'], true)) {
+    $_SESSION['cart'] = [];
 }
 
 $pageTitle       = 'Order Confirmed | The Alex — Alexandria, Indiana';
@@ -22,14 +56,14 @@ require __DIR__ . '/templates/header.php';
 <section class="page-hero">
   <div class="container">
     <p class="breadcrumb"><a href="index.php">Home</a><span class="sep">/</span>Confirmation</p>
-    <h1><?= $txn ? 'Order Confirmed!' : 'Order Not Found' ?></h1>
+    <h1><?= $paid ? 'Order Confirmed!' : ($failed ? 'Payment Not Completed' : 'Order Not Found') ?></h1>
   </div>
 </section>
 
 <section>
   <div class="container" style="max-width:600px;">
 
-    <?php if ($txn && $txn['payment_status'] === 'paid'): ?>
+    <?php if ($paid && $txn): ?>
       <div class="highlight-box" style="text-align:center; padding:2rem; margin-bottom:2rem;">
         <div style="font-size:3rem; margin-bottom:0.5rem;">&#10003;</div>
         <h2 style="margin:0 0 0.5rem;">Thank you<?= $txn['customer_name'] ? ', ' . e((string)$txn['customer_name']) : '' ?>!</h2>
@@ -72,9 +106,9 @@ require __DIR__ . '/templates/header.php';
         <a href="index.php#now-showing" class="btn btn-crimson">See More Movies</a>
       </div>
 
-    <?php elseif ($txn && $txn['payment_status'] === 'failed'): ?>
+    <?php elseif ($failed): ?>
       <div class="alert alert-error">
-        <p>This transaction did not go through. Please <a href="javascript:history.back()">try again</a> or call us at <a href="tel:765-620-9093">(765) 620-9093</a>.</p>
+        <p>This payment did not go through. Please <a href="javascript:history.back()">try again</a> or call us at <a href="tel:765-620-9093">(765) 620-9093</a>.</p>
       </div>
 
     <?php else: ?>

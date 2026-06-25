@@ -96,6 +96,75 @@ final class TransactionRepo
         }
     }
 
+    /**
+     * Transition a transaction to a new status ONLY if it is currently pending.
+     * Returns true if this call performed the transition (rowCount === 1), false
+     * if it was already moved on — lets the webhook run side effects exactly once.
+     */
+    public static function transitionFromPending(int $id, string $newStatus): bool
+    {
+        try {
+            $pdo  = Database::getInstance();
+            $stmt = $pdo->prepare(
+                "UPDATE transactions SET payment_status = :new WHERE id = :id AND payment_status = 'pending'"
+            );
+            $stmt->execute([':new' => $newStatus, ':id' => $id]);
+            return $stmt->rowCount() > 0;
+        } catch (\Throwable $e) {
+            error_log('[TransactionRepo::transitionFromPending] ' . $e->getMessage());
+            return false;
+        }
+    }
+
+    /** Set customer name/email on a still-pending transaction, found by ref. */
+    public static function setCustomerByRef(string $ref, ?string $name, ?string $email): bool
+    {
+        try {
+            $pdo  = Database::getInstance();
+            $stmt = $pdo->prepare(
+                "UPDATE transactions SET customer_name = :name, customer_email = :email
+                 WHERE transaction_ref = :ref AND payment_status = 'pending'"
+            );
+            return $stmt->execute([
+                ':name'  => ($name  !== null && $name  !== '') ? $name  : null,
+                ':email' => ($email !== null && $email !== '') ? $email : null,
+                ':ref'   => $ref,
+            ]);
+        } catch (\Throwable $e) {
+            error_log('[TransactionRepo::setCustomerByRef] ' . $e->getMessage());
+            return false;
+        }
+    }
+
+    /** Attach a Stripe PaymentIntent id to a transaction. */
+    public static function setStripePaymentIntent(int $id, string $paymentIntentId): bool
+    {
+        try {
+            $pdo  = Database::getInstance();
+            $stmt = $pdo->prepare('UPDATE transactions SET stripe_payment_intent_id = :pi WHERE id = :id');
+            return $stmt->execute([':pi' => $paymentIntentId, ':id' => $id]);
+        } catch (\Throwable $e) {
+            error_log('[TransactionRepo::setStripePaymentIntent] ' . $e->getMessage());
+            return false;
+        }
+    }
+
+    public static function getByPaymentIntent(string $paymentIntentId): ?array
+    {
+        try {
+            $pdo  = Database::getInstance();
+            $stmt = $pdo->prepare('SELECT * FROM transactions WHERE stripe_payment_intent_id = :pi LIMIT 1');
+            $stmt->execute([':pi' => $paymentIntentId]);
+            $row = $stmt->fetch();
+            if (!$row) return null;
+            $row['items'] = self::getItems((int)$row['id']);
+            return $row;
+        } catch (\Throwable $e) {
+            error_log('[TransactionRepo::getByPaymentIntent] ' . $e->getMessage());
+            return null;
+        }
+    }
+
     public static function getByRef(string $ref): ?array
     {
         try {
