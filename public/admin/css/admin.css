@@ -621,7 +621,8 @@ h3 { font-size: 1.2rem; }
 
 /* ---------- Badges ---------- */
 
-.badge {
+.badge,
+.status-badge {
     display: inline-block;
     padding: 0.2rem 0.6rem;
     border-radius: 999px;
@@ -646,6 +647,27 @@ h3 { font-size: 1.2rem; }
 .badge-warning {
     background: #5a4019;
     color: #f0c674;
+}
+
+/* Transaction payment-status badges */
+.status-paid {
+    background: #1f5132;
+    color: #9bd9b4;
+}
+
+.status-pending {
+    background: #5a4019;
+    color: #f0c674;
+}
+
+.status-failed {
+    background: #6B1527;
+    color: #E07A8A;
+}
+
+.status-voided {
+    background: #2a2a2a;
+    color: #999;
 }
 
 /* ---------- Alerts ---------- */
