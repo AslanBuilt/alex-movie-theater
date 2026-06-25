@@ -11,3 +11,7 @@ Thumbs.db
 config/database.php
 public/config/database.php
 database/seed-with-passwords.sql
+
+# Stripe keys (generated from secrets at deploy; never commit)
+config/stripe.php
+public/config/stripe.php

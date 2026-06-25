@@ -59,6 +59,48 @@ jobs:
               sys.stdout.write("Generated public/config/database.php from secrets\n")
           PYEOF
 
+      - name: Generate stripe.php from secrets
+        id: gen_stripe
+        env:
+          STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
+          STRIPE_PUBLISHABLE_KEY: ${{ secrets.STRIPE_PUBLISHABLE_KEY }}
+          STRIPE_WEBHOOK_SECRET: ${{ secrets.STRIPE_WEBHOOK_SECRET }}
+          STRIPE_MODE: ${{ secrets.STRIPE_MODE }}
+        run: |
+          python3 - << 'PYEOF'
+          import os, sys
+
+          def esc(v):
+              return v.replace('\\', '\\\\').replace("'", "\\'")
+
+          sk   = esc(os.environ.get('STRIPE_SECRET_KEY', ''))
+          pk   = esc(os.environ.get('STRIPE_PUBLISHABLE_KEY', ''))
+          wh   = esc(os.environ.get('STRIPE_WEBHOOK_SECRET', ''))
+          mode = esc(os.environ.get('STRIPE_MODE', '') or 'test')
+
+          if not sk:
+              sys.stdout.write("WARNING: STRIPE_SECRET_KEY not set — skipping stripe.php generation.\n")
+              sys.stdout.write("Server keeps its existing stripe.php (Stripe checkout will error until set).\n")
+              sys.stdout.write("Fix: set STRIPE_SECRET_KEY, STRIPE_PUBLISHABLE_KEY, STRIPE_WEBHOOK_SECRET in repo secrets.\n")
+              with open('/tmp/.skip_stripe_upload', 'w') as f:
+                  f.write('1')
+          else:
+              php = (
+                  "<?php\n"
+                  "declare(strict_types=1);\n"
+                  "return [\n"
+                  "    'secret_key'      => '" + sk + "',\n"
+                  "    'publishable_key' => '" + pk + "',\n"
+                  "    'webhook_secret'  => '" + wh + "',\n"
+                  "    'currency'        => 'usd',\n"
+                  "    'mode'            => '" + mode + "',\n"
+                  "];\n"
+              )
+              with open('./public/config/stripe.php', 'w') as f:
+                  f.write(php)
+              sys.stdout.write("Generated public/config/stripe.php from secrets (mode=" + mode + ")\n")
+          PYEOF
+
       - name: Clear FTP deploy cache (force full re-upload)
         run: |
           curl -s \
@@ -83,6 +125,7 @@ jobs:
             **/Thumbs.db
             **/.htaccess.bak
             **/config/database.php
+            **/config/stripe.php
 
       - name: Deploy database/ (excluding seed.sql)
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
@@ -112,6 +155,19 @@ jobs:
               -u "${{ secrets.FTP_USERNAME }}:${{ secrets.FTP_PASSWORD }}" \
               "ftp://${{ secrets.FTP_HOST }}/cs/alex-movie-theater/config/database.php"
             echo "Uploaded database.php"
+          fi
+
+      - name: Deploy stripe.php via FTP
+        run: |
+          if [ -f "/tmp/.skip_stripe_upload" ]; then
+            echo "Skipping stripe.php upload — STRIPE_SECRET_KEY not configured."
+            echo "Server retains its existing stripe.php (if any)."
+          else
+            curl -s --ftp-create-dirs \
+              -T "./public/config/stripe.php" \
+              -u "${{ secrets.FTP_USERNAME }}:${{ secrets.FTP_PASSWORD }}" \
+              "ftp://${{ secrets.FTP_HOST }}/cs/alex-movie-theater/config/stripe.php"
+            echo "Uploaded stripe.php"
           fi
 
       - name: Run DB init and cleanup

@@ -189,6 +189,35 @@ if (tableExists($conn, 'transactions') && !enumHasValue($conn, 'transactions', '
     $log[] = "skip payment_status 'voided' (exists)";
 }
 
+// ── transactions.stripe_payment_intent_id (Stripe integration) ────────────────
+if (tableExists($conn, 'transactions') && !columnExists($conn, 'transactions', 'stripe_payment_intent_id')) {
+    runQ($conn,
+        "ALTER TABLE `transactions`
+         ADD COLUMN `stripe_payment_intent_id` VARCHAR(255) NULL AFTER `payment_method`,
+         ADD KEY `idx_txn_stripe_pi` (`stripe_payment_intent_id`)",
+        'transactions.stripe_payment_intent_id');
+    $log[] = 'added transactions.stripe_payment_intent_id';
+} else {
+    $log[] = 'skip transactions.stripe_payment_intent_id (exists)';
+}
+
+// ── webhook_events: idempotency ledger for Stripe webhooks ────────────────────
+if (!tableExists($conn, 'webhook_events')) {
+    runQ($conn, "
+        CREATE TABLE `webhook_events` (
+            `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+            `event_id` VARCHAR(255) NOT NULL,
+            `type` VARCHAR(100) NOT NULL,
+            `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            PRIMARY KEY (`id`),
+            UNIQUE KEY `uq_webhook_event_id` (`event_id`)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+    ", 'create webhook_events');
+    $log[] = 'created webhook_events';
+} else {
+    $log[] = 'skip webhook_events (exists)';
+}
+
 if (!tableExists($conn, 'transaction_items')) {
     runQ($conn, "
         CREATE TABLE `transaction_items` (

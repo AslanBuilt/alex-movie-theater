@@ -187,13 +187,15 @@ CREATE TABLE `transactions` (
     `total_amount` DECIMAL(8,2) NOT NULL,
     `payment_status` ENUM('paid','pending','failed','voided') NOT NULL DEFAULT 'pending',
     `payment_method` VARCHAR(50) NOT NULL DEFAULT 'mock',
+    `stripe_payment_intent_id` VARCHAR(255) NULL,
     `gateway_ref` VARCHAR(100) NULL,
     `customer_name` VARCHAR(100) NULL,
     `customer_email` VARCHAR(150) NULL,
     PRIMARY KEY (`id`),
     UNIQUE KEY `uq_transaction_ref` (`transaction_ref`),
     KEY `idx_transactions_created` (`created_at`),
-    KEY `idx_transactions_status` (`payment_status`)
+    KEY `idx_transactions_status` (`payment_status`),
+    KEY `idx_txn_stripe_pi` (`stripe_payment_intent_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ----------------------------------------------------------------------------
@@ -215,6 +217,19 @@ CREATE TABLE `transaction_items` (
     CONSTRAINT `fk_items_transaction`
         FOREIGN KEY (`transaction_id`) REFERENCES `transactions` (`id`)
         ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ----------------------------------------------------------------------------
+-- webhook_events — idempotency ledger for incoming Stripe webhooks
+-- ----------------------------------------------------------------------------
+DROP TABLE IF EXISTS `webhook_events`;
+CREATE TABLE `webhook_events` (
+    `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+    `event_id` VARCHAR(255) NOT NULL,
+    `type` VARCHAR(100) NOT NULL,
+    `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `uq_webhook_event_id` (`event_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ----------------------------------------------------------------------------
