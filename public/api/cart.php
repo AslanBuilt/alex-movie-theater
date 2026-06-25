@@ -11,6 +11,21 @@ require_once INCLUDES_PATH . '/ConcessionRepo.php';
 
 $action = (string)($_REQUEST['action'] ?? '');
 
+/**
+ * Reject mutating requests that don't carry a valid CSRF token.
+ * Token is sent via the X-CSRF-Token header (falls back to a POST field).
+ */
+function requireCsrf(): void
+{
+    $hdr = (string)($_SERVER['HTTP_X_CSRF_TOKEN'] ?? '');
+    $tok = $hdr !== '' ? $hdr : (string)($_POST['csrf_token'] ?? '');
+    if (empty($_SESSION['csrf_token']) || !hash_equals((string)$_SESSION['csrf_token'], $tok)) {
+        http_response_code(403);
+        echo json_encode(['ok' => false, 'error' => 'Invalid session token']);
+        exit;
+    }
+}
+
 function cartCount(): int
 {
     return (int)array_sum(array_column($_SESSION['cart'] ?? [], 'qty'));
@@ -71,6 +86,7 @@ function cartPayload(): array
 
 switch ($action) {
     case 'add':
+        requireCsrf();
         $id  = (int)($_POST['id'] ?? 0);
         $qty = max(1, (int)($_POST['qty'] ?? 1));
         $opt = isset($_POST['option']) && $_POST['option'] !== '' ? $_POST['option'] : null;
@@ -94,6 +110,7 @@ switch ($action) {
         break;
 
     case 'update':
+        requireCsrf();
         $id  = (int)($_POST['id'] ?? 0);
         $qty = max(0, (int)($_POST['qty'] ?? 0));
         $opt = isset($_POST['option']) && $_POST['option'] !== '' ? $_POST['option'] : null;
@@ -111,6 +128,7 @@ switch ($action) {
         break;
 
     case 'remove':
+        requireCsrf();
         $id  = (int)($_POST['id'] ?? 0);
         $opt = isset($_POST['option']) && $_POST['option'] !== '' ? $_POST['option'] : null;
         $_SESSION['cart'] = array_values(array_filter(
@@ -129,6 +147,7 @@ switch ($action) {
         break;
 
     case 'clear':
+        requireCsrf();
         $_SESSION['cart'] = [];
         echo json_encode(['ok' => true, 'count' => 0, 'total' => 0.0, 'items' => []]);
         break;

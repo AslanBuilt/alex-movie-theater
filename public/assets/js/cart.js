@@ -3,6 +3,12 @@
 
     var API = 'api/cart.php';
 
+    // CSRF token from the <meta name="csrf-token"> tag, sent on every mutating request.
+    function csrfHeaders() {
+        var m = document.querySelector('meta[name="csrf-token"]');
+        return { 'X-CSRF-Token': m ? m.getAttribute('content') : '' };
+    }
+
     var drawer       = document.getElementById('cartDrawer');
     var overlay      = document.getElementById('cartOverlay');
     var bodyEl       = document.getElementById('cartBody');
@@ -155,7 +161,7 @@
                 if (opt) fd.append('option', opt);
                 row.classList.add('removing');
                 setTimeout(function () {
-                    fetch(API, { method: 'POST', body: fd })
+                    fetch(API, { method: 'POST', body: fd, headers: csrfHeaders() })
                         .then(function (r) { return r.json(); })
                         .then(renderCart).catch(function () {});
                 }, 220);
@@ -172,7 +178,7 @@
             fd.append('id', id);
             fd.append('qty', next);
             if (opt) fd.append('option', opt);
-            fetch(API, { method: 'POST', body: fd })
+            fetch(API, { method: 'POST', body: fd, headers: csrfHeaders() })
                 .then(function (r) { return r.json(); })
                 .then(renderCart).catch(function () {});
         });
@@ -193,7 +199,7 @@
         fd.append('id', btn.dataset.id);
         fd.append('qty', '1');
 
-        fetch(API, { method: 'POST', body: fd })
+        fetch(API, { method: 'POST', body: fd, headers: csrfHeaders() })
             .then(function (r) { return r.json(); })
             .then(function (data) {
                 renderCart(data);

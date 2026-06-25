@@ -1,8 +1,20 @@
+<?php
+// Ensure a session + CSRF token exist so any page can safely POST to the cart API.
+// Guarded so pages that already started the session (e.g. checkout.php) don't notice.
+if (session_status() === PHP_SESSION_NONE) {
+    session_name('ALEX_ADMIN_SESS');
+    session_start();
+}
+if (empty($_SESSION['csrf_token'])) {
+    $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+}
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="csrf-token" content="<?= e($_SESSION['csrf_token']) ?>">
 <title><?= htmlspecialchars($pageTitle ?? 'The Alex — Alexandria, Indiana') ?></title>
 <meta name="description" content="<?= htmlspecialchars($pageDescription ?? '') ?>">
 <?php

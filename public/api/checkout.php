@@ -179,6 +179,13 @@ foreach ($lineItems as $li) {
     }
 }
 
+// Empty the session cart now that its concession items have been ordered.
+// Ticket-only orders are built from URL params and never use the session cart,
+// so leave it untouched to preserve any concessions the user still has pending.
+if ($hasConcession) {
+    $_SESSION['cart'] = [];
+}
+
 echo json_encode([
     'success'         => true,
     'transaction_ref' => $txnRef,
