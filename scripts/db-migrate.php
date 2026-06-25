@@ -51,6 +51,17 @@ function tableExists(mysqli $c, string $table): bool
     return (int)$r->fetch_row()[0] > 0;
 }
 
+function enumHasValue(mysqli $c, string $table, string $col, string $val): bool
+{
+    $db  = $c->query('SELECT DATABASE()')->fetch_row()[0];
+    $r   = $c->query(
+        "SELECT COLUMN_TYPE FROM information_schema.COLUMNS
+         WHERE TABLE_SCHEMA = '$db' AND TABLE_NAME = '$table' AND COLUMN_NAME = '$col'"
+    );
+    $row = $r ? $r->fetch_row() : null;
+    return $row !== null && strpos((string)$row[0], "'$val'") !== false;
+}
+
 function runQ(mysqli $c, string $sql, string $label): void
 {
     if (!$c->query($sql)) {
@@ -152,7 +163,7 @@ if (!tableExists($conn, 'transactions')) {
             `type` ENUM('ticket','concession','combo') NOT NULL,
             `source_channel` ENUM('website','kiosk','staff') NOT NULL DEFAULT 'website',
             `total_amount` DECIMAL(8,2) NOT NULL,
-            `payment_status` ENUM('paid','pending','failed') NOT NULL DEFAULT 'pending',
+            `payment_status` ENUM('paid','pending','failed','voided') NOT NULL DEFAULT 'pending',
             `payment_method` VARCHAR(50) NOT NULL DEFAULT 'mock',
             `customer_name` VARCHAR(100) NULL,
             `customer_email` VARCHAR(150) NULL,
@@ -165,6 +176,17 @@ if (!tableExists($conn, 'transactions')) {
     $log[] = 'created transactions';
 } else {
     $log[] = 'skip transactions (exists)';
+}
+
+// ── transactions.payment_status: add 'voided' (for admin transaction void) ────
+if (tableExists($conn, 'transactions') && !enumHasValue($conn, 'transactions', 'payment_status', 'voided')) {
+    runQ($conn,
+        "ALTER TABLE `transactions`
+         MODIFY `payment_status` ENUM('paid','pending','failed','voided') NOT NULL DEFAULT 'pending'",
+        'transactions.payment_status +voided');
+    $log[] = "added 'voided' to payment_status enum";
+} else {
+    $log[] = "skip payment_status 'voided' (exists)";
 }
 
 if (!tableExists($conn, 'transaction_items')) {

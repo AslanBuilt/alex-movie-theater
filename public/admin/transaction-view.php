@@ -12,6 +12,10 @@ if (!$txn) {
     header('Location: transactions.php');
     exit;
 }
+
+$csrf      = $auth->generateCsrfToken();
+$isVoided  = $txn['payment_status'] === 'voided';
+$hasPaid   = $txn['payment_status'] === 'paid';
 ?>
 
 <div class="admin-page-header">
@@ -82,5 +86,23 @@ if (!$txn) {
 <?php else: ?>
   <p style="color:var(--color-text-muted);">No line items recorded.</p>
 <?php endif; ?>
+
+<div style="margin-top:2.5rem; padding-top:1.5rem; border-top:1px solid rgba(0,0,0,0.1);">
+  <?php if ($isVoided): ?>
+    <p style="color:var(--color-text-muted);">This transaction has been voided.</p>
+  <?php else: ?>
+    <form method="POST" action="transaction-void.php"
+          onsubmit="return confirm('Void <?= e((string)$txn['transaction_ref']) ?>?<?= $hasPaid ? ' Concession stock and ticket counts from this order will be restored.' : '' ?> This cannot be undone.');">
+      <input type="hidden" name="csrf_token" value="<?= e($csrf) ?>">
+      <input type="hidden" name="id" value="<?= (int)$txn['id'] ?>">
+      <button type="submit" class="btn btn-sm" style="background:var(--color-crimson); color:#fff;">Void Transaction</button>
+      <span style="margin-left:0.75rem; font-size:0.82rem; color:var(--color-text-muted);">
+        <?= $hasPaid
+            ? 'Marks the transaction voided (drops it from reports) and restores inventory.'
+            : 'Marks the transaction voided so it no longer counts in reports.' ?>
+      </span>
+    </form>
+  <?php endif; ?>
+</div>
 
 <?php require_once __DIR__ . '/includes/admin-footer.php'; ?>

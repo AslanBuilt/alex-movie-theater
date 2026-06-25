@@ -80,6 +80,22 @@ final class TransactionRepo
         }
     }
 
+    /**
+     * Mark a transaction as voided. Unlike updateStatus(), this does NOT touch
+     * payment_method, so the original gateway/method record is preserved.
+     */
+    public static function voidTransaction(int $id): bool
+    {
+        try {
+            $pdo  = Database::getInstance();
+            $stmt = $pdo->prepare("UPDATE transactions SET payment_status = 'voided' WHERE id = :id");
+            return $stmt->execute([':id' => $id]);
+        } catch (\Throwable $e) {
+            error_log('[TransactionRepo::voidTransaction] ' . $e->getMessage());
+            return false;
+        }
+    }
+
     public static function getByRef(string $ref): ?array
     {
         try {

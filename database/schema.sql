@@ -185,7 +185,7 @@ CREATE TABLE `transactions` (
     `type` ENUM('ticket','concession','combo') NOT NULL,
     `source_channel` ENUM('website','kiosk','staff') NOT NULL DEFAULT 'website',
     `total_amount` DECIMAL(8,2) NOT NULL,
-    `payment_status` ENUM('paid','pending','failed') NOT NULL DEFAULT 'pending',
+    `payment_status` ENUM('paid','pending','failed','voided') NOT NULL DEFAULT 'pending',
     `payment_method` VARCHAR(50) NOT NULL DEFAULT 'mock',
     `gateway_ref` VARCHAR(100) NULL,
     `customer_name` VARCHAR(100) NULL,

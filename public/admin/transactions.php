@@ -24,6 +24,7 @@ $pages = (int)ceil($total / $perPage);
     <option value="paid"    <?= $statusFilter === 'paid'    ? 'selected' : '' ?>>Paid</option>
     <option value="pending" <?= $statusFilter === 'pending' ? 'selected' : '' ?>>Pending</option>
     <option value="failed"  <?= $statusFilter === 'failed'  ? 'selected' : '' ?>>Failed</option>
+    <option value="voided"  <?= $statusFilter === 'voided'  ? 'selected' : '' ?>>Voided</option>
   </select>
   <span style="color:var(--color-text-muted); font-size:0.85rem;"><?= $total ?> record<?= $total !== 1 ? 's' : '' ?></span>
 </form>

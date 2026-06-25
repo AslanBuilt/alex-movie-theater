@@ -147,6 +147,25 @@ final class ShowtimeRepo
     }
 
     /**
+     * Restore tickets to a showtime (e.g. when voiding a transaction).
+     * Lowers tickets_sold by qty, never below zero.
+     */
+    public static function restoreTickets(int $id, int $qty): bool
+    {
+        try {
+            $pdo  = Database::getInstance();
+            $stmt = $pdo->prepare(
+                'UPDATE showtimes SET tickets_sold = GREATEST(0, tickets_sold - :qty) WHERE id = :id'
+            );
+            $stmt->execute([':qty' => $qty, ':id' => $id]);
+            return $stmt->rowCount() > 0;
+        } catch (\Throwable $e) {
+            error_log('[ShowtimeRepo::restoreTickets] ' . $e->getMessage());
+            return false;
+        }
+    }
+
+    /**
      * Create a transactional showtime (date + time + capacity).
      */
     public static function createTransactional(
