@@ -135,6 +135,20 @@ jobs:
             **/config/database.php
             **/config/stripe.php
 
+      - name: Remove retired server files (deletions don't propagate via FTP sync)
+        # The "Clear FTP deploy cache" step wipes the sync-state each run, so the
+        # FTP action re-uploads everything but never deletes files removed from
+        # the repo. Explicitly DELE anything retired so it can't linger live.
+        # `|| true` keeps this idempotent once the file is already gone.
+        run: |
+          for f in pos-doctor.php; do
+            curl -s \
+              -u "${{ secrets.FTP_USERNAME }}:${{ secrets.FTP_PASSWORD }}" \
+              -Q "DELE /cs/alex-movie-theater/$f" \
+              "ftp://${{ secrets.FTP_HOST }}" || true
+            echo "Ensured removed: $f"
+          done
+
       - name: Deploy database/ (excluding seed.sql)
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
