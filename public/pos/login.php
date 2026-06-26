@@ -70,7 +70,7 @@ $csrf = $auth->generateCsrfToken();
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="robots" content="noindex,nofollow">
     <title>POS Sign in — <?= e(SITE_NAME) ?></title>
-    <link rel="stylesheet" href="../assets/css/pos.css">
+    <link rel="stylesheet" href="../assets/css/pos.css?v=<?= @filemtime(__DIR__ . '/../assets/css/pos.css') ?>">
 </head>
 <body>
 <div class="stage">

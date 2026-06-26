@@ -65,9 +65,30 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
 .pgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:var(--s3)}
 .card{background:var(--c-surface);border:1px solid var(--c-border);border-radius:var(--r);
   overflow:hidden;text-align:left;display:flex;flex-direction:column;min-height:200px;
-  box-shadow:var(--shadow);transition:transform .06s ease}
-.card:not(.out):active{transform:scale(.97)}
+  box-shadow:var(--shadow);transition:border-color .12s ease,box-shadow .12s ease}
+.card.inCart{border-color:var(--c-brand);box-shadow:0 0 0 1px var(--c-brand),var(--shadow)}
+.card-tap{display:flex;flex-direction:column;flex:1;width:100%;text-align:left;
+  background:none;border:none;color:inherit;padding:0;transition:transform .06s ease}
+.card:not(.out) .card-tap:active{transform:scale(.97)}
+.card.out .card-tap{cursor:not-allowed}
 .card .thumb{position:relative;height:104px;background:var(--c-surface-2);display:grid;place-items:center;color:var(--c-border-strong);overflow:hidden}
+.qchip{position:absolute;top:8px;right:8px;min-width:28px;height:28px;padding:0 8px;border-radius:14px;
+  background:var(--c-brand);color:#fff;font-weight:800;font-size:14px;display:grid;place-items:center;
+  box-shadow:0 1px 4px rgba(0,0,0,.3)}
+/* card footer controls */
+.cardfoot{padding:10px 12px;border-top:1px solid var(--c-border)}
+.stepper{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.step{width:48px;height:48px;border-radius:10px;background:var(--c-surface-2);
+  border:1px solid var(--c-border-strong);display:grid;place-items:center;color:var(--c-text)}
+.step:active{background:var(--c-border)}
+.step.plus{background:var(--c-brand);border-color:var(--c-brand);color:#fff}
+.step.plus:active{background:var(--c-brand-dark)}
+.step:disabled{opacity:.35;cursor:not-allowed}
+.stepn{flex:1;text-align:center;font-weight:800;font-size:20px}
+.step-add{width:100%;min-height:48px;border-radius:10px;background:var(--c-brand);color:#fff;
+  font-weight:800;font-size:15px;display:flex;align-items:center;justify-content:center;gap:6px}
+.step-add:active{background:var(--c-brand-dark)}
+.step-add:disabled{opacity:.4;cursor:not-allowed}
 .card .thumb svg{width:42px;height:42px;stroke-width:1.5}
 .card .thumb img{width:100%;height:100%;object-fit:cover}
 .card .body{padding:12px;display:flex;flex-direction:column;gap:6px;flex:1}

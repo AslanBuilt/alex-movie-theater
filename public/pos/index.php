@@ -199,7 +199,7 @@ $bootData = [
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="robots" content="noindex,nofollow">
     <title>Register — <?= e(SITE_NAME) ?> POS</title>
-    <link rel="stylesheet" href="../assets/css/pos.css">
+    <link rel="stylesheet" href="../assets/css/pos.css?v=<?= @filemtime(__DIR__ . '/../assets/css/pos.css') ?>">
 </head>
 <body>
 <div class="stage">
@@ -322,6 +322,6 @@ $bootData = [
 <div class="toast" id="toast"><svg class="ico" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg><span id="toastMsg">Added</span></div>
 
 <script>window.POS_BOOT = <?= json_encode($bootData, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>;</script>
-<script src="../assets/js/pos.js"></script>
+<script src="../assets/js/pos.js?v=<?= @filemtime(__DIR__ . '/../assets/js/pos.js') ?>"></script>
 </body>
 </html>

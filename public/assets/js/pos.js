@@ -98,25 +98,110 @@
     }
 
     BOOT.products.filter(function (p) { return p.cat === curTab; }).forEach(function (p) {
-      var st = statusOf(p);
-      var b = document.createElement('button');
-      b.type = 'button';
-      b.className = 'card' + (st === 'out' ? ' out' : '');
-      var thumb = makeThumb(p.image, ICON_BOX);
-      b.innerHTML = thumb +
-        '<div class="body">' +
-        '<span class="badge ' + st + '">' + BADGE[st] + '</span>' +
-        '<div class="nm">' + esc(p.name) + '</div>' +
-        (p.options && p.options.length
-          ? '<div class="opt-flag"><svg class="ico ico-sm" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>choose option</div>'
-          : '') +
-        '<div class="pr tnum">' + money(p.price) + '</div>' +
-        '</div>';
-      if (st !== 'out') {
-        b.addEventListener('click', function () { tapConcession(p); });
-      }
-      g.appendChild(b);
+      g.appendChild(buildConcessionCard(p));
     });
+    refreshSteppers();
+  }
+
+  /* Build one concession card: a tappable picture/name/price region plus a
+     footer control. Plain items get an inline "− qty +" stepper; items with
+     options get a "+ Add" that opens the option picker (their per-option lines
+     are managed in the cart). The card is a <div> — the tap region and the
+     stepper buttons are siblings, never nested buttons. */
+  function buildConcessionCard(p) {
+    var st = statusOf(p);
+    var hasOpts = p.options && p.options.length;
+
+    var card = document.createElement('div');
+    card.className = 'card' + (st === 'out' ? ' out' : '');
+    card.setAttribute('data-pid', p.id);
+    card.setAttribute('data-stock', p.stock);
+
+    var tap = document.createElement('button');
+    tap.type = 'button';
+    tap.className = 'card-tap';
+    tap.innerHTML = makeThumb(p.image, ICON_BOX) +
+      '<div class="body">' +
+      '<span class="badge ' + st + '">' + BADGE[st] + '</span>' +
+      '<div class="nm">' + esc(p.name) + '</div>' +
+      (hasOpts
+        ? '<div class="opt-flag"><svg class="ico ico-sm" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>choose option</div>'
+        : '') +
+      '<div class="pr tnum">' + money(p.price) + '</div>' +
+      '</div>';
+    if (st === 'out') {
+      tap.disabled = true;
+    } else {
+      tap.addEventListener('click', function () { tapConcession(p); });
+    }
+    // "In cart" count chip, shown on the thumb when qty > 0.
+    var chip = document.createElement('span');
+    chip.className = 'qchip';
+    chip.style.display = 'none';
+    var thumb = tap.querySelector('.thumb');
+    if (thumb) thumb.appendChild(chip);
+    card.appendChild(tap);
+
+    var foot = document.createElement('div');
+    foot.className = 'cardfoot';
+    if (st === 'out') {
+      foot.innerHTML = '<button type="button" class="step-add" disabled>Out of Stock</button>';
+    } else if (hasOpts) {
+      var addb = document.createElement('button');
+      addb.type = 'button';
+      addb.className = 'step-add';
+      addb.innerHTML = '<svg class="ico ico-sm" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg> Add';
+      addb.addEventListener('click', function () { openOptions(p); });
+      foot.appendChild(addb);
+    } else {
+      var stepper = document.createElement('div');
+      stepper.className = 'stepper';
+      var minus = document.createElement('button');
+      minus.type = 'button';
+      minus.className = 'step minus';
+      minus.innerHTML = '<svg class="ico" viewBox="0 0 24 24"><path d="M5 12h14"/></svg>';
+      minus.addEventListener('click', function () { decConcession(p.id); });
+      var num = document.createElement('span');
+      num.className = 'stepn tnum';
+      num.textContent = '0';
+      var plus = document.createElement('button');
+      plus.type = 'button';
+      plus.className = 'step plus';
+      plus.innerHTML = '<svg class="ico" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>';
+      plus.addEventListener('click', function () { addConcession(p, null, true); });
+      stepper.appendChild(minus);
+      stepper.appendChild(num);
+      stepper.appendChild(plus);
+      foot.appendChild(stepper);
+    }
+    card.appendChild(foot);
+    return card;
+  }
+
+  /* Sync every visible card's stepper/chip to the cart (source of truth) and
+     cap "+" at available stock. Targeted DOM updates only — never a full grid
+     re-render — so the touchscreen's scroll position is preserved mid-order. */
+  function refreshSteppers() {
+    var cards = document.querySelectorAll('#pgrid .card[data-pid]');
+    for (var i = 0; i < cards.length; i++) {
+      var card = cards[i];
+      var pid = parseInt(card.getAttribute('data-pid'), 10);
+      var stock = parseInt(card.getAttribute('data-stock'), 10);
+      var n = concQtyInCart(pid);
+      var atMax = !isNaN(stock) && stock > 0 && n >= stock;
+
+      card.classList.toggle('inCart', n > 0);
+      var chip = card.querySelector('.qchip');
+      if (chip) { chip.textContent = n; chip.style.display = n > 0 ? '' : 'none'; }
+      var num = card.querySelector('.stepn');
+      if (num) num.textContent = n;
+      var minus = card.querySelector('.step.minus');
+      if (minus) minus.disabled = n <= 0;
+      var plus = card.querySelector('.step.plus');
+      if (plus) plus.disabled = atMax;
+      var addb = card.querySelector('.step-add');
+      if (addb && !card.classList.contains('out')) addb.disabled = atMax;
+    }
   }
 
   /* ---------------- add to cart ---------------- */
@@ -124,13 +209,36 @@
     if (p.options && p.options.length) { openOptions(p); return; }
     addConcession(p, null);
   }
-  function addConcession(p, option) {
+  /* Total quantity of a concession in the cart, summed across all its options.
+     Drives the on-card stepper number / chip and the stock cap. */
+  function concQtyInCart(id) {
+    var n = 0;
+    for (var i = 0; i < cart.length; i++) {
+      if (cart[i].kind === 'concession' && cart[i].id === id) n += cart[i].qty;
+    }
+    return n;
+  }
+  function addConcession(p, option, silent) {
+    if (p.stock > 0 && concQtyInCart(p.id) >= p.stock) {
+      toast('Only ' + p.stock + ' in stock', true);
+      return;
+    }
     var key = 'c:' + p.id + '|' + (option || '');
     var line = findKey(key);
     if (line) line.qty++;
     else cart.push({ key: key, kind: 'concession', id: p.id, name: p.name, option: option, price: p.price, qty: 1 });
     renderCart();
-    toast((option ? p.name + ' (' + option + ')' : p.name) + ' added');
+    if (!silent) toast((option ? p.name + ' (' + option + ')' : p.name) + ' added');
+  }
+  /* Remove one unit of a no-option concession straight from its card. (Option
+     items hold separate lines per option, so their card has no minus — removal
+     happens in the cart where the specific option is visible.) */
+  function decConcession(id) {
+    var line = findKey('c:' + id + '|');
+    if (!line) return;
+    line.qty--;
+    if (line.qty <= 0) removeLine(line);
+    renderCart();
   }
   function addTicket(t, age) {
     var price = age === 'Child' ? t.child : t.adult;
@@ -204,6 +312,7 @@
     document.getElementById('ccount').textContent = n + (n === 1 ? ' item' : ' items');
     document.getElementById('subtot').textContent = money(cartTotal());
     document.getElementById('goPay').disabled = n === 0;
+    refreshSteppers();
 
     if (!cart.length) {
       box.innerHTML = '<div class="cempty"><svg class="ico" viewBox="0 0 24 24"><circle cx="9" cy="20" r="1.5"/><circle cx="18" cy="20" r="1.5"/><path d="M2 3h2l2.5 13h11l2-9H6"/></svg><div><div style="font-weight:800;color:var(--c-text-2)">No items yet</div>Tap a product to add it</div></div>';
