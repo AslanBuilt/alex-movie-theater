@@ -44,7 +44,7 @@ $_ogUrl   = SITE_URL . basename($_SERVER['PHP_SELF'] ?? 'index.php');
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@700&family=Playfair+Display:ital,wght@0,700;1,400;1,700&family=Lato:wght@400;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/css/main.css">
+<link rel="stylesheet" href="assets/css/main.css?v=<?= @filemtime(__DIR__ . '/../assets/css/main.css') ?>">
 </head>
 <body>
 

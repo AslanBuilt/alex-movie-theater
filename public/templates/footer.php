@@ -111,7 +111,7 @@ $ldBusiness = [
 ];
 ?>
 <script type="application/ld+json"><?= json_encode($ldBusiness, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) ?></script>
-<script src="assets/js/main.js"></script>
-<script src="assets/js/cart.js"></script>
+<script src="assets/js/main.js?v=<?= @filemtime(__DIR__ . '/../assets/js/main.js') ?>"></script>
+<script src="assets/js/cart.js?v=<?= @filemtime(__DIR__ . '/../assets/js/cart.js') ?>"></script>
 </body>
 </html>
