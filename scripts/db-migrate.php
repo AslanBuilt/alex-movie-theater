@@ -313,5 +313,65 @@ $r = $conn->query("UPDATE movies SET poster_path = REPLACE(poster_path, '.jpg', 
 $fixed = $conn->affected_rows;
 $log[] = $fixed > 0 ? "converted $fixed movie poster paths to .webp" : 'skip movie .webp conversion (already done or no .jpg paths)';
 
+// ═══════════════════════════════════════════════════════════════════════════
+// Task 4 — Employee POS (staff register)
+// ═══════════════════════════════════════════════════════════════════════════
+
+// ── employees table (PIN-authenticated POS operators) ─────────────────────────
+if (!tableExists($conn, 'employees')) {
+    runQ($conn, "
+        CREATE TABLE `employees` (
+            `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+            `name` VARCHAR(100) NOT NULL,
+            `pin_hash` VARCHAR(255) NOT NULL,
+            `is_active` TINYINT(1) NOT NULL DEFAULT 1,
+            `failed_attempts` INT NOT NULL DEFAULT 0,
+            `locked_until` DATETIME NULL,
+            `last_login` DATETIME NULL,
+            `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            PRIMARY KEY (`id`)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+    ", 'create employees');
+    $log[] = 'created employees';
+} else {
+    $log[] = 'skip employees (exists)';
+}
+
+// ── seed one default employee (PIN 7090) if the table is empty ────────────────
+$r = $conn->query("SELECT COUNT(*) FROM employees");
+if ((int)$r->fetch_row()[0] === 0) {
+    // bcrypt cost 12 — matches admin_users hashing.
+    $pinHash = password_hash('7090', PASSWORD_BCRYPT, ['cost' => 12]);
+    $hashEsc = $conn->real_escape_string($pinHash);
+    $conn->query(
+        "INSERT INTO employees (name, pin_hash, is_active) VALUES ('Front Desk', '$hashEsc', 1)"
+    );
+    $log[] = 'seeded default employee (PIN 7090)';
+} else {
+    $log[] = 'skip employee seed (has data)';
+}
+
+// ── transactions.source_channel: add 'staff_register' (POS walk-up sales) ─────
+if (tableExists($conn, 'transactions') && !enumHasValue($conn, 'transactions', 'source_channel', 'staff_register')) {
+    runQ($conn,
+        "ALTER TABLE `transactions`
+         MODIFY `source_channel` ENUM('website','kiosk','staff','staff_register') NOT NULL DEFAULT 'website'",
+        'transactions.source_channel +staff_register');
+    $log[] = "added 'staff_register' to source_channel enum";
+} else {
+    $log[] = "skip source_channel 'staff_register' (exists)";
+}
+
+// ── inventory_log.source: add 'staff_register' (POS stock decrements) ─────────
+if (tableExists($conn, 'inventory_log') && !enumHasValue($conn, 'inventory_log', 'source', 'staff_register')) {
+    runQ($conn,
+        "ALTER TABLE `inventory_log`
+         MODIFY `source` ENUM('website','admin','kiosk','staff','staff_register') NOT NULL DEFAULT 'website'",
+        'inventory_log.source +staff_register');
+    $log[] = "added 'staff_register' to inventory_log.source enum";
+} else {
+    $log[] = "skip inventory_log.source 'staff_register' (exists)";
+}
+
 $conn->close();
 echo json_encode(['status' => 'success', 'log' => $log]);
