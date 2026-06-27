@@ -93,34 +93,69 @@ $pageTitle = 'Sign in';
     <div class="login-card">
         <div class="login-brand">
             <span class="login-brand-name">The Alex</span>
-            <span class="login-brand-sub">ADMIN</span>
+            <span class="login-brand-sub" id="brandSub"><?= $error !== '' ? 'ADMIN' : 'SIGN IN' ?></span>
         </div>
 
-        <?php if ($error !== '') : ?>
-            <div class="alert alert-error" role="alert"><?= e($error) ?></div>
-        <?php endif; ?>
+        <!-- Chooser: pick Admin (this page) or Employee (PIN page). -->
+        <div class="login-choice" id="loginChooser"<?= $error !== '' ? ' hidden' : '' ?>>
+            <button type="button" class="choice-btn" id="chooseAdmin">
+                <span class="choice-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l7 3v5c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6z"/><path d="M9.5 12l1.8 1.8 3.5-3.6"/></svg></span>
+                <span class="choice-tx"><span class="choice-tt">Admin login</span><span class="choice-ss">Username &amp; password</span></span>
+                <span class="choice-arr"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 6l6 6-6 6"/></svg></span>
+            </button>
+            <a class="choice-btn" href="../pos/login.php">
+                <span class="choice-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="3"/><circle cx="8.5" cy="9" r="1.1" fill="currentColor"/><circle cx="12" cy="9" r="1.1" fill="currentColor"/><circle cx="15.5" cy="9" r="1.1" fill="currentColor"/><circle cx="8.5" cy="13" r="1.1" fill="currentColor"/><circle cx="12" cy="13" r="1.1" fill="currentColor"/><circle cx="15.5" cy="13" r="1.1" fill="currentColor"/><path d="M8.5 17h7"/></svg></span>
+                <span class="choice-tx"><span class="choice-tt">Employee</span><span class="choice-ss">Enter your register PIN</span></span>
+                <span class="choice-arr"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 6l6 6-6 6"/></svg></span>
+            </a>
+        </div>
 
-        <form method="post" class="admin-form" data-prevent-double="1" novalidate>
-            <input type="hidden" name="csrf_token" value="<?= e($csrf) ?>">
+        <!-- Admin username/password pane -->
+        <div id="adminPane"<?= $error === '' ? ' hidden' : '' ?>>
+            <button type="button" class="login-back" id="backToChooser">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 6l-6 6 6 6"/></svg> Back
+            </button>
 
-            <div class="form-group">
-                <label for="username">Username</label>
-                <input type="text" name="username" id="username"
-                       value="<?= e($username) ?>" autocomplete="username" required autofocus>
-            </div>
+            <?php if ($error !== '') : ?>
+                <div class="alert alert-error" role="alert"><?= e($error) ?></div>
+            <?php endif; ?>
 
-            <div class="form-group">
-                <label for="password">Password</label>
-                <input type="password" name="password" id="password"
-                       autocomplete="current-password" required>
-            </div>
+            <form method="post" class="admin-form" data-prevent-double="1" novalidate>
+                <input type="hidden" name="csrf_token" value="<?= e($csrf) ?>">
 
-            <div class="form-actions">
-                <button type="submit" class="btn btn-primary">Sign in</button>
-            </div>
-        </form>
+                <div class="form-group">
+                    <label for="username">Username</label>
+                    <input type="text" name="username" id="username"
+                           value="<?= e($username) ?>" autocomplete="username" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" name="password" id="password"
+                           autocomplete="current-password" required>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">Sign in</button>
+                </div>
+            </form>
+        </div>
     </div>
 
+    <script>
+        (function () {
+            var chooser = document.getElementById('loginChooser');
+            var pane = document.getElementById('adminPane');
+            var sub = document.getElementById('brandSub');
+            document.getElementById('chooseAdmin').addEventListener('click', function () {
+                chooser.hidden = true; pane.hidden = false; sub.textContent = 'ADMIN';
+                var u = document.getElementById('username'); if (u) u.focus();
+            });
+            document.getElementById('backToChooser').addEventListener('click', function () {
+                pane.hidden = true; chooser.hidden = false; sub.textContent = 'SIGN IN';
+            });
+        })();
+    </script>
     <script src="js/admin.js" defer></script>
 </body>
 </html>

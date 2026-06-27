@@ -8,6 +8,10 @@ declare(strict_types=1);
  * straight through to the order screen (admins may use the POS). Otherwise a
  * numeric PIN is required. Login is rate-limited and CSRF-protected; the
  * per-account 5-attempt / 15-minute lockout lives in PosAuth.
+ *
+ * Presentation matches the unified admin login (dark crimson theme). The
+ * "Admin login" choice lives at ../admin/login.php; this page is the Employee
+ * PIN pane of that same sign-in design.
  */
 
 require_once __DIR__ . '/../config/config.php';
@@ -69,51 +73,53 @@ $csrf = $auth->generateCsrfToken();
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="robots" content="noindex,nofollow">
-    <title>POS Sign in — <?= e(SITE_NAME) ?></title>
-    <link rel="stylesheet" href="../assets/css/pos.css?v=<?= @filemtime(__DIR__ . '/../assets/css/pos.css') ?>">
+    <title>Employee sign in — <?= e(SITE_NAME) ?></title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,400;1,700&family=Lato:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../admin/css/admin.css">
 </head>
-<body>
-<div class="stage">
-  <section class="screen show">
-    <div class="center-wrap">
-      <div class="pin-card">
-        <div class="logo">A</div>
-        <h3 style="font-size:18px">The Alex · Register</h3>
-        <p style="color:var(--c-text-muted);font-size:14px;margin-top:4px">Enter your PIN to start</p>
+<body class="admin-login">
+    <div class="login-card">
+        <div class="login-brand">
+            <span class="login-brand-name">The Alex</span>
+            <span class="login-brand-sub">REGISTER</span>
+        </div>
 
-        <form method="post" id="pinForm" autocomplete="off">
-          <input type="hidden" name="csrf_token" value="<?= e($csrf) ?>">
-          <input type="hidden" name="pin" id="pinField" value="">
+        <a class="login-back" href="../admin/login.php">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 6l-6 6 6 6"/></svg> Admin login
+        </a>
 
-          <div class="pin-dots" id="pinDots">
-            <i></i><i></i><i></i><i></i>
-          </div>
+        <?php if ($error !== '') : ?>
+            <div class="alert alert-error" role="alert"><?= e($error) ?></div>
+        <?php endif; ?>
 
-          <?php if ($error !== '') : ?>
-            <div class="pin-error" role="alert"><?= e($error) ?></div>
-          <?php endif; ?>
+        <form method="post" id="pinForm" class="login-pin" autocomplete="off">
+            <input type="hidden" name="csrf_token" value="<?= e($csrf) ?>">
+            <input type="hidden" name="pin" id="pinField" value="">
 
-          <div class="keypad pin" id="pinpad" style="margin-top:18px">
-            <button type="button" class="key" data-k="1">1</button>
-            <button type="button" class="key" data-k="2">2</button>
-            <button type="button" class="key" data-k="3">3</button>
-            <button type="button" class="key" data-k="4">4</button>
-            <button type="button" class="key" data-k="5">5</button>
-            <button type="button" class="key" data-k="6">6</button>
-            <button type="button" class="key" data-k="7">7</button>
-            <button type="button" class="key" data-k="8">8</button>
-            <button type="button" class="key" data-k="9">9</button>
-            <button type="button" class="key" data-k="clr" aria-label="clear">C</button>
-            <button type="button" class="key" data-k="0">0</button>
-            <button type="button" class="key" data-k="del" aria-label="delete">&#9003;</button>
-          </div>
+            <div class="pin-dots" id="pinDots"><i></i><i></i><i></i><i></i></div>
 
-          <button type="submit" class="btn-checkout" style="margin-top:18px;width:100%">Sign in</button>
+            <div class="pinpad" id="pinpad">
+                <button type="button" class="pinkey" data-k="1">1</button>
+                <button type="button" class="pinkey" data-k="2">2</button>
+                <button type="button" class="pinkey" data-k="3">3</button>
+                <button type="button" class="pinkey" data-k="4">4</button>
+                <button type="button" class="pinkey" data-k="5">5</button>
+                <button type="button" class="pinkey" data-k="6">6</button>
+                <button type="button" class="pinkey" data-k="7">7</button>
+                <button type="button" class="pinkey" data-k="8">8</button>
+                <button type="button" class="pinkey" data-k="9">9</button>
+                <button type="button" class="pinkey fn" data-k="clr" aria-label="Clear">Clear</button>
+                <button type="button" class="pinkey" data-k="0">0</button>
+                <button type="button" class="pinkey fn" data-k="del" aria-label="Delete">&#9003;</button>
+            </div>
+
+            <button type="submit" class="btn btn-primary pin-submit">Sign in</button>
+            <div class="pin-hint">PIN unlocks the register</div>
         </form>
-      </div>
     </div>
-  </section>
-</div>
 
 <script>
 (function () {
@@ -134,7 +140,7 @@ $csrf = $auth->generateCsrfToken();
   }
 
   document.getElementById('pinpad').addEventListener('click', function (e) {
-    var btn = e.target.closest('.key');
+    var btn = e.target.closest('.pinkey');
     if (!btn) return;
     var k = btn.getAttribute('data-k');
     if (k === 'del') pin = pin.slice(0, -1);
