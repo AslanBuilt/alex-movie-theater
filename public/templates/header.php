@@ -23,6 +23,7 @@ $_ogDesc  = $pageDescription ?? 'Your neighborhood two-screen movie theater in A
 $_ogImg   = $ogImage         ?? SITE_URL . 'assets/images/hero-1.webp';
 $_ogUrl   = SITE_URL . basename($_SERVER['PHP_SELF'] ?? 'index.php');
 ?>
+<link rel="canonical" href="<?= htmlspecialchars($_ogUrl) ?>">
 <meta property="og:type"        content="website">
 <meta property="og:site_name"   content="<?= htmlspecialchars(SITE_NAME) ?>">
 <meta property="og:title"       content="<?= htmlspecialchars($_ogTitle) ?>">
@@ -45,6 +46,35 @@ $_ogUrl   = SITE_URL . basename($_SERVER['PHP_SELF'] ?? 'index.php');
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@700&family=Playfair+Display:ital,wght@0,700;1,400;1,700&family=Lato:wght@400;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="assets/css/main.css?v=<?= @filemtime(__DIR__ . '/../assets/css/main.css') ?>">
+<?php
+// LocalBusiness (MovieTheater) JSON-LD — site-wide, built from real config NAP.
+// Improves Google rich results + AI-search citation. No fabricated data
+// (opening hours / geo omitted rather than invented).
+$_schema = [
+    '@context'    => 'https://schema.org',
+    '@type'       => 'MovieTheater',
+    'name'        => SITE_NAME,
+    'description' => 'Neighborhood two-screen movie theater in Alexandria, Indiana — first-run films with $5 adult / $3 child tickets and classic concessions.',
+    'url'         => SITE_URL,
+    'telephone'   => '+1-765-620-9093',
+    'email'       => SITE_EMAIL,
+    'image'       => SITE_URL . 'assets/images/hero-1.webp',
+    'priceRange'  => '$',
+    'address'     => [
+        '@type'           => 'PostalAddress',
+        'streetAddress'   => '407 N. Harrison Street',
+        'addressLocality' => 'Alexandria',
+        'addressRegion'   => 'IN',
+        'postalCode'      => '46001',
+        'addressCountry'  => 'US',
+    ],
+    'sameAs'      => array_values(array_filter([
+        defined('FACEBOOK_URL') ? FACEBOOK_URL : '',
+        defined('INSTAGRAM_URL') ? INSTAGRAM_URL : '',
+    ])),
+];
+?>
+<script type="application/ld+json"><?= json_encode($_schema, JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_AMP) ?></script>
 </head>
 <body>
 
