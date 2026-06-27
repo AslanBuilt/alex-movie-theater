@@ -13,7 +13,35 @@
   var ICON_BOX  = '<svg class="ico" viewBox="0 0 24 24"><path d="M3 7l9-4 9 4-9 4-9-4z"/><path d="M3 7v10l9 4 9-4V7"/><path d="M12 11v10"/></svg>';
   var ICON_TICK = '<svg class="ico" viewBox="0 0 24 24"><path d="M3 9a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2 2 2 0 0 0 0 4 2 2 0 0 1-2 2H5a2 2 0 0 1-2-2 2 2 0 0 0 0-4z"/><path d="M13 7v10"/></svg>';
 
-  var BADGE = { ok: 'In Stock', low: 'Low Stock', out: 'Out of Stock' };
+  var BADGE = { ok: 'In Stock', low: 'Low Stock', out: 'Sold Out' };
+
+  /* Left-rail category icons (Tabler-style). Unknown categories fall back to a
+     generic tag glyph so a new concession category never renders icon-less. */
+  var CAT_ICONS = {
+    Tickets: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2 2 2 0 0 0 0 4 2 2 0 0 1-2 2H5a2 2 0 0 1-2-2 2 2 0 0 0 0-4z"/><path d="M13 6v12"/></svg>',
+    Combos:  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-4 9 4-9 4-9-4z"/><path d="M3 9v6l9 4 9-4V9"/></svg>',
+    Popcorn: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l1.5 12h9L18 9"/><path d="M5 9a2.5 2.5 0 1 1 1-4.8A2.5 2.5 0 0 1 11 4a2.5 2.5 0 0 1 4 .7A2.5 2.5 0 1 1 19 9"/></svg>',
+    Drinks:  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4h12l-1.5 16h-9L6 4z"/><path d="M6.5 9h11"/></svg>',
+    Candy:   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4.5"/><path d="M16 9l4-3v12l-4-3M8 15l-4 3V6l4 3"/></svg>'
+  };
+  var CAT_FALLBACK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4h7l6 6-7 7-6-6V4z"/><circle cx="10.5" cy="7.5" r="1"/></svg>';
+  function catIcon(name) { return CAT_ICONS[name] || CAT_FALLBACK; }
+
+  /* Count of buyable items in a category — drives the rail badge. */
+  function availCount(cat) {
+    if (cat === 'Tickets') return BOOT.tickets.length;
+    var n = 0;
+    BOOT.products.forEach(function (p) { if (p.cat === cat && p.stock > 0) n++; });
+    return n;
+  }
+  function setCatHeader() {
+    var title = document.getElementById('catTitle');
+    var sub = document.getElementById('catSub');
+    if (title) title.textContent = curTab;
+    if (sub) sub.textContent = curTab === 'Tickets'
+      ? (BOOT.tickets.length + (BOOT.tickets.length === 1 ? ' showing' : ' showing'))
+      : (availCount(curTab) + ' available');
+  }
 
   /* cart line shape:
      concession: {key, kind:'concession', id, name, option, price, qty}
@@ -45,9 +73,9 @@
       'onerror="this.style.display=\'none\'"></div>';
   }
 
-  /* ---------------- tabs ---------------- */
-  function buildTabs() {
-    var wrap = document.getElementById('tabs');
+  /* ---------------- left-rail categories ---------------- */
+  function buildCats() {
+    var wrap = document.getElementById('cats');
     var tabs = [];
     if (BOOT.hasTickets) tabs.push('Tickets');
     var seen = {};
@@ -58,17 +86,20 @@
     tabs.forEach(function (t) {
       var b = document.createElement('button');
       b.type = 'button';
-      b.className = 'tab' + (t === curTab ? ' on' : '');
+      b.className = 'cat' + (t === curTab ? ' on' : '');
       b.setAttribute('data-tab', t);
-      b.textContent = t;
+      b.innerHTML = '<span class="ci">' + catIcon(t) + '</span>' +
+        '<span class="cl">' + esc(t) + '</span>' +
+        '<span class="cb">' + availCount(t) + '</span>';
       wrap.appendChild(b);
     });
     wrap.addEventListener('click', function (e) {
-      var t = e.target.closest('.tab');
+      var t = e.target.closest('.cat');
       if (!t) return;
       curTab = t.getAttribute('data-tab');
-      wrap.querySelectorAll('.tab').forEach(function (x) { x.classList.remove('on'); });
+      wrap.querySelectorAll('.cat').forEach(function (x) { x.classList.remove('on'); });
       t.classList.add('on');
+      setCatHeader();
       renderGrid();
     });
   }
@@ -83,13 +114,16 @@
         var b = document.createElement('button');
         b.type = 'button';
         b.className = 'card';
-        var thumb = makeThumb(t.image, ICON_TICK);
-        b.innerHTML = thumb +
+        b.innerHTML =
+          '<div class="thumb">' + ICON_TICK +
+            (t.image ? '<img src="' + esc(t.image) + '" alt="" onerror="this.style.display=\'none\'">' : '') +
+            '<span class="badge ticket">Ticket</span>' +
+            '<div class="cardctl"><span class="step-add"><svg class="ico ico-sm" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></span></div>' +
+          '</div>' +
           '<div class="body">' +
-          '<span class="badge ticket">Ticket</span>' +
-          '<div class="nm">' + esc(t.title) + '</div>' +
-          (t.when ? '<div class="opt-flag">' + esc(t.when) + '</div>' : '') +
-          '<div class="pr tnum">' + money(t.adult) + ' / ' + money(t.child) + '</div>' +
+            '<div class="nm">' + esc(t.title) + '</div>' +
+            (t.when ? '<div class="opt-flag">' + esc(t.when) + '</div>' : '') +
+            '<div class="row2"><span class="pr tnum">' + money(t.adult) + ' / ' + money(t.child) + '</span><span class="stock">Adult / Kids</span></div>' +
           '</div>';
         b.addEventListener('click', function () { openTicket(t); });
         g.appendChild(b);
@@ -117,64 +151,72 @@
     card.setAttribute('data-pid', p.id);
     card.setAttribute('data-stock', p.stock);
 
-    var tap = document.createElement('button');
-    tap.type = 'button';
+    // Tap region is a DIV (role=button) so the overlay control buttons can live
+    // inside the thumb without nesting a <button> inside a <button>.
+    var tap = document.createElement('div');
     tap.className = 'card-tap';
-    tap.innerHTML = makeThumb(p.image, ICON_BOX) +
-      '<div class="body">' +
-      '<span class="badge ' + st + '">' + BADGE[st] + '</span>' +
-      '<div class="nm">' + esc(p.name) + '</div>' +
-      (hasOpts
-        ? '<div class="opt-flag"><svg class="ico ico-sm" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>choose option</div>'
-        : '') +
-      '<div class="pr tnum">' + money(p.price) + '</div>' +
-      '</div>';
-    if (st === 'out') {
-      tap.disabled = true;
-    } else {
-      tap.addEventListener('click', function () { tapConcession(p); });
+    if (st !== 'out') {
+      tap.setAttribute('role', 'button');
+      tap.setAttribute('tabindex', '0');
     }
-    // "In cart" count chip, shown on the thumb when qty > 0.
-    var chip = document.createElement('span');
-    chip.className = 'qchip';
-    chip.style.display = 'none';
-    var thumb = tap.querySelector('.thumb');
-    if (thumb) thumb.appendChild(chip);
+    var stockTxt = st === 'out' ? 'Sold out' : (p.stock + ' left');
+    var stockCls = st === 'low' ? ' low' : (st === 'out' ? ' out' : '');
+    tap.innerHTML =
+      '<div class="thumb">' + ICON_BOX +
+        (p.image ? '<img src="' + esc(p.image) + '" alt="" onerror="this.style.display=\'none\'">' : '') +
+        '<span class="badge ' + st + '">' + BADGE[st] + '</span>' +
+        '<span class="qchip" style="display:none">0</span>' +
+      '</div>' +
+      '<div class="body">' +
+        '<div class="nm">' + esc(p.name) + '</div>' +
+        (hasOpts
+          ? '<div class="opt-flag"><svg class="ico ico-sm" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>choose option</div>'
+          : '') +
+        '<div class="row2"><span class="pr tnum">' + money(p.price) + '</span>' +
+        '<span class="stock' + stockCls + '">' + stockTxt + '</span></div>' +
+      '</div>';
+    if (st !== 'out') {
+      tap.addEventListener('click', function () { tapConcession(p); });
+      tap.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); tapConcession(p); }
+      });
+    }
     card.appendChild(tap);
 
-    var foot = document.createElement('div');
-    foot.className = 'cardfoot';
-    if (st === 'out') {
-      foot.innerHTML = '<button type="button" class="step-add" disabled>Out of Stock</button>';
-    } else if (hasOpts) {
-      var addb = document.createElement('button');
-      addb.type = 'button';
-      addb.className = 'step-add';
-      addb.innerHTML = '<svg class="ico ico-sm" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg> Add';
-      addb.addEventListener('click', function () { openOptions(p); });
-      foot.appendChild(addb);
-    } else {
-      var stepper = document.createElement('div');
-      stepper.className = 'stepper';
-      var minus = document.createElement('button');
-      minus.type = 'button';
-      minus.className = 'step minus';
-      minus.innerHTML = '<svg class="ico" viewBox="0 0 24 24"><path d="M5 12h14"/></svg>';
-      minus.addEventListener('click', function () { decConcession(p.id); });
-      var num = document.createElement('span');
-      num.className = 'stepn tnum';
-      num.textContent = '0';
-      var plus = document.createElement('button');
-      plus.type = 'button';
-      plus.className = 'step plus';
-      plus.innerHTML = '<svg class="ico" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>';
-      plus.addEventListener('click', function () { addConcession(p, null, true); });
-      stepper.appendChild(minus);
-      stepper.appendChild(num);
-      stepper.appendChild(plus);
-      foot.appendChild(stepper);
+    // Control overlay on the thumb's bottom-right.
+    if (st !== 'out') {
+      var ctl = document.createElement('div');
+      ctl.className = 'cardctl';
+      if (hasOpts) {
+        var addb = document.createElement('button');
+        addb.type = 'button';
+        addb.className = 'step-add';
+        addb.innerHTML = '<svg class="ico ico-sm" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg> Add';
+        addb.addEventListener('click', function (e) { e.stopPropagation(); openOptions(p); });
+        ctl.appendChild(addb);
+      } else {
+        var stepper = document.createElement('div');
+        stepper.className = 'stepper';
+        var minus = document.createElement('button');
+        minus.type = 'button';
+        minus.className = 'step minus';
+        minus.innerHTML = '<svg class="ico" viewBox="0 0 24 24"><path d="M5 12h14"/></svg>';
+        minus.addEventListener('click', function (e) { e.stopPropagation(); decConcession(p.id); });
+        var num = document.createElement('span');
+        num.className = 'stepn tnum';
+        num.textContent = '0';
+        var plus = document.createElement('button');
+        plus.type = 'button';
+        plus.className = 'step plus';
+        plus.innerHTML = '<svg class="ico" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>';
+        plus.addEventListener('click', function (e) { e.stopPropagation(); addConcession(p, null, true); });
+        stepper.appendChild(minus);
+        stepper.appendChild(num);
+        stepper.appendChild(plus);
+        ctl.appendChild(stepper);
+      }
+      tap.querySelector('.thumb').appendChild(ctl);
     }
-    card.appendChild(foot);
     return card;
   }
 
@@ -260,6 +302,7 @@
   /* ---------------- overlay (concession options + ticket age) ---------------- */
   var overlay = document.getElementById('overlay');
   function openOptions(p) {
+    document.getElementById('optPoster').classList.remove('show');
     document.getElementById('optTitle').textContent = p.name;
     document.getElementById('optSub').textContent = 'Pick one — it adds to the order instantly.';
     var og = document.getElementById('optGrid');
@@ -275,6 +318,9 @@
     overlay.classList.add('show');
   }
   function openTicket(t) {
+    var poster = document.getElementById('optPoster');
+    if (t.image) { poster.style.backgroundImage = "url('" + t.image + "')"; poster.classList.add('show'); }
+    else { poster.classList.remove('show'); }
     document.getElementById('optTitle').textContent = t.title;
     document.getElementById('optSub').textContent = (t.when ? t.when + ' · ' : '') + 'Choose ticket type.';
     var og = document.getElementById('optGrid');
@@ -305,6 +351,21 @@
     if (l.kind === 'ticket') return l.when || '';
     return l.option || '';
   }
+  /* Look up a line's image from BOOT for the cart thumbnail (render-time only —
+     the cart line shape sent to checkout is unchanged). */
+  function lineImage(l) {
+    var i;
+    if (l.kind === 'ticket') {
+      for (i = 0; i < BOOT.tickets.length; i++) {
+        if (BOOT.tickets[i].showtime_id === l.showtimeId) return BOOT.tickets[i].image || '';
+      }
+      return '';
+    }
+    for (i = 0; i < BOOT.products.length; i++) {
+      if (BOOT.products[i].id === l.id) return BOOT.products[i].image || '';
+    }
+    return '';
+  }
 
   function renderCart() {
     var box = document.getElementById('clines');
@@ -315,15 +376,17 @@
     refreshSteppers();
 
     if (!cart.length) {
-      box.innerHTML = '<div class="cempty"><svg class="ico" viewBox="0 0 24 24"><circle cx="9" cy="20" r="1.5"/><circle cx="18" cy="20" r="1.5"/><path d="M2 3h2l2.5 13h11l2-9H6"/></svg><div><div style="font-weight:800;color:var(--c-text-2)">No items yet</div>Tap a product to add it</div></div>';
+      box.innerHTML = '<div class="cempty"><svg class="ico" viewBox="0 0 24 24"><circle cx="9" cy="20" r="1.5"/><circle cx="18" cy="20" r="1.5"/><path d="M2 3h2l2.5 13h11l2-9H6"/></svg><div style="font-weight:800;color:var(--c-text-2)">No items yet</div></div>';
       return;
     }
     box.innerHTML = '';
     cart.forEach(function (l) {
       var sub = lineSub(l);
+      var img = lineImage(l);
       var row = document.createElement('div');
       row.className = 'cline';
       row.innerHTML =
+        '<span class="cth"' + (img ? ' style="background-image:url(\'' + img + '\')"' : '') + '></span>' +
         '<div><div class="nm">' + esc(lineLabel(l)) + '</div>' +
         (sub ? '<div class="op">' + esc(sub) + '</div>' : '') +
         '<div class="qty">' +
@@ -511,7 +574,8 @@
   }
 
   /* ---------------- init ---------------- */
-  buildTabs();
+  buildCats();
+  setCatHeader();
   renderGrid();
   renderCart();
 })();

@@ -207,14 +207,16 @@ $bootData = [
   <!-- ===================== ORDER ===================== -->
   <section class="screen show" id="order">
     <div class="layout">
+      <nav class="railcats">
+        <div class="railbrand"><span class="dot">A</span> <span>The Alex</span></div>
+        <div class="cats" id="cats"><!-- JS fills --></div>
+      </nav>
       <div class="left">
         <div class="appbar">
-          <div class="brand"><span class="dot">A</span> The Alex Register</div>
+          <div class="cattitle"><h1 id="catTitle">Menu</h1><span class="catsub" id="catSub"></span></div>
           <div class="spacer"></div>
           <div class="who"><span class="av"><?= e($initials) ?></span> <?= e($operatorName) ?></div>
-          <a class="btn-lock" href="logout.php"><svg class="ico ico-sm" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg> Log out</a>
         </div>
-        <div class="tabs" id="tabs"><!-- JS fills --></div>
         <div class="grid-wrap">
           <div class="pgrid" id="pgrid"><!-- JS fills --></div>
         </div>
@@ -230,6 +232,9 @@ $bootData = [
           <div class="subrow"><span>Subtotal</span><span class="big tnum" id="subtot">$0.00</span></div>
           <button class="btn-checkout" id="goPay" disabled>Checkout <svg class="ico" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
           <button class="btn-clear" id="clearBtn"><svg class="ico ico-sm" viewBox="0 0 24 24"><path d="M4 7h16M9 7V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2m2 0v12a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V7"/></svg> Clear Cart</button>
+        </div>
+        <div class="cart-logout">
+          <a class="btn-lock" href="logout.php"><svg class="ico ico-sm" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg> Log out</a>
         </div>
       </aside>
     </div>
@@ -312,6 +317,7 @@ $bootData = [
 <!-- options / ticket overlay -->
 <div class="overlay" id="overlay">
   <div class="sheet">
+    <div class="opt-poster" id="optPoster"></div>
     <h3 id="optTitle">Choose an option</h3>
     <p id="optSub">One tap adds it to the order.</p>
     <div class="optgrid" id="optGrid"></div>
