@@ -33,11 +33,18 @@ $statusClasses = [
 ?>
 
 <div class="admin-page-header">
-  <h1 class="admin-page-title">Concession Orders</h1>
+  <h1 class="admin-page-title">Legacy Concession Orders</h1>
 </div>
 
+<p class="text-muted" style="margin-bottom:1rem;">
+  Archive of the retired pay-at-theatre pre-order form. New concession sales now
+  go through the cart &rarr; checkout (online) and the in-venue register, and
+  appear under <a href="transactions.php">Transactions</a>. Existing rows below
+  are read-only history; you can still update their status to close them out.
+</p>
+
 <?php if (empty($orders)): ?>
-  <p class="text-muted">No orders yet. Orders placed through the pre-order form will appear here.</p>
+  <p class="text-muted">No legacy orders on record.</p>
 <?php else: ?>
   <div class="admin-table-wrap">
     <table class="admin-table">

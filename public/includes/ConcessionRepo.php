@@ -121,31 +121,12 @@ class ConcessionRepo
         }
     }
 
-    public function saveOrder(array $data): bool
-    {
-        if ($this->db === null) return false;
-        try {
-            $stmt = $this->db->prepare(
-                "INSERT INTO concession_orders
-                    (order_number, customer_name, customer_email, customer_phone, show_info, items_json, total_amount)
-                 VALUES
-                    (:order_number, :customer_name, :customer_email, :customer_phone, :show_info, :items_json, :total_amount)"
-            );
-            return $stmt->execute([
-                ':order_number'   => $data['order_number']   ?? '',
-                ':customer_name'  => $data['customer_name']  ?? '',
-                ':customer_email' => $data['customer_email'] ?? '',
-                ':customer_phone' => $data['customer_phone'] ?? '',
-                ':show_info'      => $data['show_info']      ?? '',
-                ':items_json'     => $data['items_json']     ?? '[]',
-                ':total_amount'   => (float)($data['total_amount'] ?? 0),
-            ]);
-        } catch (Throwable $e) {
-            error_log('ConcessionRepo::saveOrder: ' . $e->getMessage());
-            return false;
-        }
-    }
-
+    /**
+     * NOTE: the legacy pay-at-theatre pre-order writer (saveOrder) was removed
+     * when that flow was consolidated into cart → checkout → Stripe. The two
+     * methods below remain read/maintenance-only so admin can still view and
+     * close out historical `concession_orders` rows.
+     */
     public function getOrders(int $limit = 50): array
     {
         if ($this->db === null) return [];
