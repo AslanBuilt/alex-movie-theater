@@ -109,6 +109,46 @@ jobs:
               sys.stdout.write("Generated public/config/stripe.php from secrets (mode=" + mode + ")\n")
           PYEOF
 
+      - name: Generate sendgrid.php from secrets
+        id: gen_sendgrid
+        env:
+          SENDGRID_API_KEY: ${{ secrets.SENDGRID_API_KEY }}
+          MAIL_FROM: ${{ secrets.MAIL_FROM }}
+          MAIL_FROM_NAME: ${{ secrets.MAIL_FROM_NAME }}
+          MAIL_REPLY_TO: ${{ secrets.MAIL_REPLY_TO }}
+        run: |
+          python3 - << 'PYEOF'
+          import os, sys
+
+          def esc(v):
+              return v.replace('\\', '\\\\').replace("'", "\\'")
+
+          key = esc(os.environ.get('SENDGRID_API_KEY', ''))
+          frm = esc(os.environ.get('MAIL_FROM', ''))
+          nm  = esc(os.environ.get('MAIL_FROM_NAME', '') or 'The Alex')
+          rep = esc(os.environ.get('MAIL_REPLY_TO', '') or os.environ.get('MAIL_FROM', ''))
+
+          if not key or not frm:
+              sys.stdout.write("WARNING: SENDGRID_API_KEY / MAIL_FROM not set — skipping sendgrid.php.\n")
+              sys.stdout.write("Order-confirmation emails will safely no-op until these secrets are set.\n")
+              with open('/tmp/.skip_sendgrid_upload', 'w') as f:
+                  f.write('1')
+          else:
+              php = (
+                  "<?php\n"
+                  "declare(strict_types=1);\n"
+                  "return [\n"
+                  "    'api_key'   => '" + key + "',\n"
+                  "    'from'      => '" + frm + "',\n"
+                  "    'from_name' => '" + nm  + "',\n"
+                  "    'reply_to'  => '" + rep + "',\n"
+                  "];\n"
+              )
+              with open('./public/config/sendgrid.php', 'w') as f:
+                  f.write(php)
+              sys.stdout.write("Generated public/config/sendgrid.php from secrets\n")
+          PYEOF
+
       - name: Clear FTP deploy cache (force full re-upload)
         run: |
           curl -s \
@@ -134,6 +174,7 @@ jobs:
             **/.htaccess.bak
             **/config/database.php
             **/config/stripe.php
+            **/config/sendgrid.php
 
       - name: Remove retired server files (deletions don't propagate via FTP sync)
         # The "Clear FTP deploy cache" step wipes the sync-state each run, so the
@@ -190,6 +231,19 @@ jobs:
               -u "${{ secrets.FTP_USERNAME }}:${{ secrets.FTP_PASSWORD }}" \
               "ftp://${{ secrets.FTP_HOST }}/cs/alex-movie-theater/config/stripe.php"
             echo "Uploaded stripe.php"
+          fi
+
+      - name: Deploy sendgrid.php via FTP
+        run: |
+          if [ -f "/tmp/.skip_sendgrid_upload" ]; then
+            echo "Skipping sendgrid.php upload — SENDGRID_API_KEY / MAIL_FROM not configured."
+            echo "Server retains its existing sendgrid.php (if any); emails no-op until set."
+          else
+            curl -s --ftp-create-dirs \
+              -T "./public/config/sendgrid.php" \
+              -u "${{ secrets.FTP_USERNAME }}:${{ secrets.FTP_PASSWORD }}" \
+              "ftp://${{ secrets.FTP_HOST }}/cs/alex-movie-theater/config/sendgrid.php"
+            echo "Uploaded sendgrid.php"
           fi
 
       - name: Run DB init and cleanup

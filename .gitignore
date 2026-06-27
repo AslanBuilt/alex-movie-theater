@@ -16,3 +16,7 @@ database/seed-with-passwords.sql
 # Stripe keys (generated from secrets at deploy; never commit)
 config/stripe.php
 public/config/stripe.php
+
+# SendGrid keys (generated from secrets at deploy; never commit)
+config/sendgrid.php
+public/config/sendgrid.php

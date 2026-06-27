@@ -15,6 +15,8 @@ require_once INCLUDES_PATH . '/TransactionRepo.php';
 require_once INCLUDES_PATH . '/ConcessionRepo.php';
 require_once INCLUDES_PATH . '/InventoryRepo.php';
 require_once INCLUDES_PATH . '/ShowtimeRepo.php';
+require_once INCLUDES_PATH . '/Mailer.php';
+require_once INCLUDES_PATH . '/OrderEmail.php';
 
 header('Content-Type: application/json');
 
@@ -114,6 +116,20 @@ switch ($event['type'] ?? '') {
                     InventoryRepo::logChange($itemId, 'sale', -$qtySold, $newStock, 'website', $txn['transaction_ref']);
                 }
             }
+        }
+
+        // Send the order-confirmation receipt — only here, inside the guarded
+        // pending→paid transition, so it fires exactly once per order. A mail
+        // failure (or no SendGrid key yet) must never fail the webhook, so this
+        // is best-effort and fully isolated.
+        try {
+            $custEmail = trim((string)($txn['customer_email'] ?? ''));
+            if ($custEmail !== '') {
+                $mail = OrderEmail::build($txn);
+                Mailer::send($custEmail, (string)($txn['customer_name'] ?? ''), $mail['subject'], $mail['html'], $mail['text']);
+            }
+        } catch (Throwable $e) {
+            error_log('[stripe-webhook] receipt email failed for ' . ($txn['transaction_ref'] ?? '?') . ': ' . $e->getMessage());
         }
         break;
 
