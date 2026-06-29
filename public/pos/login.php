@@ -153,6 +153,27 @@ $csrf = $auth->generateCsrfToken();
     if (pin.length < 4) { e.preventDefault(); }
   });
 
+  // Physical-keyboard support (desktop): digits append, Backspace deletes,
+  // Escape clears, Enter submits when the PIN is long enough.
+  document.addEventListener('keydown', function (e) {
+    if (e.key >= '0' && e.key <= '9') {
+      if (pin.length < MAX) pin += e.key;
+      render();
+      e.preventDefault();
+    } else if (e.key === 'Backspace') {
+      pin = pin.slice(0, -1);
+      render();
+      e.preventDefault();
+    } else if (e.key === 'Escape') {
+      pin = '';
+      render();
+      e.preventDefault();
+    } else if (e.key === 'Enter') {
+      if (pin.length >= 4) form.submit();
+      e.preventDefault();
+    }
+  });
+
   render();
 })();
 </script>
