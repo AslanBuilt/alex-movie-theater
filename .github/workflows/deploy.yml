@@ -182,7 +182,7 @@ jobs:
         # the repo. Explicitly DELE anything retired so it can't linger live.
         # `|| true` keeps this idempotent once the file is already gone.
         run: |
-          for f in pos-doctor.php _mailtest.php; do
+          for f in pos-doctor.php _mailtest.php admin/fix-image-paths.php; do
             curl -s \
               -u "${{ secrets.FTP_USERNAME }}:${{ secrets.FTP_PASSWORD }}" \
               -Q "DELE /cs/alex-movie-theater/$f" \

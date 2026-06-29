@@ -50,8 +50,13 @@ if ($paid && $ref !== '' && ($_SESSION['cart_pending_ref'] ?? '') === $ref) {
     unset($_SESSION['cart_pending_ref']);
 }
 
-$pageTitle       = 'Order Confirmed | The Alex — Alexandria, Indiana';
-$pageDescription = 'Your order at The Alex Theater is confirmed.';
+$pageTitle       = ($paid
+                      ? 'Order Confirmed'
+                      : ($failed ? 'Payment Not Completed' : 'Order Not Found'))
+                   . ' | The Alex — Alexandria, Indiana';
+$pageDescription = $paid
+    ? 'Your order at The Alex Theater is confirmed.'
+    : 'Order status at The Alex Theater.';
 
 require __DIR__ . '/templates/header.php';
 ?>
