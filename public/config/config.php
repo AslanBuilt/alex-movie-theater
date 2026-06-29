@@ -25,8 +25,8 @@ define('FORM_EMPLOYMENT', 'https://docs.google.com/forms/d/e/1FAIpQLSeIx_YNZ91tX
 define('FACEBOOK_URL', 'https://www.facebook.com/TheAlexandriaTheatre');
 define('INSTAGRAM_URL', 'https://www.instagram.com/the.alextheatre');
 
-define('GA_MEASUREMENT_ID', '');  // Set to 'G-XXXXXXXXXX' from Google Analytics
-define('FB_PIXEL_ID',        '');  // Set to numeric pixel ID from Meta Events Manager
+define('GA_MEASUREMENT_ID', 'G-SW2FC3JLE8');  // GA4 stream "Alex Movie Theater" (stream ID 15167575038)
+define('FB_PIXEL_ID',        '');  // Deferred — set to numeric pixel ID from Meta Events Manager when running Meta ads
 
 define('ROOT_PATH', dirname(__DIR__));
 define('PUBLIC_PATH', ROOT_PATH . '/public');
