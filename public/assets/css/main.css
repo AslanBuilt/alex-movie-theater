@@ -2478,6 +2478,13 @@ section { padding: 4rem 0; }
     box-shadow: 0 4px 12px rgba(139,29,51,0.25);
 }
 
+.time-btn.active {
+    background: var(--crimson);
+    border-color: var(--crimson);
+    color: #FFFFFF;
+    box-shadow: 0 2px 8px rgba(139,29,51,0.25);
+}
+
 /* ── Event Feature Card ── */
 .event-feature-card {
     border: 1px solid var(--border);
