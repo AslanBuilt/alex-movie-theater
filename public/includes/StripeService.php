@@ -23,10 +23,15 @@ final class StripeService
     /** Create a PaymentIntent for the given amount (in cents). */
     public function createPaymentIntent(int $amountCents, array $metadata = []): array
     {
+        // Card-only: avoids Stripe Link's "save your info for faster checkout"
+        // prompt (shown by automatic_payment_methods), so no card details are
+        // ever offered to be saved. Card data still goes straight to Stripe's
+        // iframe — never to our server. (Re-enable wallets/Link later by
+        // switching back to automatic_payment_methods[enabled]=true.)
         $params = [
-            'amount'                              => $amountCents,
-            'currency'                            => $this->currency,
-            'automatic_payment_methods[enabled]'  => 'true',
+            'amount'                  => $amountCents,
+            'currency'                => $this->currency,
+            'payment_method_types[]'  => 'card',
         ];
         foreach ($metadata as $k => $v) {
             $params["metadata[$k]"] = $v;
