@@ -18,9 +18,11 @@ if ($movie === null) {
     $pageTitle       = 'Movie Not Found | The Alex — Alexandria, Indiana';
     $pageDescription = 'Movie information at The Alex in Alexandria, Indiana.';
 } else {
-    $pageTitle       = htmlspecialchars($movie['title']) . ' | The Alex — Alexandria, Indiana';
+    // Set raw strings; header.php applies htmlspecialchars when rendering
+    // <title>/<meta> (pre-encoding here would double-encode, e.g. "&" → "&amp;").
+    $pageTitle       = $movie['title'] . ' | The Alex — Alexandria, Indiana';
     $pageDescription = $movie['description']
-        ? htmlspecialchars(substr($movie['description'], 0, 155))
+        ? substr($movie['description'], 0, 155)
         : 'Now showing at The Alex in Alexandria, Indiana.';
     $ogImage = !empty($movie['poster_path'])
         ? SITE_URL . 'assets/' . ltrim($movie['poster_path'], '/')
