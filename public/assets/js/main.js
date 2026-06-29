@@ -198,30 +198,11 @@ document.addEventListener('DOMContentLoaded', function () {
         window.addEventListener('resize', function () { scrollTo(0); updateArrows(); });
     });
 
-    // ── Showtime day tabs (movie detail page) ──
-    var dayTabs = document.getElementById('showtime-day-tabs');
-    var timeBtns = document.getElementById('showtime-time-btns');
-    if (dayTabs && timeBtns) {
-        dayTabs.addEventListener('click', function (e) {
-            var btn = e.target.closest('.day-tab');
-            if (!btn) return;
-            dayTabs.querySelectorAll('.day-tab').forEach(function (b) {
-                b.classList.remove('active');
-                b.setAttribute('aria-selected', 'false');
-            });
-            btn.classList.add('active');
-            btn.setAttribute('aria-selected', 'true');
-            var timesStr = btn.getAttribute('data-times') || '';
-            var times = timesStr.split(/\s*[•·]\s*/).map(function (t) { return t.trim(); }).filter(Boolean);
-            timeBtns.innerHTML = times.map(function (t) {
-                var sid = btn.getAttribute('data-showtime-id') || '';
-                var href = sid ? ('checkout.php?showtime=' + sid + '&t=' + encodeURIComponent(t)) : 'tickets.php';
-                return '<a href="' + href + '"' +
-                       ' class="time-btn" data-track="showtime-click"' +
-                       ' data-track-label="' + t.replace(/"/g, '&quot;') + '">' + t + '</a>';
-            }).join('');
-        });
-    }
+    // ── Showtime day tabs + time buttons are handled by the inline script in
+    //    movie.php (handles both new-style transactional slots and legacy
+    //    label/times modes). A previous handler lived here but conflicted with
+    //    it — on day-tab click it rebuilt the time buttons as <a> links to
+    //    tickets.php, hijacking the in-page purchase flow. Removed. ──
 
     // ── Click tracking (fires gtag/fbq if loaded; no-op otherwise) ──
     document.addEventListener('click', function (e) {
