@@ -86,6 +86,9 @@ const REPORT_PALETTE = ['#8B1D33', '#3a5a7a', '#6a4a8a', '#4a7a5a', '#a8632a', '
 
 <div class="admin-page-header">
   <h1>Reports</h1>
+  <div class="admin-page-actions">
+    <a class="btn btn-outline btn-sm" href="occupancy.php">Occupancy Report</a>
+  </div>
 </div>
 
 <!-- Tabs -->
