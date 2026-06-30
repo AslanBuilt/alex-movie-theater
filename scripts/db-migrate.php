@@ -373,5 +373,71 @@ if (tableExists($conn, 'inventory_log') && !enumHasValue($conn, 'inventory_log',
     $log[] = "skip inventory_log.source 'staff_register' (exists)";
 }
 
+// ═══════════════════════════════════════════════════════════════════════════
+// Task 5 — duration/end-time, order fulfillment screen, QR ticket check-in
+// ═══════════════════════════════════════════════════════════════════════════
+
+// ── movies.duration_minutes (for auto end-time calc) ──────────────────────────
+if (!columnExists($conn, 'movies', 'duration_minutes')) {
+    runQ($conn, "ALTER TABLE `movies` ADD COLUMN `duration_minutes` INT UNSIGNED NULL AFTER `screen`", 'movies.duration_minutes');
+    $log[] = 'added movies.duration_minutes';
+} else {
+    $log[] = 'skip movies.duration_minutes (exists)';
+}
+
+// ── transactions.fulfillment_status (order fulfillment screen) ────────────────
+if (tableExists($conn, 'transactions') && !columnExists($conn, 'transactions', 'fulfillment_status')) {
+    runQ($conn,
+        "ALTER TABLE `transactions`
+         ADD COLUMN `fulfillment_status` ENUM('pending','fulfilled','voided') NOT NULL DEFAULT 'pending'",
+        'transactions.fulfillment_status');
+    $log[] = 'added transactions.fulfillment_status';
+
+    $conn->query("UPDATE `transactions` SET `fulfillment_status` = 'fulfilled' WHERE `payment_status` = 'paid'");
+    $log[] = 'backfilled fulfillment_status=fulfilled on ' . $conn->affected_rows . ' existing paid transaction(s)';
+} else {
+    $log[] = 'skip transactions.fulfillment_status (exists, no re-backfill)';
+}
+
+// ── ticket_tokens (QR check-in) ────────────────────────────────────────────────
+// References transaction_items.id (the real PK — NOT line_item_id; this table
+// has no separate "line item" id column in this schema).
+if (!tableExists($conn, 'ticket_tokens')) {
+    runQ($conn, "
+        CREATE TABLE `ticket_tokens` (
+            `token_id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+            `transaction_id` INT UNSIGNED NOT NULL,
+            `transaction_item_id` INT UNSIGNED NOT NULL,
+            `movie_id` INT UNSIGNED NOT NULL,
+            `showtime_id` INT UNSIGNED NOT NULL,
+            `ticket_token` VARCHAR(128) NOT NULL,
+            `token_status` ENUM('valid','used','voided') NOT NULL DEFAULT 'valid',
+            `checked_in_at` DATETIME NULL,
+            `checked_in_terminal` VARCHAR(100) NULL,
+            `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            PRIMARY KEY (`token_id`),
+            UNIQUE KEY `uq_ticket_token` (`ticket_token`),
+            KEY `idx_tt_transaction` (`transaction_id`),
+            KEY `idx_tt_showtime` (`showtime_id`),
+            KEY `idx_tt_status` (`token_status`),
+            CONSTRAINT `fk_tt_transaction`
+                FOREIGN KEY (`transaction_id`) REFERENCES `transactions` (`id`)
+                ON DELETE CASCADE ON UPDATE CASCADE,
+            CONSTRAINT `fk_tt_item`
+                FOREIGN KEY (`transaction_item_id`) REFERENCES `transaction_items` (`id`)
+                ON DELETE CASCADE ON UPDATE CASCADE,
+            CONSTRAINT `fk_tt_movie`
+                FOREIGN KEY (`movie_id`) REFERENCES `movies` (`id`)
+                ON UPDATE CASCADE,
+            CONSTRAINT `fk_tt_showtime`
+                FOREIGN KEY (`showtime_id`) REFERENCES `showtimes` (`id`)
+                ON UPDATE CASCADE
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+    ", 'create ticket_tokens');
+    $log[] = 'created ticket_tokens';
+} else {
+    $log[] = 'skip ticket_tokens (exists)';
+}
+
 $conn->close();
 echo json_encode(['status' => 'success', 'log' => $log]);

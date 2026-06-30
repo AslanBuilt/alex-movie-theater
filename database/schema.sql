@@ -21,6 +21,7 @@ CREATE TABLE `movies` (
     `title` VARCHAR(255) NOT NULL,
     `rating` VARCHAR(10) NOT NULL DEFAULT '',
     `screen` ENUM('large', 'small', 'either') NOT NULL DEFAULT 'either',
+    `duration_minutes` INT UNSIGNED NULL,
     `poster_path` VARCHAR(500) NOT NULL DEFAULT '',
     `description` TEXT NULL,
     `status` ENUM('now_showing', 'coming_soon', 'archived') NOT NULL DEFAULT 'now_showing',
@@ -186,6 +187,7 @@ CREATE TABLE `transactions` (
     `source_channel` ENUM('website','kiosk','staff') NOT NULL DEFAULT 'website',
     `total_amount` DECIMAL(8,2) NOT NULL,
     `payment_status` ENUM('paid','pending','failed','voided') NOT NULL DEFAULT 'pending',
+    `fulfillment_status` ENUM('pending','fulfilled','voided') NOT NULL DEFAULT 'pending',
     `payment_method` VARCHAR(50) NOT NULL DEFAULT 'mock',
     `stripe_payment_intent_id` VARCHAR(255) NULL,
     `gateway_ref` VARCHAR(100) NULL,
@@ -217,6 +219,40 @@ CREATE TABLE `transaction_items` (
     CONSTRAINT `fk_items_transaction`
         FOREIGN KEY (`transaction_id`) REFERENCES `transactions` (`id`)
         ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ----------------------------------------------------------------------------
+-- ticket_tokens — QR check-in, one row per individual ticket
+-- ----------------------------------------------------------------------------
+DROP TABLE IF EXISTS `ticket_tokens`;
+CREATE TABLE `ticket_tokens` (
+    `token_id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+    `transaction_id` INT UNSIGNED NOT NULL,
+    `transaction_item_id` INT UNSIGNED NOT NULL,
+    `movie_id` INT UNSIGNED NOT NULL,
+    `showtime_id` INT UNSIGNED NOT NULL,
+    `ticket_token` VARCHAR(128) NOT NULL,
+    `token_status` ENUM('valid','used','voided') NOT NULL DEFAULT 'valid',
+    `checked_in_at` DATETIME NULL,
+    `checked_in_terminal` VARCHAR(100) NULL,
+    `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (`token_id`),
+    UNIQUE KEY `uq_ticket_token` (`ticket_token`),
+    KEY `idx_tt_transaction` (`transaction_id`),
+    KEY `idx_tt_showtime` (`showtime_id`),
+    KEY `idx_tt_status` (`token_status`),
+    CONSTRAINT `fk_tt_transaction`
+        FOREIGN KEY (`transaction_id`) REFERENCES `transactions` (`id`)
+        ON DELETE CASCADE ON UPDATE CASCADE,
+    CONSTRAINT `fk_tt_item`
+        FOREIGN KEY (`transaction_item_id`) REFERENCES `transaction_items` (`id`)
+        ON DELETE CASCADE ON UPDATE CASCADE,
+    CONSTRAINT `fk_tt_movie`
+        FOREIGN KEY (`movie_id`) REFERENCES `movies` (`id`)
+        ON UPDATE CASCADE,
+    CONSTRAINT `fk_tt_showtime`
+        FOREIGN KEY (`showtime_id`) REFERENCES `showtimes` (`id`)
+        ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ----------------------------------------------------------------------------
