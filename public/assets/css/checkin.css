@@ -1,0 +1,76 @@
+/* ============================================================
+   THE ALEX — TICKET CHECK-IN KIOSK
+   Dark, theatrical palette (mirrors admin.css / the public site) —
+   this screen is the customer's last touchpoint before the show,
+   not an internal ops tool, so it carries the brand mood.
+   ============================================================ */
+:root{
+  --crimson:#8B1D33; --crimson-light:#A8253F;
+  --cream:#F2E8DC; --cream-dim:#C8B8A8;
+  --bg-primary:#0C0807; --bg-card:#1C1410;
+  --text-secondary:#9A8070; --border-light:#3A2418;
+  --success-bg:#1f5132; --danger-bg:#6B1527;
+  --font-display:'Playfair Display',Georgia,serif;
+  --font-body:'Lato','Helvetica Neue',Arial,sans-serif;
+}
+*{box-sizing:border-box;}
+html,body{height:100%;margin:0;}
+body{
+  background:var(--bg-primary); color:var(--cream); font-family:var(--font-body);
+  overflow:hidden; -webkit-font-smoothing:antialiased;
+}
+.kiosk{ position:fixed; inset:0; display:flex; flex-direction:column; }
+
+.state{
+  flex:1; display:none; flex-direction:column; align-items:center; justify-content:center;
+  text-align:center; padding:2rem; gap:1rem;
+}
+.state.show{ display:flex; }
+
+/* ---- ready / scanning ---- */
+#stateReady{ position:relative; }
+.cam-wrap{
+  position:relative; width:min(70vw, 70vh, 520px); aspect-ratio:1;
+  border-radius:24px; overflow:hidden; background:#000;
+  border:3px dashed var(--cream-dim);
+}
+.cam-wrap video{ width:100%; height:100%; object-fit:cover; display:block; }
+.cam-fallback-icon{
+  position:absolute; inset:0; display:none; align-items:center; justify-content:center;
+  color:var(--cream-dim);
+}
+.cam-wrap.no-camera .cam-fallback-icon{ display:flex; }
+.cam-wrap.no-camera video{ display:none; }
+.cam-fallback-icon svg{ width:96px; height:96px; }
+#stateReady h1{ font-family:var(--font-display); font-size:2.2rem; margin:1.5rem 0 0.25rem; }
+#stateReady p{ color:var(--text-secondary); font-size:1.2rem; margin:0; }
+
+.manual-row{
+  margin-top:2rem; display:flex; gap:0.6rem; width:min(90vw, 420px);
+}
+.manual-row input{
+  flex:1; background:var(--bg-card); border:1px solid var(--border-light); color:var(--cream);
+  border-radius:10px; padding:0 1rem; font-size:1.1rem; min-height:60px;
+}
+.manual-row button{
+  background:var(--bg-card); border:1px solid var(--border-light); color:var(--cream-dim);
+  border-radius:10px; padding:0 1.5rem; font-weight:700; font-size:1.1rem; min-height:60px; cursor:pointer;
+}
+.manual-row button:hover{ background:var(--crimson); color:var(--cream); border-color:var(--crimson-light); }
+
+/* ---- result states ---- */
+.state.success{ background:var(--success-bg); }
+.state.fail{ background:var(--danger-bg); }
+.state .icon{ width:140px; height:140px; }
+.state h1{ font-family:var(--font-display); font-size:clamp(2rem, 6vw, 3.2rem); margin:0; color:#fff; line-height:1.2; }
+.state .sub{ font-size:clamp(1.1rem, 3vw, 1.6rem); color:rgba(255,255,255,0.88); margin:0; }
+
+@media (prefers-reduced-motion: no-preference){
+  .state.show{ animation:fadeIn .25s ease; }
+}
+@keyframes fadeIn{ from{ opacity:0; } to{ opacity:1; } }
+
+@media (max-width:600px){
+  .cam-wrap{ width:min(85vw, 85vh, 400px); }
+  #stateReady h1{ font-size:1.6rem; }
+}
