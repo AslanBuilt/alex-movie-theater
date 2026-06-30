@@ -573,6 +573,46 @@
     toastT = setTimeout(function () { t.classList.remove('show'); }, 2400);
   }
 
+  /* ---------------- live stock polling ----------------
+     Refreshes stock/reorder from the server every 60s so an item sold out on
+     another terminal greys out here without a page reload. Updates BOOT.products
+     in place and swaps only the cards that actually changed — cards not on the
+     currently visible tab are skipped (no node to update), and the rail badge
+     counts are patched without re-attaching the category click listener. */
+  function refreshCatBadges() {
+    var wrap = document.getElementById('cats');
+    if (!wrap) return;
+    var btns = wrap.querySelectorAll('.cat');
+    for (var i = 0; i < btns.length; i++) {
+      var cb = btns[i].querySelector('.cb');
+      if (cb) cb.textContent = availCount(btns[i].getAttribute('data-tab'));
+    }
+    setCatHeader();
+  }
+  function pollStock() {
+    fetch('../api/pos-stock.php', { credentials: 'same-origin' })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (data) {
+        if (!data || !data.ok) return;
+        var anyChanged = false;
+        BOOT.products.forEach(function (p) {
+          var fresh = data.concessions[p.id];
+          if (!fresh || (fresh.stock === p.stock && fresh.reorder === p.reorder)) return;
+          p.stock = fresh.stock;
+          p.reorder = fresh.reorder;
+          anyChanged = true;
+          var old = document.querySelector('#pgrid .card[data-pid="' + p.id + '"]');
+          if (old) old.replaceWith(buildConcessionCard(p));
+        });
+        if (anyChanged) {
+          refreshSteppers();
+          refreshCatBadges();
+        }
+      })
+      .catch(function () { /* next tick retries */ });
+  }
+  setInterval(pollStock, 60000);
+
   /* ---------------- init ---------------- */
   buildCats();
   setCatHeader();
