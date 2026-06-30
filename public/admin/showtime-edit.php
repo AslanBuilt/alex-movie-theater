@@ -24,10 +24,17 @@ $movies  = [];
 $isLegacy = false;
 
 try {
-    $movies = $db->query('SELECT id, title FROM movies ORDER BY title ASC')
+    $movies = $db->query('SELECT id, title, duration_minutes FROM movies ORDER BY title ASC')
                  ->fetchAll(PDO::FETCH_ASSOC) ?: [];
 } catch (PDOException $e) {
     error_log('showtime-edit movies load: ' . $e->getMessage());
+}
+
+$movieDurations = [];
+foreach ($movies as $m) {
+    if ($m['duration_minutes'] !== null) {
+        $movieDurations[(int)$m['id']] = (int)$m['duration_minutes'];
+    }
 }
 
 if ($isEdit) {
@@ -153,6 +160,16 @@ $csrf = $auth->generateCsrfToken();
       <input type="time" name="showtime_time" id="showtime_time"
              value="<?= e($old['showtime_time']) ?>" required>
     </div>
+    <div class="form-group" id="end-time-group">
+      <label for="manual_end_time">Ends (manual)</label>
+      <input type="time" id="manual_end_time">
+      <small class="form-help">Set a duration on this movie to calculate this automatically.</small>
+    </div>
+    <div class="form-group" id="end-time-calculated" style="display:none;">
+      <label>Ends</label>
+      <div class="end-time-readout" id="end-time-readout" style="padding:0.55rem 0; font-weight:600;"></div>
+      <small class="form-help">Calculated from the movie's duration.</small>
+    </div>
   </div>
 
   <div class="form-row">
@@ -180,5 +197,44 @@ $csrf = $auth->generateCsrfToken();
     <a class="btn btn-outline" href="showtimes.php?movie_id=<?= $old['movie_id'] ?>">Cancel</a>
   </div>
 </form>
+
+<script>
+(function () {
+    var durations = <?= json_encode($movieDurations, JSON_FORCE_OBJECT) ?>;
+    var movieSel  = document.getElementById('movie_id');
+    var timeInput = document.getElementById('showtime_time');
+    var manualGrp = document.getElementById('end-time-group');
+    var calcGrp   = document.getElementById('end-time-calculated');
+    var readout   = document.getElementById('end-time-readout');
+
+    function formatTime(totalMinutes) {
+        totalMinutes = ((totalMinutes % 1440) + 1440) % 1440;
+        var h = Math.floor(totalMinutes / 60);
+        var m = totalMinutes % 60;
+        var suffix = h >= 12 ? 'PM' : 'AM';
+        var h12 = h % 12;
+        if (h12 === 0) h12 = 12;
+        return h12 + ':' + (m < 10 ? '0' : '') + m + ' ' + suffix;
+    }
+
+    function update() {
+        var duration = durations[movieSel.value];
+        if (!duration || !timeInput.value) {
+            manualGrp.style.display = '';
+            calcGrp.style.display   = 'none';
+            return;
+        }
+        var parts = timeInput.value.split(':');
+        var startMinutes = parseInt(parts[0], 10) * 60 + parseInt(parts[1], 10);
+        readout.textContent = formatTime(startMinutes) + ' → Ends ' + formatTime(startMinutes + duration);
+        manualGrp.style.display = 'none';
+        calcGrp.style.display   = '';
+    }
+
+    movieSel.addEventListener('change', update);
+    timeInput.addEventListener('input', update);
+    update();
+})();
+</script>
 
 <?php require_once __DIR__ . '/includes/admin-footer.php'; ?>

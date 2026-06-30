@@ -11,6 +11,7 @@ $old = [
     'title'        => '',
     'rating'       => '',
     'screen'       => 'either',
+    'duration_minutes' => '',
     'poster_path'  => '',
     'description'  => '',
     'status'       => 'now_showing',
@@ -36,6 +37,7 @@ if ($isEdit) {
             'title'       => (string)$row['title'],
             'rating'      => (string)($row['rating'] ?? ''),
             'screen'      => (string)$row['screen'],
+            'duration_minutes' => $row['duration_minutes'] !== null ? (int)$row['duration_minutes'] : '',
             'poster_path' => (string)($row['poster_path'] ?? ''),
             'description' => (string)($row['description'] ?? ''),
             'status'      => (string)$row['status'],
@@ -61,6 +63,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $old['title']       = trim((string)($_POST['title'] ?? ''));
         $old['rating']      = trim((string)($_POST['rating'] ?? ''));
         $old['screen']      = (string)($_POST['screen'] ?? 'either');
+
+        $durHours = max(0, (int)($_POST['duration_hours'] ?? 0));
+        $durMins  = max(0, min(59, (int)($_POST['duration_minutes_part'] ?? 0)));
+        $totalDur = $durHours * 60 + $durMins;
+        $old['duration_minutes'] = $totalDur > 0 ? $totalDur : '';
+
         $old['poster_path'] = trim((string)($_POST['poster_path'] ?? ''));
         $old['description'] = (string)($_POST['description'] ?? '');
         $old['status']      = (string)($_POST['status'] ?? 'now_showing');
@@ -124,6 +132,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                 title = :title,
                                 rating = :rating,
                                 screen = :screen,
+                                duration_minutes = :duration_minutes,
                                 poster_path = :poster_path,
                                 description = :description,
                                 status = :status,
@@ -136,6 +145,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         ':title'       => $old['title'],
                         ':rating'      => $old['rating'] !== '' ? $old['rating'] : null,
                         ':screen'      => $old['screen'],
+                        ':duration_minutes' => $old['duration_minutes'] !== '' ? $old['duration_minutes'] : null,
                         ':poster_path' => $old['poster_path'] !== '' ? $old['poster_path'] : null,
                         ':description' => $old['description'] !== '' ? $old['description'] : null,
                         ':status'      => $old['status'],
@@ -146,14 +156,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $_SESSION['flash'] = ['type' => 'success', 'message' => 'Movie updated.'];
                 } else {
                     $sql = 'INSERT INTO movies
-                                (title, rating, screen, poster_path, description, status, online_only, sort_order, created_at, updated_at)
+                                (title, rating, screen, duration_minutes, poster_path, description, status, online_only, sort_order, created_at, updated_at)
                             VALUES
-                                (:title, :rating, :screen, :poster_path, :description, :status, :online_only, :sort_order, NOW(), NOW())';
+                                (:title, :rating, :screen, :duration_minutes, :poster_path, :description, :status, :online_only, :sort_order, NOW(), NOW())';
                     $stmt = $db->prepare($sql);
                     $stmt->execute([
                         ':title'       => $old['title'],
                         ':rating'      => $old['rating'] !== '' ? $old['rating'] : null,
                         ':screen'      => $old['screen'],
+                        ':duration_minutes' => $old['duration_minutes'] !== '' ? $old['duration_minutes'] : null,
                         ':poster_path' => $old['poster_path'] !== '' ? $old['poster_path'] : null,
                         ':description' => $old['description'] !== '' ? $old['description'] : null,
                         ':status'      => $old['status'],
@@ -228,6 +239,17 @@ $csrf = $auth->generateCsrfToken();
                 <?php endforeach; ?>
             </select>
         </div>
+    </div>
+
+    <div class="form-group">
+        <label for="duration_hours">Duration</label>
+        <div style="display:flex; gap:0.5rem; align-items:center;">
+            <input type="number" name="duration_hours" id="duration_hours" min="0" max="9" style="width:5rem;"
+                   value="<?= $old['duration_minutes'] !== '' ? intdiv((int)$old['duration_minutes'], 60) : '' ?>"> <span>hr</span>
+            <input type="number" name="duration_minutes_part" id="duration_minutes_part" min="0" max="59" style="width:5rem;"
+                   value="<?= $old['duration_minutes'] !== '' ? ((int)$old['duration_minutes'] % 60) : '' ?>"> <span>min</span>
+        </div>
+        <small class="form-help">Set a duration to enable automatic end-time calculation for showtimes.</small>
     </div>
 
     <div class="form-group">
