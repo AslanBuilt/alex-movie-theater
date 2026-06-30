@@ -1,0 +1,88 @@
+/* ============================================================
+   THE ALEX — ORDER FULFILLMENT BOARD
+   Same light, high-contrast token family as pos.css — both are
+   "read from across a counter" operator screens, distinct from the
+   editorial-dark admin panel.
+   ============================================================ */
+:root{
+  --c-bg:#eef1f5; --c-surface:#ffffff; --c-surface-2:#f8fafc;
+  --c-border:#dbe1ea; --c-border-strong:#c4ccd8;
+  --c-text:#0f172a; --c-text-2:#475569; --c-text-muted:#7c8696;
+  --c-brand:#b3122b; --c-brand-dark:#8d0e22;
+  --c-online:#1d4ed8; --c-online-bg:#dbeafe;
+  --c-walkup:#15803d; --c-walkup-bg:#dcfce7;
+  --c-kiosk:#7c3aed; --c-kiosk-bg:#ede9fe;
+  --s2:8px; --s3:16px; --s4:24px; --s5:32px;
+  --r:14px;
+  --shadow:0 1px 2px rgba(15,23,42,.06),0 4px 12px rgba(15,23,42,.08);
+  --font:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  font-family:var(--font);background:var(--c-bg);color:var(--c-text);
+  font-variant-numeric:tabular-nums lining-nums;
+  -webkit-font-smoothing:antialiased;
+  min-height:100vh;
+}
+.tnum{font-variant-numeric:tabular-nums lining-nums}
+
+.board{ padding:var(--s5); max-width:1600px; margin:0 auto; }
+
+.board-head{
+  display:flex; justify-content:space-between; align-items:baseline; flex-wrap:wrap;
+  gap:var(--s3); margin-bottom:var(--s5);
+}
+.board-head h1{ font-size:2.2rem; font-weight:800; }
+.board-head .ts{ color:var(--c-text-muted); font-size:1.1rem; }
+
+.empty-state{
+  text-align:center; padding:6rem 1rem; color:var(--c-text-muted);
+  font-size:1.6rem; font-weight:700;
+}
+
+.order-grid{
+  display:grid; grid-template-columns:repeat(auto-fill, minmax(340px, 1fr));
+  gap:var(--s4);
+}
+
+.order-card{
+  background:var(--c-surface); border:1px solid var(--c-border); border-radius:var(--r);
+  box-shadow:var(--shadow); padding:var(--s4);
+  display:flex; flex-direction:column; gap:var(--s3);
+  animation:slideIn .35s ease;
+}
+@keyframes slideIn{ from{ opacity:0; transform:translateY(12px); } to{ opacity:1; transform:none; } }
+.order-card.leaving{ animation:slideOut .35s ease forwards; }
+@keyframes slideOut{ to{ transform:translateX(40px); opacity:0; } }
+@media (prefers-reduced-motion: reduce){ .order-card, .order-card.leaving{ animation:none; } }
+
+.order-card-top{ display:flex; justify-content:space-between; align-items:flex-start; gap:var(--s2); }
+.order-id{ font-size:2rem; font-weight:800; line-height:1; }
+.order-time{ color:var(--c-text-muted); font-size:1rem; white-space:nowrap; padding-top:0.3rem; }
+
+.channel-badge{
+  display:inline-block; padding:0.3rem 0.75rem; border-radius:999px;
+  font-size:0.85rem; font-weight:700; text-transform:uppercase; letter-spacing:0.03em;
+}
+.badge-online{ background:var(--c-online-bg); color:var(--c-online); }
+.badge-walkup{ background:var(--c-walkup-bg); color:var(--c-walkup); }
+.badge-kiosk{ background:var(--c-kiosk-bg); color:var(--c-kiosk); }
+
+.order-items{ list-style:none; display:flex; flex-direction:column; gap:0.4rem; }
+.order-items li{ display:flex; gap:0.5rem; font-size:1.2rem; align-items:baseline; }
+.order-items .qty{ font-weight:800; min-width:2.2rem; }
+.order-items .opt{ color:var(--c-text-muted); font-size:1rem; }
+
+.complete-btn{
+  margin-top:auto; background:var(--c-brand); color:#fff; border:none; border-radius:10px;
+  padding:1.1rem; font-weight:800; font-size:1.15rem; cursor:pointer; min-height:60px;
+}
+.complete-btn:hover{ background:var(--c-brand-dark); }
+.complete-btn:disabled{ opacity:0.6; cursor:not-allowed; }
+
+@media (max-width:720px){
+  .board{ padding:var(--s3); }
+  .board-head h1{ font-size:1.6rem; }
+  .order-grid{ grid-template-columns:1fr; }
+}

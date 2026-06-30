@@ -1,5 +1,9 @@
 User-agent: *
 Allow: /
+Disallow: /fulfillment.php
+Disallow: /checkin.php
+Disallow: /pos/
+Disallow: /api/
 
 Sitemap: https://parityrfp.com/cs/alex-movie-theater/sitemap.php
 
