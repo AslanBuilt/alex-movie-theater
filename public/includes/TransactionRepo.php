@@ -319,6 +319,45 @@ final class TransactionRepo
         }
     }
 
+    /** Revenue per day for the current calendar week (Mon-start). Sparse — only days with sales. */
+    public static function getRevenueByDayThisWeek(): array
+    {
+        try {
+            $pdo  = Database::getInstance();
+            $stmt = $pdo->query(
+                "SELECT DATE(created_at) AS day, SUM(total_amount) AS revenue
+                 FROM transactions
+                 WHERE payment_status = 'paid' AND YEARWEEK(created_at, 1) = YEARWEEK(CURDATE(), 1)
+                 GROUP BY DATE(created_at)
+                 ORDER BY day ASC"
+            );
+            return $stmt->fetchAll();
+        } catch (\Throwable $e) {
+            error_log('[TransactionRepo::getRevenueByDayThisWeek] ' . $e->getMessage());
+            return [];
+        }
+    }
+
+    /** Revenue per day for the current calendar month. Sparse — only days with sales. */
+    public static function getRevenueByDayThisMonth(): array
+    {
+        try {
+            $pdo  = Database::getInstance();
+            $stmt = $pdo->query(
+                "SELECT DATE(created_at) AS day, SUM(total_amount) AS revenue
+                 FROM transactions
+                 WHERE payment_status = 'paid'
+                   AND YEAR(created_at) = YEAR(CURDATE()) AND MONTH(created_at) = MONTH(CURDATE())
+                 GROUP BY DATE(created_at)
+                 ORDER BY day ASC"
+            );
+            return $stmt->fetchAll();
+        } catch (\Throwable $e) {
+            error_log('[TransactionRepo::getRevenueByDayThisMonth] ' . $e->getMessage());
+            return [];
+        }
+    }
+
     /** Paginated list for admin. */
     public static function getPaginated(int $page = 1, int $perPage = 25, string $status = ''): array
     {
