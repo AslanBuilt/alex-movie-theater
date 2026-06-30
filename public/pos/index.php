@@ -137,7 +137,6 @@ foreach ($concessions as $c) {
 
     $stock    = (int)($c['stock_quantity'] ?? 0);
     $reorder  = $c['reorder_point'] !== null ? (int)$c['reorder_point'] : null;
-    $imageRel = assetRel((string)($c['image_path'] ?? ''));
 
     $products[] = [
         'kind'    => 'concession',
@@ -147,7 +146,7 @@ foreach ($concessions as $c) {
         'price'   => round((float)$c['price'], 2),
         'stock'   => $stock,
         'reorder' => $reorder,
-        'image'   => $imageRel !== '' ? '../assets/' . $imageRel : '',
+        'image'   => posterUrl($c['image_path'] ?? ''),
         'options' => $options,
     ];
 }

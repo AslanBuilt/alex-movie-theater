@@ -129,7 +129,7 @@ function cartItems(): array
                 'price'    => (float)$item['price'],
                 'qty'      => $qty,
                 'option'   => $e['option'] ?? null,
-                'image'    => assetRel($item['image_path'] ?? ''),
+                'image'    => posterUrl($item['image_path'] ?? ''),
                 'subtotal' => round((float)$item['price'] * $qty, 2),
             ];
         }

@@ -130,7 +130,7 @@
         var html = '<ul class="cart-item-list">';
         items.forEach(function (item) {
             var img = item.image
-                ? '<img class="cart-item-img" src="assets/' + esc(item.image) + '" alt="" loading="lazy">'
+                ? '<img class="cart-item-img" src="' + esc(item.image) + '" alt="" loading="lazy">'
                 : '<div class="cart-item-img cart-item-img--placeholder"><svg viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/></svg></div>';
             html +=
                 '<li class="cart-item" data-id="' + item.id + '" data-type="' + esc(item.type || 'concession') + '" data-option="' + esc(item.option || '') + '">' +

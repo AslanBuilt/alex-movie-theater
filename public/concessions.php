@@ -50,7 +50,7 @@ require __DIR__ . '/templates/header.php';
           <?php foreach ($catItems as $item): ?>
             <li class="concession-row-item">
               <?php if (!empty($item['image_path'])): ?>
-                <img class="concession-row-thumb" src="assets/<?= htmlspecialchars(assetRel($item['image_path'])) ?>" alt="<?= htmlspecialchars($item['name']) ?>" loading="lazy">
+                <img class="concession-row-thumb" src="<?= htmlspecialchars(posterUrl($item['image_path'])) ?>" alt="<?= htmlspecialchars($item['name']) ?>" loading="lazy">
               <?php else: ?>
                 <div class="concession-row-thumb concession-row-thumb--placeholder"></div>
               <?php endif; ?>

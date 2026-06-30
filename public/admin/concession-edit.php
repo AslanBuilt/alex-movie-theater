@@ -177,7 +177,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <small class="form-help">JPG, PNG, GIF, or WebP (max 8 MB). Saves to <code>assets/images/concessions/</code> and fills the path below.</small>
     <?php if ((string)$old['image_path'] !== ''): ?>
       <div style="margin-top:0.6rem; display:flex; align-items:center; gap:0.75rem; flex-wrap:wrap;">
-        <img src="<?= e(SITE_URL . 'assets/' . ltrim((string)$old['image_path'], '/')) ?>" alt="Current image" id="image-preview"
+        <img src="<?= e(posterUrl($old['image_path'])) ?>" alt="Current image" id="image-preview"
              style="height:72px; width:72px; object-fit:cover; border-radius:4px; border:1px solid var(--border);">
         <span style="font-size:0.8rem; color:var(--text-secondary);">Current image</span>
       </div>
