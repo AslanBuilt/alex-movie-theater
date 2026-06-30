@@ -10,7 +10,7 @@ $isEdit = $id > 0;
 
 $old = [
     'movie_id'          => (int)($_GET['movie_id'] ?? 0),
-    'showtime_date'     => '',
+    'showtime_date'     => preg_match('/^\d{4}-\d{2}-\d{2}$/', (string)($_GET['date'] ?? '')) ? (string)$_GET['date'] : '',
     'showtime_time'     => '',
     'available_tickets' => 50,
     'is_active'         => 1,
@@ -22,6 +22,15 @@ $old = [
 $errors  = [];
 $movies  = [];
 $isLegacy = false;
+
+/** Where to send the admin back to — the month containing this showtime's date. */
+function showtime_return_url(string $date): string
+{
+    if (preg_match('/^(\d{4})-(\d{2})-\d{2}$/', $date, $m)) {
+        return 'showtimes.php?year=' . $m[1] . '&month=' . $m[2];
+    }
+    return 'showtimes.php';
+}
 
 try {
     $movies = $db->query('SELECT id, title, duration_minutes FROM movies ORDER BY title ASC')
@@ -90,7 +99,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 );
                 if ($ok) {
                     $_SESSION['flash'] = ['type' => 'success', 'message' => 'Showtime updated.'];
-                    header('Location: showtimes.php?movie_id=' . $old['movie_id']);
+                    header('Location: ' . showtime_return_url($old['showtime_date']));
                     exit;
                 }
                 $errors[] = 'Failed to update showtime.';
@@ -104,7 +113,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 );
                 if ($newId) {
                     $_SESSION['flash'] = ['type' => 'success', 'message' => 'Showtime created.'];
-                    header('Location: showtimes.php?movie_id=' . $old['movie_id']);
+                    header('Location: ' . showtime_return_url($old['showtime_date']));
                     exit;
                 }
                 $errors[] = 'Failed to create showtime.';
@@ -117,7 +126,7 @@ $csrf = $auth->generateCsrfToken();
 ?>
 <div class="admin-page-header">
   <h1><?= $isEdit ? 'Edit Showtime' : 'New Showtime' ?></h1>
-  <a class="btn btn-sm btn-secondary" href="showtimes.php?movie_id=<?= $old['movie_id'] ?>">&#8592; Back</a>
+  <a class="btn btn-sm btn-secondary" href="<?= e(showtime_return_url($old['showtime_date'])) ?>">&#8592; Back</a>
 </div>
 
 <?php if (!empty($errors)): ?>
@@ -194,7 +203,7 @@ $csrf = $auth->generateCsrfToken();
 
   <div class="form-actions">
     <button type="submit" class="btn btn-primary"><?= $isEdit ? 'Save Changes' : 'Create Showtime' ?></button>
-    <a class="btn btn-outline" href="showtimes.php?movie_id=<?= $old['movie_id'] ?>">Cancel</a>
+    <a class="btn btn-outline" href="<?= e(showtime_return_url($old['showtime_date'])) ?>">Cancel</a>
   </div>
 </form>
 
