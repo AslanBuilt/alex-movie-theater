@@ -236,7 +236,7 @@ $csrf = $auth->generateCsrfToken();
         <small class="form-help">Upload JPG, PNG, or WebP (max 8 MB). Overwrites the path below if provided.</small>
         <?php if ($old['poster_path'] !== ''): ?>
             <div style="margin-top:0.6rem; display:flex; align-items:center; gap:0.75rem; flex-wrap:wrap;">
-                <img src="<?= e(SITE_URL . 'assets/' . $old['poster_path']) ?>" alt="Current poster" id="poster-preview"
+                <img src="<?= e(posterUrl($old['poster_path'])) ?>" alt="Current poster" id="poster-preview"
                      style="height:80px; width:56px; object-fit:cover; border-radius:3px; border:1px solid var(--border);">
                 <span style="font-size:0.8rem; color:var(--text-secondary);">Current poster</span>
             </div>
@@ -248,7 +248,7 @@ $csrf = $auth->generateCsrfToken();
     <div class="form-group">
         <label for="poster_path">Poster Path (manual)</label>
         <input type="text" name="poster_path" id="poster_path" maxlength="500" value="<?= e($old['poster_path']) ?>">
-        <small class="form-help">Relative path (e.g. <code>images/posters/mymovie.jpg</code>) or leave blank if uploading above.</small>
+        <small class="form-help">Either a relative path (e.g. <code>images/posters/mymovie.jpg</code>) or a full image URL (e.g. from "Find Poster on Google" — right-click the image and copy its address). Leave blank if uploading above.</small>
     </div>
 
     <div class="form-group">

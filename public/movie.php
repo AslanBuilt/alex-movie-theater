@@ -24,9 +24,7 @@ if ($movie === null) {
     $pageDescription = $movie['description']
         ? substr($movie['description'], 0, 155)
         : 'Now showing at The Alex in Alexandria, Indiana.';
-    $ogImage = !empty($movie['poster_path'])
-        ? SITE_URL . 'assets/' . ltrim($movie['poster_path'], '/')
-        : null;
+    $ogImage = posterUrl($movie['poster_path'] ?? '') ?: null;
 }
 
 require __DIR__ . '/templates/header.php';
@@ -82,7 +80,7 @@ require __DIR__ . '/templates/header.php';
       <!-- Poster -->
       <div class="movie-detail-poster">
         <?php if (!empty($movie['poster_path'])): ?>
-          <img src="assets/<?= e($movie['poster_path']) ?>" alt="<?= e($movie['title']) ?> movie poster" loading="eager">
+          <img src="<?= e(posterUrl($movie['poster_path'])) ?>" alt="<?= e($movie['title']) ?> movie poster" loading="eager">
         <?php else: ?>
           <div class="movie-poster-placeholder"><?= e($movie['title']) ?></div>
         <?php endif; ?>

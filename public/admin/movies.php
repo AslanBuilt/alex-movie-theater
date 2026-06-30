@@ -135,8 +135,7 @@ function admin_page_url(array $overrides, string $base): string
             <tr><td colspan="8" class="empty-state">No movies found. <a href="movie-edit.php">Add the first one.</a></td></tr>
         <?php else : foreach ($rows as $row) : ?>
             <?php
-                $posterPath = (string)($row['poster_path'] ?? '');
-                $posterUrl  = $posterPath !== '' ? (SITE_URL . 'assets/' . $posterPath) : '';
+                $posterUrl  = posterUrl((string)($row['poster_path'] ?? ''));
             ?>
             <tr>
                 <td style="width:52px; padding:0.5rem 0.75rem;">

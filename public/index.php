@@ -70,8 +70,7 @@ require __DIR__ . '/templates/header.php';
                 $title      = (string) ($movie['title'] ?? '');
                 $rating     = (string) ($movie['rating'] ?? '');
                 $screen     = (string) ($movie['screen'] ?? 'either');
-                $poster     = (string) ($movie['poster_path'] ?? '');
-                $posterSrc  = $poster !== '' ? 'assets/' . ltrim($poster, '/') : '';
+                $posterSrc  = posterUrl((string) ($movie['poster_path'] ?? ''));
                 $screenLabel = $screen === 'large' ? 'Large Screen' : ($screen === 'small' ? 'Small Screen' : '');
               ?>
               <div class="poster-card" data-track="movie-click" data-track-label="<?= e($title) ?>">

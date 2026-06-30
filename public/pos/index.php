@@ -170,7 +170,7 @@ foreach (MovieRepo::getNowShowing() as $movie) {
         'adult'       => POS_TICKET_ADULT,
         'child'       => POS_TICKET_CHILD,
         'remaining'   => max(0, $remaining),
-        'image'       => !empty($movie['poster_path']) ? '../assets/' . assetRel((string)$movie['poster_path']) : '',
+        'image'       => posterUrl($movie['poster_path'] ?? ''),
     ];
 }
 

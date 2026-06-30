@@ -30,6 +30,25 @@ function assetRel(?string $path): string
     return $p;
 }
 
+/**
+ * Resolve a stored poster_path to a displayable <img src>. Admin can paste an
+ * absolute image URL (e.g. via the "Find Poster on Google" helper) instead of
+ * uploading a file — those must be returned untouched. Prefixing an absolute
+ * URL with 'assets/' produces a path that 404s, which renders as a solid black
+ * box (the poster wrapper's dark placeholder background showing through).
+ */
+function posterUrl(?string $path): string
+{
+    $p = trim((string)$path);
+    if ($p === '') {
+        return '';
+    }
+    if (preg_match('#^(https?:)?//#i', $p) === 1) {
+        return $p;
+    }
+    return asset(assetRel($p));
+}
+
 function url(string $path = ''): string
 {
     return SITE_URL . ltrim($path, '/');
