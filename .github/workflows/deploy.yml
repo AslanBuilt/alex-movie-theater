@@ -151,10 +151,24 @@ jobs:
 
       - name: Clear FTP deploy cache (force full re-upload)
         run: |
-          curl -s \
+          set +e
+          output=$(curl -s -S \
             -u "${{ secrets.FTP_USERNAME }}:${{ secrets.FTP_PASSWORD }}" \
             -Q "DELE /cs/alex-movie-theater/.ftp-deploy-sync-state.json" \
-            "ftp://${{ secrets.FTP_HOST }}" || true
+            "ftp://${{ secrets.FTP_HOST }}" 2>&1)
+          code=$?
+          echo "$output"
+          echo "curl exit code: $code"
+          # Exit 21 = FTP "quote" (DELE) command rejected by the server, e.g. the state file
+          # doesn't exist yet (first run, or it was already cleared) — expected, not an error.
+          # Any OTHER non-zero code (DNS/connect/login failures, etc.) means we can't trust the
+          # cache was actually cleared, which risks the next step silently under-uploading against
+          # stale state. Fail loudly here instead of limping into an incomplete "successful" deploy.
+          if [ "$code" -ne 0 ] && [ "$code" -ne 21 ]; then
+            echo "::error::FTP cache-clear failed unexpectedly (curl exit $code) — aborting before an unreliable upload. See output above."
+            exit "$code"
+          fi
+          echo "Cache-clear step OK (curl exit $code)."
 
       - name: Deploy public/ to web root
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
