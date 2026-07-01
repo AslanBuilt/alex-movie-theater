@@ -104,23 +104,118 @@ document.addEventListener('DOMContentLoaded', function () {
         startTimer();
     });
 
-    // ── Contact form — Formspree AJAX ──
-    var form = document.getElementById('contact-form');
-    if (form) {
+    // ── Formspree forms — validation, GOV.UK-style error summary, AJAX submit ──
+    // Shared by every .js-formspree-form on the site (general contact, rental
+    // inquiry, ...) so validation/error UX stays identical per frontend-form-patterns.
+    function fieldLabelText(form, field) {
+        var label = form.querySelector('label[for="' + field.id + '"]');
+        return label ? label.textContent.replace('*', '').trim() : (field.name || 'This field');
+    }
+
+    function fieldErrorMessage(form, field) {
+        if (field.validity.valueMissing) return fieldLabelText(form, field) + ' is required';
+        if (field.validity.typeMismatch && field.type === 'email') return 'Enter a valid email address';
+        if (field.validity.typeMismatch && field.type === 'tel') return 'Enter a valid phone number';
+        return fieldLabelText(form, field) + ' is not valid';
+    }
+
+    function setFieldError(field, msg) {
+        var group = field.closest('.form-group');
+        if (group) group.classList.add('has-error');
+        field.setAttribute('aria-invalid', 'true');
+        var errId = field.getAttribute('aria-describedby');
+        var errEl = errId ? document.getElementById(errId) : null;
+        if (errEl) {
+            errEl.hidden = false;
+            errEl.innerHTML = '<span class="sr-only">Error: </span>' + msg;
+        }
+    }
+
+    function clearFieldError(field) {
+        var group = field.closest('.form-group');
+        if (group) group.classList.remove('has-error');
+        field.removeAttribute('aria-invalid');
+        var errId = field.getAttribute('aria-describedby');
+        var errEl = errId ? document.getElementById(errId) : null;
+        if (errEl) { errEl.hidden = true; errEl.textContent = ''; }
+    }
+
+    function initFormspreeForm(form) {
+        var wrap       = form.closest('.contact-form-wrap') || form.parentElement;
+        var submitBtn  = form.querySelector('button[type="submit"]');
+        var btnText    = submitBtn ? submitBtn.querySelector('.btn-text') : null;
+        var btnLoading = submitBtn ? submitBtn.querySelector('.btn-loading') : null;
+        var success    = wrap ? wrap.querySelector('.form-success') : null;
+        var bannerError = wrap ? wrap.querySelector('.form-feedback.form-error') : null;
+        var summary    = form.querySelector('.form-error-summary');
+        var summaryList = summary ? summary.querySelector('ul') : null;
+
+        var requiredFields = Array.prototype.slice.call(form.querySelectorAll('[required]'));
+
+        requiredFields.forEach(function (field) {
+            field.addEventListener('blur', function () {
+                if (!field.checkValidity()) {
+                    setFieldError(field, fieldErrorMessage(form, field));
+                } else {
+                    clearFieldError(field);
+                }
+            });
+            field.addEventListener('input', function () {
+                var group = field.closest('.form-group');
+                if (group && group.classList.contains('has-error') && field.checkValidity()) {
+                    clearFieldError(field);
+                }
+            });
+        });
+
+        function validate() {
+            var invalid = [];
+            requiredFields.forEach(function (field) {
+                if (!field.checkValidity()) {
+                    var msg = fieldErrorMessage(form, field);
+                    setFieldError(field, msg);
+                    invalid.push({ field: field, msg: msg });
+                } else {
+                    clearFieldError(field);
+                }
+            });
+            return invalid;
+        }
+
+        function showSummary(invalid) {
+            if (!summary || !summaryList) return;
+            summaryList.innerHTML = '';
+            invalid.forEach(function (item) {
+                var li = document.createElement('li');
+                var a  = document.createElement('a');
+                a.href = '#' + item.field.id;
+                a.textContent = item.msg;
+                a.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    item.field.focus();
+                });
+                li.appendChild(a);
+                summaryList.appendChild(li);
+            });
+            summary.hidden = false;
+            summary.focus();
+        }
+
         form.addEventListener('submit', function (e) {
             e.preventDefault();
 
-            var submitBtn  = document.getElementById('cf-submit');
-            var btnText    = submitBtn.querySelector('.btn-text');
-            var btnLoading = submitBtn.querySelector('.btn-loading');
-            var success    = document.getElementById('cf-success');
-            var error      = document.getElementById('cf-error');
+            var invalid = validate();
+            if (invalid.length) {
+                showSummary(invalid);
+                return;
+            }
+            if (summary) summary.hidden = true;
 
-            btnText.style.display    = 'none';
-            btnLoading.style.display = 'inline';
-            submitBtn.disabled = true;
-            success.style.display = 'none';
-            error.style.display   = 'none';
+            if (btnText) btnText.style.display = 'none';
+            if (btnLoading) btnLoading.style.display = 'inline';
+            if (submitBtn) submitBtn.disabled = true;
+            if (success) success.style.display = 'none';
+            if (bannerError) bannerError.style.display = 'none';
 
             fetch(form.action, {
                 method:  'POST',
@@ -129,20 +224,34 @@ document.addEventListener('DOMContentLoaded', function () {
             })
             .then(function (r) {
                 if (r.ok) {
-                    form.style.display    = 'none';
-                    success.style.display = 'block';
+                    form.style.display = 'none';
+                    if (success) success.style.display = 'block';
                 } else {
                     throw new Error('server');
                 }
             })
             .catch(function () {
-                error.style.display      = 'block';
-                btnText.style.display    = 'inline';
-                btnLoading.style.display = 'none';
-                submitBtn.disabled = false;
+                if (bannerError) bannerError.style.display = 'block';
+                if (btnText) btnText.style.display = 'inline';
+                if (btnLoading) btnLoading.style.display = 'none';
+                if (submitBtn) submitBtn.disabled = false;
             });
         });
     }
+
+    document.querySelectorAll('.js-formspree-form').forEach(initFormspreeForm);
+
+    // ── Rental package buttons — preselect + scroll to the inquiry form ──
+    document.querySelectorAll('.js-package-select').forEach(function (btn) {
+        btn.addEventListener('click', function (e) {
+            var target = document.querySelector('#rental-inquiry');
+            var select = document.getElementById('ri-package');
+            if (!target) return;
+            e.preventDefault();
+            if (select) select.value = btn.getAttribute('data-package') || '';
+            target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        });
+    });
 
     // ── Poster carousel (Now Showing) ──
     document.querySelectorAll('.poster-carousel-wrap').forEach(function (wrap) {

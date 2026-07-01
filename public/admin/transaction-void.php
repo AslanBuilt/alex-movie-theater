@@ -8,6 +8,7 @@ require_once INCLUDES_PATH . '/TransactionRepo.php';
 require_once INCLUDES_PATH . '/ConcessionRepo.php';
 require_once INCLUDES_PATH . '/InventoryRepo.php';
 require_once INCLUDES_PATH . '/ShowtimeRepo.php';
+require_once INCLUDES_PATH . '/TicketTokenRepo.php';
 
 $db   = Database::getInstance();
 $auth = new AdminAuth($db);
@@ -78,6 +79,9 @@ if ($wasPaid) {
             }
         }
     }
+    // Unused QR tokens must stop working the instant a sale is voided; a
+    // ticket already scanned at the door stays 'used' (that admission already happened).
+    TicketTokenRepo::voidForTransaction($id);
 }
 
 $msg = "Voided $ref.";

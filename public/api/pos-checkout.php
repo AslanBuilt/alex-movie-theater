@@ -31,6 +31,7 @@ require_once __DIR__ . '/../config/config.php';
 require_once INCLUDES_PATH . '/Database.php';
 require_once INCLUDES_PATH . '/PosAuth.php';
 require_once INCLUDES_PATH . '/RateLimiter.php';
+require_once INCLUDES_PATH . '/TicketTokenRepo.php';
 
 header('Content-Type: application/json');
 header('Cache-Control: no-store');
@@ -321,6 +322,17 @@ try {
     }
     error_log('[pos-checkout] ' . $e->getMessage());
     posFail(500, 'We could not complete the sale. Please try again.');
+}
+
+// Walk-up ticket sales are paid immediately (no webhook), so mint check-in
+// tokens right here — same as the Stripe webhook does for online orders.
+// Best-effort: a token-generation hiccup must not undo an already-committed sale.
+if ($hasTicket) {
+    try {
+        TicketTokenRepo::generateForTransaction($txnId);
+    } catch (\Throwable $e) {
+        error_log('[pos-checkout] ticket token generation failed for ' . $txnRef . ': ' . $e->getMessage());
+    }
 }
 
 echo json_encode([

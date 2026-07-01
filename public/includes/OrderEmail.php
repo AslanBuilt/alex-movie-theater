@@ -13,9 +13,11 @@ final class OrderEmail
 {
     /**
      * @param array<string,mixed> $txn
-     * @return array{subject:string,html:string,text:string}
+     * @param array<int,array<string,mixed>> $tickets one row per ticket, from
+     *   TicketTokenRepo::generateForTransaction()/getByTransaction()
+     * @return array{subject:string,html:string,text:string,inlineImages:array<int,array{cid:string,bytes:string,filename:string}>}
      */
-    public static function build(array $txn): array
+    public static function build(array $txn, array $tickets = []): array
     {
         $ref     = (string)($txn['transaction_ref'] ?? '');
         $name    = trim((string)($txn['customer_name'] ?? ''));
@@ -58,10 +60,47 @@ final class OrderEmail
         }
 
         $ticketNote = $hasTicket
-            ? 'Your ticket purchase is confirmed — just show this email (or give your name) at the box office. No printout needed.'
+            ? 'Your ticket purchase is confirmed — show the QR code(s) below at the door. One per ticket.'
             : 'Your order is confirmed. Please pick up your items at the concession counter.';
 
         $subject = 'Your ' . SITE_NAME . ' order' . ($ref !== '' ? ' — ' . $ref : '');
+
+        // ---- QR tickets ----
+        // Embedded as CID attachments, NOT data: URIs — Gmail and several other
+        // major webmail clients strip data: image sources from HTML email, which
+        // would silently break the one thing this receipt exists to deliver.
+        $ticketsHtml = '';
+        $ticketsText = '';
+        $inlineImages = [];
+        if ($tickets) {
+            require_once __DIR__ . '/QrCode.php';
+            $ticketsHtml .= '<tr><td style="padding:16px 28px 4px">'
+                . '<p style="margin:0 0 10px;font-size:16px;font-weight:bold;color:' . $ink . '">Your Tickets</p>'
+                . '</td></tr>';
+            $ticketsText .= "\nYour Tickets (show at the door):\n";
+            foreach ($tickets as $i => $t) {
+                $movie    = (string)($t['movie_title'] ?? 'Movie');
+                $when     = (string)($t['when'] ?? '');
+                $seq      = (int)($t['seq'] ?? ($i + 1));
+                $seqTotal = (int)($t['seq_total'] ?? count($tickets));
+                $plainLabel = $movie . ($when !== '' ? ' — ' . $when : '') . ' - Ticket ' . $seq . ' of ' . $seqTotal;
+
+                $cid = 'ticket' . ($i + 1) . '_' . substr((string)($t['ticket_token'] ?? ''), 0, 8);
+                $inlineImages[] = [
+                    'cid'      => $cid,
+                    'bytes'    => QrCode::pngBytes((string)($t['ticket_token'] ?? '')),
+                    'filename' => $cid . '.png',
+                ];
+
+                $ticketsHtml .=
+                    '<tr><td style="padding:0 28px 18px;text-align:center">'
+                    . '<img src="cid:' . $cid . '" width="180" height="180" alt="Ticket QR code" '
+                    . 'style="display:block;margin:0 auto 8px;border:1px solid ' . $line . ';border-radius:6px">'
+                    . '<div style="font-size:13px;color:' . $muted . '">' . $e($plainLabel) . '</div>'
+                    . '</td></tr>';
+                $ticketsText .= '  - ' . $plainLabel . "\n";
+            }
+        }
 
         // ---- HTML ----
         $html = '<!DOCTYPE html><html><head><meta charset="UTF-8">'
@@ -95,6 +134,8 @@ final class OrderEmail
 
             . ($method !== '' ? '<tr><td style="padding:4px 28px 8px;font-size:13px;color:' . $muted . '">Paid by ' . $e(ucfirst($method)) . '</td></tr>' : '')
 
+            . $ticketsHtml
+
             // footer
             . '<tr><td style="padding:22px 28px 26px;border-top:1px solid ' . $line . ';margin-top:8px">'
             . '<p style="margin:0 0 4px;font-size:13px;color:' . $muted . '"><strong style="color:' . $ink . '">' . $e(SITE_NAME) . '</strong></p>'
@@ -115,9 +156,10 @@ final class OrderEmail
             . "\nItems:\n" . $rowsText
             . 'Total: ' . $money($total) . "\n"
             . ($method !== '' ? 'Paid by ' . ucfirst($method) . "\n" : '')
+            . $ticketsText
             . "\n" . SITE_NAME . "\n" . SITE_ADDRESS . "\n" . SITE_PHONE . ' · ' . SITE_EMAIL . "\n"
             . "Questions? Just reply to this email.\n";
 
-        return ['subject' => $subject, 'html' => $html, 'text' => $text];
+        return ['subject' => $subject, 'html' => $html, 'text' => $text, 'inlineImages' => $inlineImages];
     }
 }

@@ -59,8 +59,13 @@ final class Mailer
     /**
      * Send one transactional email. Prefers SendGrid; falls back to PHP mail().
      * Never throws — logs and returns false on any problem.
+     *
+     * @param array<int,array{cid:string,bytes:string,filename?:string}> $inlineImages
+     *   Images referenced from $html as `<img src="cid:THE_CID">`. Passed as
+     *   real CID attachments (not data: URIs) because Gmail and other major
+     *   webmail clients strip data: image sources from HTML email.
      */
-    public static function send(string $toEmail, string $toName, string $subject, string $html, string $text): bool
+    public static function send(string $toEmail, string $toName, string $subject, string $html, string $text, array $inlineImages = []): bool
     {
         $toEmail = trim($toEmail);
         if ($toEmail === '' || !filter_var($toEmail, FILTER_VALIDATE_EMAIL)) {
@@ -75,7 +80,7 @@ final class Mailer
         $cfg = self::config();
         if ($cfg === null) {
             // No SendGrid key provisioned — use the host mail server.
-            return self::sendViaMail($toEmail, $toName, $subject, $html, $text);
+            return self::sendViaMail($toEmail, $toName, $subject, $html, $text, $inlineImages);
         }
 
         $payload = [
@@ -90,6 +95,19 @@ final class Mailer
                 ['type' => 'text/html',  'value' => $html],
             ],
         ];
+
+        if ($inlineImages) {
+            $payload['attachments'] = array_map(
+                static fn($img) => [
+                    'content'     => base64_encode($img['bytes']),
+                    'filename'    => $img['filename'] ?? ($img['cid'] . '.png'),
+                    'type'        => 'image/png',
+                    'disposition' => 'inline',
+                    'content_id'  => $img['cid'],
+                ],
+                $inlineImages
+            );
+        }
 
         $ch = curl_init(self::ENDPOINT);
         curl_setopt_array($ch, [
@@ -120,12 +138,15 @@ final class Mailer
 
     /**
      * Fallback transport: PHP mail() via the host MTA. Builds a multipart/
-     * alternative (plain text + HTML) message. The from address is
-     * no-reply@<site host> so the local mail server is authorized to send it
-     * (using an off-domain from would get rejected/spam-filed). Returns mail()'s
-     * boolean. Never throws.
+     * alternative (plain text + HTML) message, wrapped in multipart/related
+     * when $inlineImages is non-empty so `cid:` references in $html resolve.
+     * The from address is no-reply@<site host> so the local mail server is
+     * authorized to send it (an off-domain from would get rejected/spam-filed).
+     * Returns mail()'s boolean. Never throws.
+     *
+     * @param array<int,array{cid:string,bytes:string,filename?:string}> $inlineImages
      */
-    private static function sendViaMail(string $toEmail, string $toName, string $subject, string $html, string $text): bool
+    private static function sendViaMail(string $toEmail, string $toName, string $subject, string $html, string $text, array $inlineImages = []): bool
     {
         $host = defined('SITE_URL') ? (parse_url(SITE_URL, PHP_URL_HOST) ?: '') : '';
         if ($host === '') {
@@ -139,23 +160,46 @@ final class Mailer
         $encName    = '=?UTF-8?B?' . base64_encode($fromName) . '?=';
         $encSubject = '=?UTF-8?B?' . base64_encode($subject) . '?=';
 
-        $boundary = 'alexbnd_' . bin2hex(random_bytes(8));
         $eol      = "\r\n";
+        $altBound = 'alexalt_' . bin2hex(random_bytes(8));
 
-        $headers  = 'From: ' . $encName . ' <' . $fromEmail . '>' . $eol;
-        $headers .= 'Reply-To: ' . $replyTo . $eol;
-        $headers .= 'MIME-Version: 1.0' . $eol;
-        $headers .= 'Content-Type: multipart/alternative; boundary="' . $boundary . '"';
+        $altBody  = '--' . $altBound . $eol;
+        $altBody .= 'Content-Type: text/plain; charset=UTF-8' . $eol;
+        $altBody .= 'Content-Transfer-Encoding: 8bit' . $eol . $eol;
+        $altBody .= $text . $eol . $eol;
+        $altBody .= '--' . $altBound . $eol;
+        $altBody .= 'Content-Type: text/html; charset=UTF-8' . $eol;
+        $altBody .= 'Content-Transfer-Encoding: 8bit' . $eol . $eol;
+        $altBody .= $html . $eol . $eol;
+        $altBody .= '--' . $altBound . '--' . $eol;
 
-        $body  = '--' . $boundary . $eol;
-        $body .= 'Content-Type: text/plain; charset=UTF-8' . $eol;
-        $body .= 'Content-Transfer-Encoding: 8bit' . $eol . $eol;
-        $body .= $text . $eol . $eol;
-        $body .= '--' . $boundary . $eol;
-        $body .= 'Content-Type: text/html; charset=UTF-8' . $eol;
-        $body .= 'Content-Transfer-Encoding: 8bit' . $eol . $eol;
-        $body .= $html . $eol . $eol;
-        $body .= '--' . $boundary . '--' . $eol;
+        if (!$inlineImages) {
+            $headers  = 'From: ' . $encName . ' <' . $fromEmail . '>' . $eol;
+            $headers .= 'Reply-To: ' . $replyTo . $eol;
+            $headers .= 'MIME-Version: 1.0' . $eol;
+            $headers .= 'Content-Type: multipart/alternative; boundary="' . $altBound . '"';
+            $body = $altBody;
+        } else {
+            $relBound = 'alexrel_' . bin2hex(random_bytes(8));
+            $headers  = 'From: ' . $encName . ' <' . $fromEmail . '>' . $eol;
+            $headers .= 'Reply-To: ' . $replyTo . $eol;
+            $headers .= 'MIME-Version: 1.0' . $eol;
+            $headers .= 'Content-Type: multipart/related; boundary="' . $relBound . '"';
+
+            $body  = '--' . $relBound . $eol;
+            $body .= 'Content-Type: multipart/alternative; boundary="' . $altBound . '"' . $eol . $eol;
+            $body .= $altBody . $eol;
+            foreach ($inlineImages as $img) {
+                $filename = $img['filename'] ?? ($img['cid'] . '.png');
+                $body .= '--' . $relBound . $eol;
+                $body .= 'Content-Type: image/png; name="' . $filename . '"' . $eol;
+                $body .= 'Content-Transfer-Encoding: base64' . $eol;
+                $body .= 'Content-ID: <' . $img['cid'] . '>' . $eol;
+                $body .= 'Content-Disposition: inline; filename="' . $filename . '"' . $eol . $eol;
+                $body .= chunk_split(base64_encode($img['bytes'])) . $eol;
+            }
+            $body .= '--' . $relBound . '--' . $eol;
+        }
 
         // -f sets the envelope sender (Return-Path) → better deliverability.
         $ok = @mail($toEmail, $encSubject, $body, $headers, '-f' . $fromEmail);

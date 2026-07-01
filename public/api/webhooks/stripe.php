@@ -15,6 +15,7 @@ require_once INCLUDES_PATH . '/TransactionRepo.php';
 require_once INCLUDES_PATH . '/ConcessionRepo.php';
 require_once INCLUDES_PATH . '/InventoryRepo.php';
 require_once INCLUDES_PATH . '/ShowtimeRepo.php';
+require_once INCLUDES_PATH . '/TicketTokenRepo.php';
 require_once INCLUDES_PATH . '/Mailer.php';
 require_once INCLUDES_PATH . '/OrderEmail.php';
 
@@ -118,15 +119,23 @@ switch ($event['type'] ?? '') {
             }
         }
 
-        // Send the order-confirmation receipt — only here, inside the guarded
-        // pending→paid transition, so it fires exactly once per order. A mail
-        // failure (or no SendGrid key yet) must never fail the webhook, so this
-        // is best-effort and fully isolated.
+        // Mint one QR check-in token per ticket unit — only here, inside the
+        // guarded pending→paid transition, so it fires exactly once per order.
+        $tickets = [];
+        try {
+            $tickets = TicketTokenRepo::generateForTransaction((int)$txn['id']);
+        } catch (Throwable $e) {
+            error_log('[stripe-webhook] ticket token generation failed for ' . ($txn['transaction_ref'] ?? '?') . ': ' . $e->getMessage());
+        }
+
+        // Send the order-confirmation receipt — a mail failure (or no SendGrid
+        // key yet) must never fail the webhook, so this is best-effort and
+        // fully isolated.
         try {
             $custEmail = trim((string)($txn['customer_email'] ?? ''));
             if ($custEmail !== '') {
-                $mail = OrderEmail::build($txn);
-                Mailer::send($custEmail, (string)($txn['customer_name'] ?? ''), $mail['subject'], $mail['html'], $mail['text']);
+                $mail = OrderEmail::build($txn, $tickets);
+                Mailer::send($custEmail, (string)($txn['customer_name'] ?? ''), $mail['subject'], $mail['html'], $mail['text'], $mail['inlineImages']);
             }
         } catch (Throwable $e) {
             error_log('[stripe-webhook] receipt email failed for ' . ($txn['transaction_ref'] ?? '?') . ': ' . $e->getMessage());

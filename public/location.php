@@ -154,28 +154,34 @@ require __DIR__ . '/templates/header.php';
 
       <div>
         <div class="contact-form-wrap">
-          <form id="contact-form" action="https://formspree.io/f/xaqkjakn" method="POST" novalidate>
-            <input type="text" name="_gotcha" style="display:none" tabindex="-1" autocomplete="off">
+          <form id="contact-form" class="js-formspree-form" action="https://formspree.io/f/xaqkjakn" method="POST" novalidate>
+            <div class="form-error-summary" role="alert" tabindex="-1" hidden>
+              <h3 class="form-error-summary__title">There is a problem</h3>
+              <ul></ul>
+            </div>
+            <input type="text" name="_gotcha" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute; left:-10000px; top:auto; width:1px; height:1px; overflow:hidden;">
             <input type="hidden" name="_subject" value="New Message — The Alex">
 
             <div class="form-group">
-              <label for="cf-name">Name <span style="color:var(--crimson-light)">*</span></label>
-              <input type="text" id="cf-name" name="name" required autocomplete="name" placeholder="Your name">
+              <label for="cf-name">Name <abbr class="required" title="required">*</abbr></label>
+              <input type="text" id="cf-name" name="name" required autocomplete="name" placeholder="Your name" aria-describedby="cf-name-error">
+              <p id="cf-name-error" class="field-error" hidden></p>
             </div>
 
             <div class="form-group">
-              <label for="cf-email">Email Address <span style="color:var(--crimson-light)">*</span></label>
-              <input type="email" id="cf-email" name="email" required autocomplete="email" placeholder="you@example.com">
+              <label for="cf-email">Email Address <abbr class="required" title="required">*</abbr></label>
+              <input type="email" id="cf-email" name="email" required autocomplete="email" placeholder="you@example.com" aria-describedby="cf-email-error">
+              <p id="cf-email-error" class="field-error" hidden></p>
             </div>
 
             <div class="form-group">
-              <label for="cf-phone">Phone <span style="color:var(--text-muted); font-weight:400; text-transform:none; letter-spacing:0;">(optional)</span></label>
+              <label for="cf-phone">Phone <span class="optional">(optional)</span></label>
               <input type="tel" id="cf-phone" name="phone" autocomplete="tel" placeholder="765-555-0000">
             </div>
 
             <div class="form-group">
-              <label for="cf-subject">Subject <span style="color:var(--crimson-light)">*</span></label>
-              <select id="cf-subject" name="subject" required>
+              <label for="cf-subject">Subject <abbr class="required" title="required">*</abbr></label>
+              <select id="cf-subject" name="subject" required aria-describedby="cf-subject-error">
                 <option value="">Select a topic&hellip;</option>
                 <option value="General Inquiry">General Inquiry</option>
                 <option value="Showtimes & Tickets">Showtimes &amp; Tickets</option>
@@ -184,11 +190,13 @@ require __DIR__ . '/templates/header.php';
                 <option value="Feedback">Feedback</option>
                 <option value="Other">Other</option>
               </select>
+              <p id="cf-subject-error" class="field-error" hidden></p>
             </div>
 
             <div class="form-group">
-              <label for="cf-message">Message <span style="color:var(--crimson-light)">*</span></label>
-              <textarea id="cf-message" name="message" rows="5" required placeholder="How can we help?"></textarea>
+              <label for="cf-message">Message <abbr class="required" title="required">*</abbr></label>
+              <textarea id="cf-message" name="message" rows="5" required placeholder="How can we help?" aria-describedby="cf-message-error"></textarea>
+              <p id="cf-message-error" class="field-error" hidden></p>
             </div>
 
             <button type="submit" class="btn btn-crimson" id="cf-submit" style="width:100%;">
