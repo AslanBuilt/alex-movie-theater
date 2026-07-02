@@ -114,6 +114,34 @@ CREATE TABLE `admin_users` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ----------------------------------------------------------------------------
+-- employees — PIN-authenticated POS (staff register) operators
+-- ----------------------------------------------------------------------------
+DROP TABLE IF EXISTS `employees`;
+CREATE TABLE `employees` (
+    `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+    `name` VARCHAR(100) NOT NULL,
+    `pin_hash` VARCHAR(255) NOT NULL,
+    `is_active` TINYINT(1) NOT NULL DEFAULT 1,
+    `failed_attempts` INT NOT NULL DEFAULT 0,
+    `locked_until` DATETIME NULL,
+    `last_login` DATETIME NULL,
+    `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ----------------------------------------------------------------------------
+-- admin_login_attempts — DB-backed admin login lockout (by IP)
+-- ----------------------------------------------------------------------------
+DROP TABLE IF EXISTS `admin_login_attempts`;
+CREATE TABLE `admin_login_attempts` (
+    `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+    `ip_address` VARCHAR(45) NOT NULL,
+    `attempted_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (`id`),
+    KEY `idx_admin_login_attempts_ip_time` (`ip_address`, `attempted_at`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ----------------------------------------------------------------------------
 -- concessions
 -- ----------------------------------------------------------------------------
 DROP TABLE IF EXISTS `concessions`;
@@ -184,7 +212,7 @@ CREATE TABLE `transactions` (
     `transaction_ref` VARCHAR(20) NOT NULL,
     `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     `type` ENUM('ticket','concession','combo') NOT NULL,
-    `source_channel` ENUM('website','kiosk','staff') NOT NULL DEFAULT 'website',
+    `source_channel` ENUM('website','kiosk','staff','staff_register') NOT NULL DEFAULT 'website',
     `total_amount` DECIMAL(8,2) NOT NULL,
     `payment_status` ENUM('paid','pending','failed','voided') NOT NULL DEFAULT 'pending',
     `fulfillment_status` ENUM('pending','fulfilled','voided') NOT NULL DEFAULT 'pending',
@@ -278,7 +306,7 @@ CREATE TABLE `inventory_log` (
     `change_type` ENUM('sale','restock','adjustment') NOT NULL,
     `qty_change` INT NOT NULL,
     `new_quantity` INT NOT NULL,
-    `source` ENUM('website','admin','kiosk','staff') NOT NULL DEFAULT 'website',
+    `source` ENUM('website','admin','kiosk','staff','staff_register') NOT NULL DEFAULT 'website',
     `note` VARCHAR(200) NULL,
     `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (`id`),

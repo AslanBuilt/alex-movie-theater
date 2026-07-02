@@ -439,5 +439,25 @@ if (!tableExists($conn, 'ticket_tokens')) {
     $log[] = 'skip ticket_tokens (exists)';
 }
 
+// ═══════════════════════════════════════════════════════════════════════════
+// Priority fix session — DB-backed admin login lockout (was session-based,
+// bypassable via a private browser window)
+// ═══════════════════════════════════════════════════════════════════════════
+
+if (!tableExists($conn, 'admin_login_attempts')) {
+    runQ($conn, "
+        CREATE TABLE `admin_login_attempts` (
+            `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+            `ip_address` VARCHAR(45) NOT NULL,
+            `attempted_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            PRIMARY KEY (`id`),
+            KEY `idx_admin_login_attempts_ip_time` (`ip_address`, `attempted_at`)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+    ", 'create admin_login_attempts');
+    $log[] = 'created admin_login_attempts';
+} else {
+    $log[] = 'skip admin_login_attempts (exists)';
+}
+
 $conn->close();
 echo json_encode(['status' => 'success', 'log' => $log]);

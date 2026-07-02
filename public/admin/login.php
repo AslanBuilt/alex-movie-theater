@@ -28,27 +28,19 @@ if ($auth->isLoggedIn()) {
     exit;
 }
 
-$RATE_WINDOW_SECONDS = 600;
-$RATE_MAX_ATTEMPTS   = 5;
-
 $error    = '';
 $username = '';
 
+if (($_GET['reason'] ?? '') === 'expired') {
+    $error = 'Your session expired. Please sign in again.';
+}
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $now = time();
+    // No trusted reverse proxy in front of this host — REMOTE_ADDR is the
+    // real client IP (see AdminAuth::isIpLockedOut()).
+    $ip = (string)($_SERVER['REMOTE_ADDR'] ?? '0.0.0.0');
 
-    $attempts = $_SESSION['login_attempts'] ?? ['count' => 0, 'first' => $now];
-    if (!is_array($attempts)) {
-        $attempts = ['count' => 0, 'first' => $now];
-    }
-    if (($now - (int)($attempts['first'] ?? $now)) > $RATE_WINDOW_SECONDS) {
-        $attempts = ['count' => 0, 'first' => $now];
-    }
-
-    $isLockedOut = ((int)$attempts['count'] >= $RATE_MAX_ATTEMPTS)
-        && (($now - (int)$attempts['first']) < $RATE_WINDOW_SECONDS);
-
-    if ($isLockedOut) {
+    if ($auth->isIpLockedOut($ip)) {
         $error = 'Too many failed attempts. Please wait a few minutes and try again.';
     } else {
         $token = (string)($_POST['csrf_token'] ?? '');
@@ -61,12 +53,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if ($username === '' || $password === '') {
                 $error = 'Please enter both username and password.';
             } elseif ($auth->login($username, $password)) {
-                unset($_SESSION['login_attempts']);
+                $auth->clearFailedAttempts($ip);
                 header('Location: index.php');
                 exit;
             } else {
-                $attempts['count'] = (int)$attempts['count'] + 1;
-                $_SESSION['login_attempts'] = $attempts;
+                $auth->recordFailedAttempt($ip);
                 $error = 'Invalid username or password.';
             }
         }

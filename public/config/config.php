@@ -28,6 +28,8 @@ define('INSTAGRAM_URL', 'https://www.instagram.com/the.alextheatre');
 define('GA_MEASUREMENT_ID', 'G-SW2FC3JLE8');  // GA4 stream "Alex Movie Theater" (stream ID 15167575038)
 define('FB_PIXEL_ID',        '');  // Deferred — set to numeric pixel ID from Meta Events Manager when running Meta ads
 
+define('ADMIN_SESSION_TTL', 28800); // 8 hours of inactivity before the admin session expires
+
 define('ROOT_PATH', dirname(__DIR__));
 define('PUBLIC_PATH', ROOT_PATH . '/public');
 define('INCLUDES_PATH', ROOT_PATH . '/includes');
