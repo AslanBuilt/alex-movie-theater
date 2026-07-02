@@ -102,21 +102,73 @@ switch ($event['type'] ?? '') {
             break; // already handled
         }
 
+        // ShowtimeRepo::decrementTickets() is the atomic capacity claim (single
+        // UPDATE...WHERE, per backend-commerce-concurrency) — its bool return is
+        // the only thing standing between "sold out" and a phantom double-sale.
+        // Policy: full-reject. If ANY line item in this order can't be claimed,
+        // the whole order is refunded and voided — no partial fulfillment, so we
+        // never have to explain "2 of your 3 tickets are valid" to a customer.
+        //
+        // To reproduce the race this guards against: open two terminals, find a
+        // showtime with `available_tickets - tickets_sold = 1` (or set one via
+        // admin/showtime-edit.php), then fire two concurrent capacity claims at it:
+        //   php -r '$p=new PDO(...); $s=$p->prepare("UPDATE showtimes SET tickets_sold=tickets_sold+1 WHERE id=? AND (available_tickets-tickets_sold)>=1"); $s->execute([ID]); var_dump($s->rowCount());'
+        // run twice in parallel (`&` in bash, or two terminal tabs at once). Fixed:
+        // exactly one rowCount()===1, the other rowCount()===0. Broken (read-then-
+        // write instead of this conditional UPDATE): both can return success and
+        // tickets_sold exceeds available_tickets.
         $concessionRepo = new ConcessionRepo($pdo);
+        $claimed = []; // what we've successfully committed so far, to reverse on reject
+        $oversold = false;
+
         foreach ($txn['items'] as $li) {
-            $itemId = (int)$li['item_id'];
+            $itemId  = (int)$li['item_id'];
             $qtySold = (int)$li['quantity'];
             if ($qtySold < 1) continue;
 
             if ($li['item_type'] === 'ticket') {
-                ShowtimeRepo::decrementTickets($itemId, $qtySold);
+                if (ShowtimeRepo::decrementTickets($itemId, $qtySold)) {
+                    $claimed[] = ['type' => 'ticket', 'item_id' => $itemId, 'qty' => $qtySold];
+                } else {
+                    error_log("[stripe-webhook] SOLD OUT: showtime $itemId short by qty $qtySold on txn {$txn['transaction_ref']} — rejecting whole order");
+                    $oversold = true;
+                    break;
+                }
             } elseif ($li['item_type'] === 'concession') {
                 $product = $concessionRepo->getById($itemId);
                 if ($product && (int)$product['stock_quantity'] > 0) {
                     $newStock = max(0, (int)$product['stock_quantity'] - $qtySold);
                     InventoryRepo::logChange($itemId, 'sale', -$qtySold, $newStock, 'website', $txn['transaction_ref']);
+                    $claimed[] = ['type' => 'concession', 'item_id' => $itemId, 'qty' => $qtySold];
                 }
             }
+        }
+
+        if ($oversold) {
+            // Reverse every claim already committed for this order, then void +
+            // refund. No tokens have been minted yet at this point in the flow.
+            foreach ($claimed as $c) {
+                if ($c['type'] === 'ticket') {
+                    ShowtimeRepo::restoreTickets($c['item_id'], $c['qty']);
+                } else {
+                    $product = $concessionRepo->getById($c['item_id']);
+                    if ($product) {
+                        $restored = (int)$product['stock_quantity'] + $c['qty'];
+                        InventoryRepo::logChange($c['item_id'], 'restock', $c['qty'], $restored, 'website', "Oversell auto-refund {$txn['transaction_ref']}");
+                    }
+                }
+            }
+
+            TransactionRepo::voidTransaction((int)$txn['id']);
+
+            try {
+                $stripe->refund((string)($pi['id'] ?? ''));
+            } catch (Throwable $e) {
+                error_log('[stripe-webhook] refund failed for oversold txn ' . ($txn['transaction_ref'] ?? '?') . ': ' . $e->getMessage());
+            }
+
+            error_log('[stripe-webhook] oversold order fully refunded+voided: ' . ($txn['transaction_ref'] ?? '?'));
+            break;
         }
 
         // Mint one QR check-in token per ticket unit — only here, inside the
