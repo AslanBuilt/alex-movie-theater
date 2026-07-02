@@ -42,32 +42,18 @@ final class QrCode
     }
 
     /**
-     * Rasterizes the vendored library's boolean module matrix into a PNG via
-     * GD. Written against Nayuki's qrcodegen.php API
-     * (qrcodegen\QrCode::encodeText()->getSize()/getModule()); if a
-     * different library is vendored, this method is the only thing to adapt.
+     * Rasterizes the vendored library's QR matrix into a PNG via GD. Written
+     * against Kazuhiko Arase's qrcodegen.php API, vendored under the
+     * QrCodeGen namespace to avoid colliding with this class (PHP class
+     * names are case-insensitive, so an unqualified `QRCode` would clash
+     * with `QrCode`) — getMinimumQRCode()/createImage(); if a different
+     * library is vendored, this method is the only thing to adapt.
      */
     private static function renderReal(string $data, int $moduleSize, int $border): string
     {
         require_once self::VENDOR_PATH;
-        $qr = \qrcodegen\QrCode::encodeText($data, \qrcodegen\QrCode::Ecc::MEDIUM);
-        $count = $qr->getSize();
-        $imgSize = ($count + $border * 2) * $moduleSize;
-
-        $img = imagecreatetruecolor($imgSize, $imgSize);
-        $white = imagecolorallocate($img, 255, 255, 255);
-        $black = imagecolorallocate($img, 0, 0, 0);
-        imagefilledrectangle($img, 0, 0, $imgSize, $imgSize, $white);
-
-        for ($y = 0; $y < $count; $y++) {
-            for ($x = 0; $x < $count; $x++) {
-                if ($qr->getModule($x, $y)) {
-                    $px = ($x + $border) * $moduleSize;
-                    $py = ($y + $border) * $moduleSize;
-                    imagefilledrectangle($img, $px, $py, $px + $moduleSize - 1, $py + $moduleSize - 1, $black);
-                }
-            }
-        }
+        $qr  = \QrCodeGen\QRCode::getMinimumQRCode($data, QR_ERROR_CORRECT_LEVEL_M);
+        $img = $qr->createImage($moduleSize, $border * $moduleSize);
 
         ob_start();
         imagepng($img);
