@@ -194,13 +194,23 @@ jobs:
         # The "Clear FTP deploy cache" step wipes the sync-state each run, so the
         # FTP action re-uploads everything but never deletes files removed from
         # the repo. Explicitly DELE anything retired so it can't linger live.
-        # `|| true` keeps this idempotent once the file is already gone.
+        # Exit 21 = FTP "quote" (DELE) rejected, e.g. the file is already gone —
+        # expected and fine. Any OTHER exit (auth/connect/permission failures)
+        # used to be swallowed by `|| true`; now it fails the step loudly instead
+        # of silently leaving a retired file reachable on the live server.
         run: |
+          set +e
           for f in pos-doctor.php _mailtest.php admin/fix-image-paths.php; do
-            curl -s \
+            output=$(curl -s -S \
               -u "${{ secrets.FTP_USERNAME }}:${{ secrets.FTP_PASSWORD }}" \
               -Q "DELE /cs/alex-movie-theater/$f" \
-              "ftp://${{ secrets.FTP_HOST }}" || true
+              "ftp://${{ secrets.FTP_HOST }}" 2>&1)
+            code=$?
+            if [ "$code" -ne 0 ] && [ "$code" -ne 21 ]; then
+              echo "$output"
+              echo "::error::Failed to remove retired file $f (curl exit $code) — it may still be reachable live."
+              exit "$code"
+            fi
             echo "Ensured removed: $f"
           done
 
@@ -261,40 +271,55 @@ jobs:
           fi
 
       - name: Run DB init and cleanup
+        # No bare curl to the HTTP endpoint: db-init.php sets a real non-2xx
+        # HTTP status on failure (500/503), but plain `curl -s -o file` still
+        # exits 0 on an HTTP error, so a broken run used to report green. Capture
+        # the status and fail loudly on anything outside 2xx — after printing the
+        # body, so the diagnostic JSON still shows up in the Action log.
         run: |
           curl -s --ftp-create-dirs \
             -T "./scripts/db-init.php" \
             -u "${{ secrets.FTP_USERNAME }}:${{ secrets.FTP_PASSWORD }}" \
             "ftp://${{ secrets.FTP_HOST }}/cs/alex-movie-theater/db-init.php"
           echo "Uploaded db-init.php — running..."
-          curl -s --max-time 30 \
+          http_code=$(curl -s --max-time 30 -w "%{http_code}" \
             "https://parityrfp.com/cs/alex-movie-theater/db-init.php" \
-            -o /tmp/db-result.json
-          echo "DB init result:"
+            -o /tmp/db-result.json)
+          echo "DB init result (HTTP $http_code):"
           cat /tmp/db-result.json
           curl -s \
             -u "${{ secrets.FTP_USERNAME }}:${{ secrets.FTP_PASSWORD }}" \
             -Q "DELE /cs/alex-movie-theater/db-init.php" \
             "ftp://${{ secrets.FTP_HOST }}"
           echo "Removed db-init.php from server"
+          if [ "$http_code" -lt 200 ] || [ "$http_code" -ge 300 ]; then
+            echo "::error::db-init.php returned HTTP $http_code — database may be left in a broken/partial state. See output above."
+            exit 1
+          fi
 
       - name: Run DB migration
+        # Same non-2xx-fails-loudly treatment as db-init above — a stale-schema
+        # deploy that silently "succeeds" is worse than one that fails the build.
         run: |
           curl -s --ftp-create-dirs \
             -T "./scripts/db-migrate.php" \
             -u "${{ secrets.FTP_USERNAME }}:${{ secrets.FTP_PASSWORD }}" \
             "ftp://${{ secrets.FTP_HOST }}/cs/alex-movie-theater/db-migrate.php"
           echo "Uploaded db-migrate.php — running..."
-          curl -s --max-time 60 \
+          http_code=$(curl -s --max-time 60 -w "%{http_code}" \
             "https://parityrfp.com/cs/alex-movie-theater/db-migrate.php" \
-            -o /tmp/migrate-result.json
-          echo "DB migration result:"
+            -o /tmp/migrate-result.json)
+          echo "DB migration result (HTTP $http_code):"
           cat /tmp/migrate-result.json
           curl -s \
             -u "${{ secrets.FTP_USERNAME }}:${{ secrets.FTP_PASSWORD }}" \
             -Q "DELE /cs/alex-movie-theater/db-migrate.php" \
             "ftp://${{ secrets.FTP_HOST }}"
           echo "Removed db-migrate.php from server"
+          if [ "$http_code" -lt 200 ] || [ "$http_code" -ge 300 ]; then
+            echo "::error::db-migrate.php returned HTTP $http_code — database may be left in a broken/partial state. See output above."
+            exit 1
+          fi
 
       - name: Deployment summary
         run: |
