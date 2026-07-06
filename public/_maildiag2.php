@@ -16,6 +16,7 @@ if (!hash_equals($TOKEN, (string)($_GET['key'] ?? ''))) {
 }
 
 require_once __DIR__ . '/config/config.php';
+require_once INCLUDES_PATH . '/Database.php';
 require_once INCLUDES_PATH . '/Mailer.php';
 require_once INCLUDES_PATH . '/TransactionRepo.php';
 
@@ -63,7 +64,9 @@ foreach ($candidates as $path) {
     foreach ($tail as $line) {
         if (stripos($line, '[Mailer]') !== false
             || stripos($line, 'stripe-webhook') !== false
-            || stripos($line, '[QrCode]') !== false) {
+            || stripos($line, '[QrCode]') !== false
+            || stripos($line, 'TransactionRepo') !== false
+            || stripos($line, 'Database') !== false) {
             echo $line;
             $found = true;
         }
