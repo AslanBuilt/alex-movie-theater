@@ -218,7 +218,6 @@ CREATE TABLE `transactions` (
     `fulfillment_status` ENUM('pending','fulfilled','voided') NOT NULL DEFAULT 'pending',
     `payment_method` VARCHAR(50) NOT NULL DEFAULT 'mock',
     `stripe_payment_intent_id` VARCHAR(255) NULL,
-    `gateway_ref` VARCHAR(100) NULL,
     `customer_name` VARCHAR(100) NULL,
     `customer_email` VARCHAR(150) NULL,
     PRIMARY KEY (`id`),

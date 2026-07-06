@@ -79,3 +79,17 @@
 1. **4.1 Walk-up kiosk** — the standout feature; reuses existing flows. *Confirm scope before building.*
 2. **5.2** launch-checklist doc; **1.6** AI-artifact/contrast re-audit + map ADR; per-showing **Movie JSON-LD** (5.1).
 3. **0.2** old-vs-new Square parity audit — needs old site URL.
+
+---
+
+## Closing session — human-gated items (2026-07-06)
+
+| Item | Status | Note |
+|---|---|---|
+| Task 0 — stray pending transactions | ✅ Done | 19 stale test transactions (all `source_channel=website`, empty `customer_email`, round test amounts, dates 06-25→07-02) voided via `payment_status='pending'` → `'voided'`. Safety-checked first: zero `inventory_log` sale entries and zero `ticket_tokens` tied to any of the 19 refs — nothing to restock/restore. Confirmed via direct DB query (one-shot script uploaded/executed/deleted via FTP, not phpMyAdmin — no cPanel access this session). |
+| Task 5 — `gateway_ref` ghost column | ✅ Done | `SHOW COLUMNS FROM transactions LIKE 'gateway_ref'` → empty result, confirming it was never created in the live DB. Zero code references repo-wide (grep-confirmed). Removed from `database/schema.sql`. |
+| Task 1 — Stripe webhook registration | ⛔ Blocked | Needs Stripe Dashboard access (browser + login) — not yet done this session. |
+| Task 2 — QR purchase test | ⛔ Blocked | Needs browser + phone camera + email inbox — not yet done this session. |
+| Task 3 — oversell race | ⛔ Pending decision | User to confirm: two-tab phpMyAdmin race test, or close as code-reviewed. |
+| Task 4 — admin session timeout | ⛔ Pending | Awaiting user signal ("ready for Task 4") to deploy temp `ADMIN_SESSION_TTL=10`. |
+| Task 6 — FTP credentials in skills repo | ⛔ Flagged for Tim | Live FTP password confirmed still present in `infra-deploy-manual` skill file; used this session to run the one-shot diagnostic scripts. Action items: Tim rotates the password, updates the GitHub Actions secret, and decides whether the skill file should reference the secret's location instead of its value. |
