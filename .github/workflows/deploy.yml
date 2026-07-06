@@ -200,7 +200,7 @@ jobs:
         # of silently leaving a retired file reachable on the live server.
         run: |
           set +e
-          for f in pos-doctor.php _mailtest.php admin/fix-image-paths.php; do
+          for f in pos-doctor.php _mailtest.php admin/fix-image-paths.php _maildiag2.php _qrdiag.php; do
             output=$(curl -s -S \
               -u "${{ secrets.FTP_USERNAME }}:${{ secrets.FTP_PASSWORD }}" \
               -Q "DELE /cs/alex-movie-theater/$f" \
