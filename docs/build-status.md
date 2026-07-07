@@ -93,3 +93,14 @@
 | Task 3 — oversell race | ⛔ Pending decision | User to confirm: two-tab phpMyAdmin race test, or close as code-reviewed. |
 | Task 4 — admin session timeout | ⛔ Pending | Awaiting user signal ("ready for Task 4") to deploy temp `ADMIN_SESSION_TTL=10`. |
 | Task 6 — FTP credentials in skills repo | ⛔ Flagged for Tim | Live FTP password confirmed still present in `infra-deploy-manual` skill file; used this session to run the one-shot diagnostic scripts. Action items: Tim rotates the password, updates the GitHub Actions secret, and decides whether the skill file should reference the secret's location instead of its value. |
+
+---
+
+## Closing session — 2026-07-07
+
+- GD extension: enabled (Tim enabled via cPanel), verified live 2026-07-07 — `extension_loaded('gd')` and `QrCode::isReady()` both true.
+- QR codes: CONFIRMED working — real 264x264px images, kiosk scan verified live (TXN-902F851A: green "Welcome!" on first scan, then double-scan rejection confirmed).
+- Check-in visibility: added to admin transactions list (Checked In column: All/Partial/Not Yet/—), admin transaction detail (per-ticket Check-In Details table), and employee POS (post-sale "Check In Now?" button calling the same `/api/checkin.php` the kiosk uses). Admin occupancy report already read `ticket_tokens.token_status='used'` — confirmed correct, no change needed.
+- Employment form: Google Docs link replaced with a real Formspree form (`mjgqdvvn`) at `location.php#employment` — footer and location.php both updated; dead `FORM_PRIVATE_RENTAL`/`FORM_EMPLOYMENT` Google Forms constants removed from `config.php`.
+- Email: confirmation email still not delivering (not even to junk). Root cause confirmed via one-shot diagnostic: no SendGrid configured (`Mailer::isConfigured()` = false), so it falls back to PHP `mail()`; `mail()` reports success (handed to local sendmail) but the message doesn't reach the inbox — the expected shared-hosting failure mode with no SPF/DKIM for the sending domain. `customer_email` capture is confirmed working correctly (TXN-902F851A had `taemoor.h@aslanadvisors.com` on file), so this is NOT a blank-email-field bug. Real fix needs SendGrid API key + domain auth (client input, already tracked as blocked in the Phase 5 table above) — post-demo polish, not a code bug.
+- Demo readiness: READY FOR CHRIS (email noted as post-demo polish, not a blocker — QR/check-in/payment all confirmed working end-to-end).
