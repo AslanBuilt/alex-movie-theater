@@ -148,7 +148,7 @@ require __DIR__ . '/templates/header.php';
         <div class="info-card">
           <h3>Employment</h3>
           <p>Interested in working at the Alex? We&rsquo;d love to have you on the team.</p>
-          <a href="https://docs.google.com/forms/d/e/1FAIpQLSeIx_YNZ91tXNZ2PvcmIRTIoVUjqDo56f3cjPNgs2z9OWspww/viewform" class="btn btn-outline mt-2" target="_blank" rel="noopener" style="display:inline-block; margin-top:1rem; font-size:0.8rem; padding:0.5rem 1rem;">Apply Now</a>
+          <a href="#employment" class="btn btn-outline mt-2" style="display:inline-block; margin-top:1rem; font-size:0.8rem; padding:0.5rem 1rem;">Apply Now</a>
         </div>
       </div>
 
@@ -209,6 +209,98 @@ require __DIR__ . '/templates/header.php';
             <p>Thank you &middot; your message has been sent. We&rsquo;ll get back to you soon.</p>
           </div>
           <div id="cf-error" style="display:none" class="form-feedback form-error">
+            <p>Something went wrong. Please try again or call us at <a href="tel:765-620-9093">(765) 620-9093</a>.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── Employment ── -->
+<section id="employment" style="background:var(--cream); border-top:1px solid var(--border);">
+  <div class="container">
+    <div class="two-col">
+      <div>
+        <div class="section-header">
+          <p class="section-label">Join Our Team</p>
+          <h2 class="section-title">Apply for a Job</h2>
+          <div class="section-divider"></div>
+        </div>
+        <p style="color:var(--text-secondary); line-height:1.8; margin-bottom:2rem;">Interested in working at the Alex? We&rsquo;re always looking for friendly, reliable people for box office, concessions, and more. Fill out the form and we&rsquo;ll be in touch &mdash; or call us at <a href="tel:765-620-9093"><strong>(765) 620-9093</strong></a>.</p>
+      </div>
+
+      <div>
+        <div class="contact-form-wrap">
+          <form id="employment-form" class="js-formspree-form" action="https://formspree.io/f/mjgqdvvn" method="POST" novalidate>
+            <div class="form-error-summary" role="alert" tabindex="-1" hidden>
+              <h3 class="form-error-summary__title">There is a problem</h3>
+              <ul></ul>
+            </div>
+            <input type="text" name="_gotcha" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute; left:-10000px; top:auto; width:1px; height:1px; overflow:hidden;">
+            <input type="hidden" name="_subject" value="Employment Application — The Alex">
+
+            <div class="form-group">
+              <label for="ef-name">Full Name <abbr class="required" title="required">*</abbr></label>
+              <input type="text" id="ef-name" name="name" required autocomplete="name" placeholder="Your full name" aria-describedby="ef-name-error">
+              <p id="ef-name-error" class="field-error" hidden></p>
+            </div>
+
+            <div class="form-group">
+              <label for="ef-email">Email Address <abbr class="required" title="required">*</abbr></label>
+              <input type="email" id="ef-email" name="email" required autocomplete="email" placeholder="you@example.com" aria-describedby="ef-email-error">
+              <p id="ef-email-error" class="field-error" hidden></p>
+            </div>
+
+            <div class="form-group">
+              <label for="ef-phone">Phone Number <abbr class="required" title="required">*</abbr></label>
+              <input type="tel" id="ef-phone" name="phone" required autocomplete="tel" placeholder="765-555-0000" aria-describedby="ef-phone-error">
+              <p id="ef-phone-error" class="field-error" hidden></p>
+            </div>
+
+            <div class="form-group">
+              <label for="ef-position">Position Applying For <abbr class="required" title="required">*</abbr></label>
+              <select id="ef-position" name="position" required aria-describedby="ef-position-error">
+                <option value="">Select a position&hellip;</option>
+                <option value="Box Office / Ticket Sales">Box Office / Ticket Sales</option>
+                <option value="Concessions">Concessions</option>
+                <option value="Usher / Theater Staff">Usher / Theater Staff</option>
+                <option value="Projectionist">Projectionist</option>
+                <option value="Manager / Supervisor">Manager / Supervisor</option>
+                <option value="Other">Other</option>
+              </select>
+              <p id="ef-position-error" class="field-error" hidden></p>
+            </div>
+
+            <div class="form-group">
+              <label for="ef-why">Why do you want to work here? <abbr class="required" title="required">*</abbr></label>
+              <textarea id="ef-why" name="why" rows="4" required placeholder="Tell us a bit about yourself and why you'd be a great fit." aria-describedby="ef-why-error"></textarea>
+              <p id="ef-why-error" class="field-error" hidden></p>
+            </div>
+
+            <div class="form-group">
+              <label>Availability</label>
+              <div class="availability-days">
+                <label class="checkbox-pill"><input type="checkbox" name="availability[]" value="Monday"> Mon</label>
+                <label class="checkbox-pill"><input type="checkbox" name="availability[]" value="Tuesday"> Tue</label>
+                <label class="checkbox-pill"><input type="checkbox" name="availability[]" value="Wednesday"> Wed</label>
+                <label class="checkbox-pill"><input type="checkbox" name="availability[]" value="Thursday"> Thu</label>
+                <label class="checkbox-pill"><input type="checkbox" name="availability[]" value="Friday"> Fri</label>
+                <label class="checkbox-pill"><input type="checkbox" name="availability[]" value="Saturday"> Sat</label>
+                <label class="checkbox-pill"><input type="checkbox" name="availability[]" value="Sunday"> Sun</label>
+              </div>
+            </div>
+
+            <button type="submit" class="btn btn-crimson" style="width:100%;">
+              <span class="btn-text">Submit Application</span>
+              <span class="btn-loading" style="display:none">Sending&hellip;</span>
+            </button>
+          </form>
+
+          <div class="form-feedback form-success" style="display:none">
+            <p>Thank you &middot; your application has been received. We&rsquo;ll be in touch if there&rsquo;s a fit.</p>
+          </div>
+          <div class="form-feedback form-error" style="display:none">
             <p>Something went wrong. Please try again or call us at <a href="tel:765-620-9093">(765) 620-9093</a>.</p>
           </div>
         </div>

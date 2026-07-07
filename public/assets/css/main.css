@@ -1242,6 +1242,25 @@ abbr.required {
 .form-error-summary ul { margin: 0; padding-left: 1.2rem; }
 .form-error-summary a { color: var(--crimson-dark); font-weight: 600; }
 
+.availability-days { display: flex; flex-wrap: wrap; gap: 0.6rem; }
+.availability-days .checkbox-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.5rem 0.9rem;
+    border: 1.5px solid var(--border);
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 400;
+    text-transform: none;
+    letter-spacing: 0;
+    margin-bottom: 0;
+    cursor: pointer;
+    background: #FFFFFF;
+    color: var(--text-primary);
+}
+.availability-days .checkbox-pill input[type="checkbox"] { width: auto; min-height: 0; margin: 0; }
+
 /* ── Utility ── */
 .text-crimson { color: var(--crimson); }
 .text-cream { color: var(--text-primary); }

@@ -20,8 +20,6 @@ define('SITE_ADDRESS', '407 N. Harrison Street, Alexandria, IN 46001');
 define('SITE_EMAIL', 'info@alexmovietheatre.com');
 
 define('TICKETS_URL', SITE_URL . 'tickets.php');
-define('FORM_PRIVATE_RENTAL', 'https://docs.google.com/forms/d/e/1FAIpQLSckaMA_1_ytsZxh1pfmvrrOuDW6DXrceZIa73_8MhWko-C19Q/viewform');
-define('FORM_EMPLOYMENT', 'https://docs.google.com/forms/d/e/1FAIpQLSeIx_YNZ91tXNZ2PvcmIRTIoVUjqDo56f3cjPNgs2z9OWspww/viewform');
 define('FACEBOOK_URL', 'https://www.facebook.com/TheAlexandriaTheatre');
 define('INSTAGRAM_URL', 'https://www.instagram.com/the.alextheatre');
 
