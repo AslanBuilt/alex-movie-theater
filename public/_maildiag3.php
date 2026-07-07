@@ -60,3 +60,24 @@ try {
 } catch (\Throwable $e) {
     echo "DB query failed: " . $e->getMessage() . "\n";
 }
+
+echo "\n=== Final confirmation — latest transaction + its tickets ===\n";
+try {
+    $pdo  = Database::getInstance();
+    $stmt = $pdo->query(
+        "SELECT t.transaction_ref, t.payment_status,
+                tk.ticket_token, tk.token_status, tk.checked_in_at
+         FROM transactions t
+         LEFT JOIN ticket_tokens tk ON tk.transaction_id = t.id
+         ORDER BY t.created_at DESC LIMIT 1"
+    );
+    foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $row) {
+        echo 'ref=' . $row['transaction_ref']
+            . ' payment_status=' . $row['payment_status']
+            . ' token_status=' . ($row['token_status'] ?? 'NULL')
+            . ' checked_in_at=' . ($row['checked_in_at'] ?? 'NULL')
+            . "\n";
+    }
+} catch (\Throwable $e) {
+    echo "DB query failed: " . $e->getMessage() . "\n";
+}
