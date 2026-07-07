@@ -530,7 +530,46 @@
     document.getElementById('doneChange').textContent = chg;
     cart = [];
     renderCart();
+
+    var tokens = Array.isArray(body.ticket_tokens) ? body.ticket_tokens : [];
+    var checkinBtn = document.getElementById('checkinNowBtn');
+    if (checkinBtn) {
+      if (tokens.length) {
+        checkinBtn.style.display = '';
+        checkinBtn.disabled = false;
+        checkinBtn.textContent = 'Check In Now?';
+        checkinBtn.onclick = function () { checkInTickets(tokens, checkinBtn); };
+      } else {
+        checkinBtn.style.display = 'none';
+      }
+    }
     go('done');
+  }
+
+  /* Walk-up equivalent of scanning the kiosk QR: the customer is standing at
+     the counter, so check them in immediately via the same endpoint the kiosk
+     uses instead of sending them to walk over and scan. */
+  function checkInTickets(tokens, btn) {
+    btn.disabled = true;
+    btn.textContent = 'Checking in…';
+    Promise.all(tokens.map(function (token) {
+      return fetch('../api/checkin.php', {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token: token, terminal: 'POS Counter' })
+      }).then(function (r) { return r.json(); }).catch(function () { return { result: 'invalid' }; });
+    })).then(function (results) {
+      var ok = results.filter(function (r) { return r && r.result === 'success'; }).length;
+      if (ok === tokens.length) {
+        btn.textContent = 'Checked In ✓';
+        toast(ok + (ok === 1 ? ' ticket' : ' tickets') + ' checked in');
+      } else {
+        btn.disabled = false;
+        btn.textContent = 'Check In Now?';
+        toast('Some tickets could not be checked in', true);
+      }
+    });
   }
 
   document.getElementById('confirmCash').addEventListener('click', function () {

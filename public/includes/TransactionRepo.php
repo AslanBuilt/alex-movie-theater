@@ -393,4 +393,61 @@ final class TransactionRepo
             return 0;
         }
     }
+
+    /**
+     * Check-in summary (total tickets / checked in / last check-in time) for a
+     * batch of transaction ids, keyed by id. Transactions with no ticket_tokens
+     * rows (concession-only) come back with total_tickets = 0.
+     *
+     * @param array<int,int> $transactionIds
+     * @return array<int,array<string,mixed>>
+     */
+    public static function getCheckinSummaries(array $transactionIds): array
+    {
+        $transactionIds = array_values(array_unique(array_map('intval', $transactionIds)));
+        if (!$transactionIds) return [];
+        try {
+            $pdo          = Database::getInstance();
+            $placeholders = implode(',', array_fill(0, count($transactionIds), '?'));
+            $stmt         = $pdo->prepare(
+                "SELECT t.id,
+                        COUNT(tk.token_id) AS total_tickets,
+                        SUM(CASE WHEN tk.token_status = 'used' THEN 1 ELSE 0 END) AS checked_in,
+                        MAX(tk.checked_in_at) AS last_checked_in_at
+                 FROM transactions t
+                 LEFT JOIN ticket_tokens tk ON tk.transaction_id = t.id
+                 WHERE t.id IN ($placeholders)
+                 GROUP BY t.id"
+            );
+            $stmt->execute($transactionIds);
+            $out = [];
+            foreach ($stmt->fetchAll() as $row) {
+                $out[(int)$row['id']] = $row;
+            }
+            return $out;
+        } catch (\Throwable $e) {
+            error_log('[TransactionRepo::getCheckinSummaries] ' . $e->getMessage());
+            return [];
+        }
+    }
+
+    /** Per-ticket check-in detail for one transaction (admin detail view). */
+    public static function getTicketTokens(int $transactionId): array
+    {
+        try {
+            $pdo  = Database::getInstance();
+            $stmt = $pdo->prepare(
+                "SELECT tt.ticket_token, tt.token_status, tt.checked_in_at, tt.checked_in_terminal, m.title AS movie_title
+                 FROM ticket_tokens tt
+                 LEFT JOIN movies m ON m.id = tt.movie_id
+                 WHERE tt.transaction_id = :id
+                 ORDER BY tt.token_id ASC"
+            );
+            $stmt->execute([':id' => $transactionId]);
+            return $stmt->fetchAll();
+        } catch (\Throwable $e) {
+            error_log('[TransactionRepo::getTicketTokens] ' . $e->getMessage());
+            return [];
+        }
+    }
 }

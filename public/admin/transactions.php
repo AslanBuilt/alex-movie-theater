@@ -11,6 +11,25 @@ $perPage      = 25;
 $rows  = TransactionRepo::getPaginated($page, $perPage, $statusFilter);
 $total = TransactionRepo::countAll($statusFilter);
 $pages = (int)ceil($total / $perPage);
+
+$checkinByTxnId = TransactionRepo::getCheckinSummaries(array_column($rows, 'id'));
+
+/** Render the "Checked In" badge for one transaction's check-in summary row. */
+function renderCheckinBadge(?array $summary): string
+{
+    $totalTickets = (int)($summary['total_tickets'] ?? 0);
+    if ($totalTickets === 0) {
+        return '—';
+    }
+    $checkedIn = (int)($summary['checked_in'] ?? 0);
+    if ($checkedIn === $totalTickets) {
+        return '<span class="badge badge-success">All Checked In</span>';
+    }
+    if ($checkedIn > 0) {
+        return '<span class="badge badge-warning">Partial ' . $checkedIn . '/' . $totalTickets . '</span>';
+    }
+    return '<span class="badge badge-muted">Not Yet</span>';
+}
 ?>
 
 <div class="admin-page-header">
@@ -41,6 +60,7 @@ $pages = (int)ceil($total / $perPage);
           <th>Type</th>
           <th>Total</th>
           <th>Status</th>
+          <th>Checked In</th>
           <th>Customer</th>
           <th>Channel</th>
           <th></th>
@@ -58,6 +78,7 @@ $pages = (int)ceil($total / $perPage);
                 <?= e((string)$txn['payment_status']) ?>
               </span>
             </td>
+            <td><?= renderCheckinBadge($checkinByTxnId[(int)$txn['id']] ?? null) ?></td>
             <td><?= $txn['customer_name'] ? e((string)$txn['customer_name']) : '<em style="color:var(--color-text-muted);">Guest</em>' ?></td>
             <td><?= e((string)$txn['source_channel']) ?></td>
             <td><a href="transaction-view.php?id=<?= (int)$txn['id'] ?>" class="btn btn-sm btn-secondary">View</a></td>

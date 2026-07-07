@@ -327,9 +327,13 @@ try {
 // Walk-up ticket sales are paid immediately (no webhook), so mint check-in
 // tokens right here — same as the Stripe webhook does for online orders.
 // Best-effort: a token-generation hiccup must not undo an already-committed sale.
+// Tokens are returned to the register so it can offer "Check In Now?" —
+// the customer is standing at the counter, so staff can check them in on the
+// spot via the same /api/checkin.php the kiosk uses, instead of a kiosk walk.
+$ticketTokens = [];
 if ($hasTicket) {
     try {
-        TicketTokenRepo::generateForTransaction($txnId);
+        $ticketTokens = array_column(TicketTokenRepo::generateForTransaction($txnId), 'ticket_token');
     } catch (\Throwable $e) {
         error_log('[pos-checkout] ticket token generation failed for ' . $txnRef . ': ' . $e->getMessage());
     }
@@ -339,4 +343,5 @@ echo json_encode([
     'ok'              => true,
     'transaction_ref' => $txnRef,
     'total'           => $total,
+    'ticket_tokens'   => $ticketTokens,
 ]);

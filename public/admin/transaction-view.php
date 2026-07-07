@@ -16,6 +16,7 @@ if (!$txn) {
 $csrf      = $auth->generateCsrfToken();
 $isVoided  = $txn['payment_status'] === 'voided';
 $hasPaid   = $txn['payment_status'] === 'paid';
+$tickets   = TransactionRepo::getTicketTokens((int)$txn['id']);
 ?>
 
 <div class="admin-page-header">
@@ -85,6 +86,34 @@ $hasPaid   = $txn['payment_status'] === 'paid';
   </table>
 <?php else: ?>
   <p style="color:var(--color-text-muted);">No line items recorded.</p>
+<?php endif; ?>
+
+<?php if (!empty($tickets)): ?>
+  <h3 style="margin:2rem 0 0.75rem;">Check-In Details</h3>
+  <table class="admin-table">
+    <thead>
+      <tr><th>#</th><th>Movie</th><th>Status</th><th>Checked In At</th><th>Terminal</th></tr>
+    </thead>
+    <tbody>
+      <?php foreach ($tickets as $i => $tk): ?>
+        <tr>
+          <td>Ticket <?= $i + 1 ?></td>
+          <td><?= e((string)($tk['movie_title'] ?? '—')) ?></td>
+          <td>
+            <?php if ($tk['token_status'] === 'used'): ?>
+              <span class="badge badge-success">Checked In</span>
+            <?php elseif ($tk['token_status'] === 'voided'): ?>
+              <span class="badge badge-muted">Voided</span>
+            <?php else: ?>
+              <span class="badge badge-muted">Not Yet</span>
+            <?php endif; ?>
+          </td>
+          <td><?= $tk['checked_in_at'] ? e(date('M j, Y g:i A', strtotime((string)$tk['checked_in_at']))) : '—' ?></td>
+          <td><?= $tk['checked_in_terminal'] ? e((string)$tk['checked_in_terminal']) : '—' ?></td>
+        </tr>
+      <?php endforeach; ?>
+    </tbody>
+  </table>
 <?php endif; ?>
 
 <div style="margin-top:2.5rem; padding-top:1.5rem; border-top:1px solid rgba(0,0,0,0.1);">

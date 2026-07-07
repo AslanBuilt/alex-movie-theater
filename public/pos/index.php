@@ -307,6 +307,7 @@ $bootData = [
       <h2 style="font-size:28px">Order Complete</h2>
       <p style="color:var(--c-text-2);font-size:16px">Transaction <b class="tnum" id="doneRef">—</b> · <b class="tnum" id="donePaid">$0.00</b></p>
       <p style="color:var(--c-text-muted);font-size:14px" id="doneChange"></p>
+      <button class="btn-checkout" style="min-width:240px;margin-top:8px;display:none" id="checkinNowBtn">Check In Now?</button>
       <button class="btn-checkout" style="min-width:240px;margin-top:8px" id="newOrderBtn">New Order</button>
     </div>
   </section>
