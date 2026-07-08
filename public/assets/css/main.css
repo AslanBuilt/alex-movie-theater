@@ -1961,6 +1961,25 @@ abbr.required {
 
 .poster-card:hover .poster-cta { color: var(--crimson-dark); }
 
+/* ── Ticket page movie grid (tickets.php "Now Showing") ── */
+.ticket-movie-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr));
+    gap: 2rem;
+}
+
+.ticket-movie-card {
+    text-align: center;
+}
+
+.ticket-movie-title {
+    font-family: var(--font-display);
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0.85rem 0 0;
+}
+
 .carousel-arrow {
     position: absolute;
     top: calc(33% - 20px);

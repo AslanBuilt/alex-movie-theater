@@ -71,12 +71,25 @@ require TEMPLATES_PATH . '/header.php';
         </div>
 
         <?php if (!empty($nowShowing)): ?>
-            <div class="info-grid">
+            <div class="ticket-movie-grid">
                 <?php foreach ($nowShowing as $movie): ?>
-                    <?php $mid = (int) ($movie['id'] ?? 0); $title = (string) ($movie['title'] ?? 'Movie'); ?>
-                    <div class="info-card">
-                        <h3><?= e($title) ?></h3>
-                        <a href="movie.php?id=<?= $mid ?>" class="btn btn-crimson" style="display:inline-block; margin-top:1rem;">Showtimes &amp; Tickets</a>
+                    <?php
+                        $mid       = (int) ($movie['id'] ?? 0);
+                        $title     = (string) ($movie['title'] ?? 'Movie');
+                        $posterSrc = posterUrl((string) ($movie['poster_path'] ?? ''));
+                    ?>
+                    <div class="ticket-movie-card">
+                        <a href="movie.php?id=<?= $mid ?>" class="poster-link">
+                            <div class="poster-img-wrap">
+                                <?php if ($posterSrc !== ''): ?>
+                                    <img src="<?= e($posterSrc) ?>" alt="<?= e($title) ?>" loading="lazy">
+                                <?php else: ?>
+                                    <div class="movie-poster-placeholder"><?= e($title) ?></div>
+                                <?php endif; ?>
+                            </div>
+                        </a>
+                        <h3 class="ticket-movie-title"><?= e($title) ?></h3>
+                        <a href="movie.php?id=<?= $mid ?>" class="btn btn-crimson" style="display:inline-block; margin-top:0.75rem;">Showtimes &amp; Tickets</a>
                     </div>
                 <?php endforeach; ?>
             </div>
