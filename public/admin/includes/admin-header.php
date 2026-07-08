@@ -1,6 +1,16 @@
 <?php
 declare(strict_types=1);
 
+// Buffer all output from this point on. Every admin edit/create page requires
+// this file BEFORE running its own POST handling, so without a buffer the
+// HTML below (sidebar, nav, opening <main>) is already sent to the browser
+// by the time a successful save calls header('Location: ...') — that
+// redirect silently fails ("headers already sent"), the page gets cut off
+// mid-render right after the sidebar, and it reads as "the page went black"
+// even though the save itself succeeded. Buffering defers the flush to
+// script end so header() always still works.
+ob_start();
+
 require_once __DIR__ . '/../../config/config.php';
 require_once INCLUDES_PATH . '/Database.php';
 require_once INCLUDES_PATH . '/AdminAuth.php';
