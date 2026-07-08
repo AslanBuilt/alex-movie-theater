@@ -28,6 +28,13 @@ define('FB_PIXEL_ID',        '');  // Deferred — set to numeric pixel ID from 
 
 define('ADMIN_SESSION_TTL', 28800); // 8 hours of inactivity before the admin session expires
 
+// Ticket prices — single source of truth for movie.php, checkout.php, api/cart.php,
+// pos/index.php, and api/pos-checkout.php. No settings table exists yet (see
+// admin/ — there's no settings admin page either), so these are constants for now;
+// promoting them to an admin-editable settings table is a future improvement.
+define('TICKET_PRICE_ADULT', 5.00);
+define('TICKET_PRICE_CHILD', 3.00);
+
 define('ROOT_PATH', dirname(__DIR__));
 define('PUBLIC_PATH', ROOT_PATH . '/public');
 define('INCLUDES_PATH', ROOT_PATH . '/includes');

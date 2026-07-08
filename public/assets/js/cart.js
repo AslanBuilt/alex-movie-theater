@@ -249,4 +249,26 @@
         .then(renderCart)
         .catch(function () {});
 
+    // ── Public API ─────────────────────────────────────────────────
+    // For pages needing a custom add flow (e.g. movie.php's age-split
+    // Adult/Child tickets, which can't be expressed as one data-qty).
+    function addItem(type, id, qty, option) {
+        var fd = new FormData();
+        fd.append('action', 'add');
+        fd.append('id', id);
+        fd.append('qty', qty);
+        fd.append('type', type);
+        if (option) fd.append('option', option);
+        return fetch(API, { method: 'POST', body: fd, headers: csrfHeaders() })
+            .then(function (r) { return r.json(); })
+            .then(function (data) {
+                if (data && data.ok !== false) {
+                    renderCart(data);
+                    pulseBadge();
+                }
+                return data;
+            });
+    }
+    window.AlexCart = { addItem: addItem, open: openDrawer, message: showMessage };
+
 })();

@@ -86,8 +86,8 @@ if (!$rawItems) {
     posFail(400, 'The cart is empty.');
 }
 
-// Flat ticket pricing — keep in sync with pos/index.php.
-$TICKET_PRICE = ['Adult' => 5.00, 'Child' => 3.00];
+// Ticket prices come from ticketPrice() (includes/helpers.php), sourced from the
+// TICKET_PRICE_ADULT/TICKET_PRICE_CHILD constants — the single source of truth.
 
 // ── Normalize the incoming cart into concession + ticket request maps ─────────
 // Concessions keyed by id (qty summed, options kept per id+option line).
@@ -113,7 +113,7 @@ foreach ($rawItems as $it) {
     } elseif ($kind === 'ticket') {
         $sid = (int)($it['showtime_id'] ?? 0);
         $age = (string)($it['age'] ?? '');
-        if ($sid < 1 || !isset($TICKET_PRICE[$age])) continue;
+        if ($sid < 1 || !in_array($age, ['Adult', 'Child'], true)) continue;
         $ticketLines[] = ['showtime_id' => $sid, 'age' => $age, 'qty' => $qty];
         $ticketQtyById[$sid] = ($ticketQtyById[$sid] ?? 0) + $qty;
     }
@@ -224,11 +224,15 @@ try {
 
     foreach ($ticketLines as $tl) {
         $st    = $stRows[$tl['showtime_id']];
-        $price = round((float)$TICKET_PRICE[$tl['age']], 2);
+        $price = round(ticketPrice($tl['age']), 2);
         $sub   = round($price * $tl['qty'], 2);
         $total += $sub;
         $hasTicket = true;
-        $name = 'Ticket: ' . $st['title'] . ' (' . $tl['age'] . ')'
+        // Age lives in selected_option below, not baked into item_name — matches
+        // the website checkout convention so admin/transaction-view.php and the
+        // confirmation/email templates (which append selected_option themselves)
+        // don't show the age twice.
+        $name = 'Ticket: ' . $st['title']
             . ($st['when'] !== '' ? ' — ' . $st['when'] : '');
         $lineItems[] = [
             'item_type'       => 'ticket',

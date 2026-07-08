@@ -17,6 +17,16 @@ $csrf      = $auth->generateCsrfToken();
 $isVoided  = $txn['payment_status'] === 'voided';
 $hasPaid   = $txn['payment_status'] === 'paid';
 $tickets   = TransactionRepo::getTicketTokens((int)$txn['id']);
+
+// Group ticket line items by name (movie + showtime) so Adult/Child show as a
+// readable per-showing breakdown instead of one flat "ticket x3" row.
+$ticketGroups = [];
+foreach ($txn['items'] ?? [] as $li) {
+    if (($li['item_type'] ?? '') !== 'ticket') continue;
+    $key = (string)$li['item_name'];
+    $ticketGroups[$key]['lines'][] = $li;
+    $ticketGroups[$key]['total'] = ($ticketGroups[$key]['total'] ?? 0) + (float)$li['subtotal'];
+}
 ?>
 
 <div class="admin-page-header">
@@ -58,6 +68,25 @@ $tickets   = TransactionRepo::getTicketTokens((int)$txn['id']);
     <p style="font-size:0.85rem; color:var(--color-text-muted);"><?= e(date('M j, Y g:i A', strtotime((string)$txn['created_at']))) ?></p>
   </div>
 </div>
+
+<?php if (!empty($ticketGroups)): ?>
+  <h3 style="margin-bottom:0.75rem;">Ticket Breakdown</h3>
+  <?php foreach ($ticketGroups as $name => $group): ?>
+    <div class="policy-box" style="margin-bottom:1rem;">
+      <p style="font-weight:700; margin:0 0 0.5rem;"><?= e($name) ?></p>
+      <?php foreach ($group['lines'] as $li): ?>
+        <div style="display:flex; justify-content:space-between; padding:0.25rem 0; padding-left:1rem;">
+          <span><?= e((string)($li['selected_option'] ?: 'Ticket')) ?> &times; <?= (int)$li['quantity'] ?></span>
+          <span>$<?= number_format((float)$li['subtotal'], 2) ?></span>
+        </div>
+      <?php endforeach; ?>
+      <div style="display:flex; justify-content:space-between; padding-top:0.5rem; margin-top:0.25rem; border-top:1px solid rgba(0,0,0,0.1); font-weight:700;">
+        <span>Total</span>
+        <span>$<?= number_format($group['total'], 2) ?></span>
+      </div>
+    </div>
+  <?php endforeach; ?>
+<?php endif; ?>
 
 <h3 style="margin-bottom:0.75rem;">Line Items</h3>
 <?php if (!empty($txn['items'])): ?>

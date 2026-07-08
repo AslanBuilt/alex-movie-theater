@@ -26,10 +26,16 @@ $stripeConfig     = is_file($stripeConfigPath) ? require $stripeConfigPath : nul
 // ── Detect mode ───────────────────────────────────────────────────────────────
 // 'ticket' = direct "Buy Now" for a single showtime (?showtime=&qty=).
 // 'cart'   = the session cart, which may hold tickets AND concessions together.
-$TICKET_PRICE = 5.00;
+// Ticket prices come from ticketPrice() (includes/helpers.php), sourced from the
+// TICKET_PRICE_ADULT/TICKET_PRICE_CHILD constants — the single source of truth.
 $mode       = 'ticket';
 $showtimeId = isset($_GET['showtime']) ? (int)$_GET['showtime'] : 0;
-$qty        = isset($_GET['qty'])      ? max(1, (int)$_GET['qty']) : 1;
+// qty_adult/qty_child are the current params; qty (legacy, all-adult) is kept
+// as a fallback for any old links still in circulation.
+$qtyAdult   = isset($_GET['qty_adult']) ? max(0, (int)$_GET['qty_adult']) : (isset($_GET['qty']) ? max(0, (int)$_GET['qty']) : 0);
+$qtyChild   = isset($_GET['qty_child']) ? max(0, (int)$_GET['qty_child']) : 0;
+if ($qtyAdult + $qtyChild < 1) $qtyAdult = 1;
+$qty        = $qtyAdult + $qtyChild;
 $timeLabel  = isset($_GET['t'])        ? urldecode($_GET['t']) : '';
 
 $showtime = null;   // populated in direct-ticket mode for the summary block
@@ -72,16 +78,20 @@ if ($showtimeId > 0) {
         if ($available < $qty) {
             $checkoutError = "Only $available ticket(s) remain for this showtime.";
         } else {
-            $name = 'Ticket: ' . ($movie['title'] ?? 'Movie');
+            $baseName = 'Ticket: ' . ($movie['title'] ?? 'Movie');
             $when = $showtimeWhen($showtime);
-            if ($when !== '') $name .= ' — ' . $when;
-            $lineItems[] = [
-                'item_type' => 'ticket', 'item_id' => (int)$showtime['id'],
-                'item_name' => $name,
-                'quantity'  => $qty, 'unit_price' => $TICKET_PRICE, 'selected_option' => null,
-                'subtotal'  => round($TICKET_PRICE * $qty, 2),
-            ];
-            $totalAmount += $TICKET_PRICE * $qty;
+            if ($when !== '') $baseName .= ' — ' . $when;
+            foreach (['Adult' => $qtyAdult, 'Child' => $qtyChild] as $age => $ageQty) {
+                if ($ageQty < 1) continue;
+                $price = ticketPrice($age);
+                $lineItems[] = [
+                    'item_type' => 'ticket', 'item_id' => (int)$showtime['id'],
+                    'item_name' => $baseName,
+                    'quantity'  => $ageQty, 'unit_price' => $price, 'selected_option' => $age,
+                    'subtotal'  => round($price * $ageQty, 2),
+                ];
+                $totalAmount += $price * $ageQty;
+            }
             $hasTicket = true;
         }
     }
@@ -93,32 +103,47 @@ if ($showtimeId > 0) {
         $checkoutError = 'Your cart is empty.';
     } else {
         $concRepo = new ConcessionRepo(Database::getInstance());
+
+        // Tickets may appear as separate Adult/Child entries for the same
+        // showtime — validate their combined qty against capacity, since each
+        // entry is priced/checked independently below.
+        $ticketQtyByShowtime = [];
+        foreach ($cart as $entry) {
+            if (($entry['type'] ?? 'concession') === 'ticket') {
+                $sid = (int)($entry['id'] ?? 0);
+                $ticketQtyByShowtime[$sid] = ($ticketQtyByShowtime[$sid] ?? 0) + max(0, (int)($entry['qty'] ?? 0));
+            }
+        }
+
         foreach ($cart as $entry) {
             $eqty = max(0, (int)($entry['qty'] ?? 0));
             if ($eqty < 1) continue;
 
             if (($entry['type'] ?? 'concession') === 'ticket') {
-                $st = tryDb(fn() => ShowtimeRepo::getById((int)$entry['id']), null);
+                $sid = (int)$entry['id'];
+                $st  = tryDb(fn() => ShowtimeRepo::getById($sid), null);
                 if (!$st || empty($st['is_active'])) {
                     $checkoutError = 'A showtime in your cart is no longer available. Please review your cart.';
                     break;
                 }
                 $available = (int)$st['available_tickets'] - (int)$st['tickets_sold'];
                 $mv = tryDb(fn() => MovieRepo::getById((int)$st['movie_id']), null);
-                if ($available < $eqty) {
+                if ($available < ($ticketQtyByShowtime[$sid] ?? $eqty)) {
                     $checkoutError = 'Only ' . max(0, $available) . ' ticket(s) remain for ' . ($mv['title'] ?? 'a showtime') . '.';
                     break;
                 }
-                $name = 'Ticket: ' . ($mv['title'] ?? 'Movie');
-                $when = $showtimeWhen($st);
+                $age   = in_array($entry['option'] ?? null, ['Adult', 'Child'], true) ? $entry['option'] : 'Adult';
+                $price = ticketPrice($age);
+                $name  = 'Ticket: ' . ($mv['title'] ?? 'Movie');
+                $when  = $showtimeWhen($st);
                 if ($when !== '') $name .= ' — ' . $when;
                 $lineItems[] = [
-                    'item_type' => 'ticket', 'item_id' => (int)$st['id'],
+                    'item_type' => 'ticket', 'item_id' => $sid,
                     'item_name' => $name,
-                    'quantity'  => $eqty, 'unit_price' => $TICKET_PRICE, 'selected_option' => null,
-                    'subtotal'  => round($TICKET_PRICE * $eqty, 2),
+                    'quantity'  => $eqty, 'unit_price' => $price, 'selected_option' => $age,
+                    'subtotal'  => round($price * $eqty, 2),
                 ];
-                $totalAmount += $TICKET_PRICE * $eqty;
+                $totalAmount += $price * $eqty;
                 $hasTicket = true;
             } else {
                 $ci = $concRepo->getById((int)$entry['id']);
@@ -212,30 +237,24 @@ require __DIR__ . '/templates/header.php';
 <section>
   <div class="container" style="max-width:640px;">
 
-    <?php if ($mode === 'ticket' && $showtime): ?>
-      <div class="policy-box" style="margin-bottom:2rem;">
-        <h3 style="margin-bottom:0.5rem;">Order Summary</h3>
-        <p style="margin:0.25rem 0;"><strong><?= e($movie ? $movie['title'] : 'Movie') ?></strong></p>
-        <p style="margin:0.25rem 0; color:var(--color-text-muted);">
-          <?php
-            $dateStr = $showtime['showtime_date'] ?? '';
-            $timeStr = $showtime['showtime_time'] ?? $timeLabel;
-            if ($dateStr) {
-                $d = new DateTime($dateStr);
-                echo e($d->format('D, M j') . ' at ' . ($timeStr ? date('g:i A', strtotime($timeStr)) : $timeLabel));
-            } else {
-                echo e($showtime['label'] ?? '');
-            }
-          ?>
-        </p>
-        <p style="margin:0.75rem 0 0;">
-          <?= $qty ?> ticket<?= $qty !== 1 ? 's' : '' ?> &times; $5.00 =
-          <strong style="color:var(--color-crimson);">$<?= number_format($qty * 5.00, 2) ?></strong>
-        </p>
-      </div>
-    <?php elseif ($mode === 'cart' && !empty($lineItems)): ?>
+    <?php if (!empty($lineItems)): ?>
       <div class="policy-box" style="margin-bottom:2rem;">
         <h3 style="margin-bottom:0.75rem;">Order Summary</h3>
+        <?php if ($mode === 'ticket' && $showtime): ?>
+          <p style="margin:0 0 0.75rem; color:var(--color-text-muted);">
+            <strong style="color:var(--color-text);"><?= e($movie ? $movie['title'] : 'Movie') ?></strong> —
+            <?php
+              $dateStr = $showtime['showtime_date'] ?? '';
+              $timeStr = $showtime['showtime_time'] ?? $timeLabel;
+              if ($dateStr) {
+                  $d = new DateTime($dateStr);
+                  echo e($d->format('D, M j') . ' at ' . ($timeStr ? date('g:i A', strtotime($timeStr)) : $timeLabel));
+              } else {
+                  echo e($showtime['label'] ?? '');
+              }
+            ?>
+          </p>
+        <?php endif; ?>
         <?php foreach ($lineItems as $li): ?>
           <div style="display:flex; justify-content:space-between; padding:0.35rem 0; border-bottom:1px solid rgba(0,0,0,0.06);">
             <span><?= e($li['item_name']) ?><?= $li['selected_option'] ? ' (' . e($li['selected_option']) . ')' : '' ?> &times; <?= (int)$li['quantity'] ?></span>

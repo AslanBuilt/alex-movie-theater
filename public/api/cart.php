@@ -12,9 +12,6 @@ require_once INCLUDES_PATH . '/ShowtimeRepo.php';
 require_once INCLUDES_PATH . '/MovieRepo.php';
 require_once INCLUDES_PATH . '/RateLimiter.php';
 
-// Flat ticket price, mirrored in checkout.php and movie.php.
-const CART_TICKET_PRICE = 5.00;
-
 $action = (string)($_REQUEST['action'] ?? '');
 
 // Throttle only the mutating actions; count/items fire on every page load to
@@ -50,7 +47,7 @@ function entryIsTicket(array $e): bool
 function entryMatches(array $e, string $type, int $id, ?string $opt): bool
 {
     if ((int)($e['id'] ?? 0) !== $id) return false;
-    if ($type === 'ticket') return entryIsTicket($e);
+    if ($type === 'ticket') return entryIsTicket($e) && normalizeTicketAge($e['option'] ?? null) === normalizeTicketAge($opt);
     return !entryIsTicket($e) && (($e['option'] ?? null) === $opt);
 }
 
@@ -102,17 +99,19 @@ function cartItems(): array
                 $when = (string)$st['label'];
             }
 
+            $age       = normalizeTicketAge($e['option'] ?? null);
+            $price     = ticketPrice($age);
             $available = max(0, (int)$st['available_tickets'] - (int)$st['tickets_sold']);
             $out[] = [
                 'type'      => 'ticket',
                 'id'        => (int)$e['id'],
-                'name'      => 'Ticket: ' . $title . ($when !== '' ? ' — ' . $when : ''),
-                'price'     => CART_TICKET_PRICE,
+                'name'      => 'Ticket: ' . $title . ($when !== '' ? ' — ' . $when : '') . ' (' . $age . ')',
+                'price'     => $price,
                 'qty'       => $qty,
-                'option'    => null,
+                'option'    => $age,
                 'image'     => '',
                 'available' => $available,
-                'subtotal'  => round(CART_TICKET_PRICE * $qty, 2),
+                'subtotal'  => round($price * $qty, 2),
             ];
         } else {
             if ($concRepo === null) {
@@ -169,21 +168,31 @@ switch ($action) {
         $cart = $_SESSION['cart'] ?? [];
 
         if ($type === 'ticket') {
+            $age   = normalizeTicketAge($_POST['option'] ?? null);
             $avail = ticketAvailable($id);
-            if ($avail < 1) {
+            // Tickets for the same showtime can exist as separate Adult/Child
+            // entries — cap by capacity remaining after the *other* age's qty.
+            $otherQty = 0;
+            foreach ($cart as $e) {
+                if (entryIsTicket($e) && (int)($e['id'] ?? 0) === $id && normalizeTicketAge($e['option'] ?? null) !== $age) {
+                    $otherQty += (int)($e['qty'] ?? 0);
+                }
+            }
+            $room = max(0, $avail - $otherQty);
+            if ($room < 1) {
                 echo json_encode(['ok' => false, 'error' => 'This showtime is sold out or no longer available.']);
                 exit;
             }
             $found = false;
             foreach ($cart as &$e) {
-                if (entryMatches($e, 'ticket', $id, null)) {
-                    $e['qty'] = min($avail, (int)$e['qty'] + $qty);
+                if (entryMatches($e, 'ticket', $id, $age)) {
+                    $e['qty'] = min($room, (int)$e['qty'] + $qty);
                     $found = true;
                     break;
                 }
             }
             unset($e);
-            if (!$found) $cart[] = ['type' => 'ticket', 'id' => $id, 'qty' => min($avail, $qty)];
+            if (!$found) $cart[] = ['type' => 'ticket', 'id' => $id, 'qty' => min($room, $qty), 'option' => $age];
         } else {
             $found = false;
             foreach ($cart as &$e) {
@@ -206,12 +215,21 @@ switch ($action) {
         $type = ($_POST['type'] ?? 'concession') === 'ticket' ? 'ticket' : 'concession';
         $id   = (int)($_POST['id'] ?? 0);
         $qty  = max(0, (int)($_POST['qty'] ?? 0));
-        $opt  = ($type === 'concession' && isset($_POST['option']) && $_POST['option'] !== '') ? $_POST['option'] : null;
-        // Never let a ticket qty climb past remaining seats.
-        if ($type === 'ticket' && $qty > 0) {
-            $qty = min($qty, ticketAvailable($id));
-        }
+        $opt  = $type === 'ticket'
+            ? normalizeTicketAge($_POST['option'] ?? null)
+            : (($_POST['option'] ?? '') !== '' ? $_POST['option'] : null);
         $cart = $_SESSION['cart'] ?? [];
+        // Never let a ticket qty climb past remaining seats, accounting for
+        // the other age's qty on the same showtime.
+        if ($type === 'ticket' && $qty > 0) {
+            $otherQty = 0;
+            foreach ($cart as $e) {
+                if (entryIsTicket($e) && (int)($e['id'] ?? 0) === $id && normalizeTicketAge($e['option'] ?? null) !== $opt) {
+                    $otherQty += (int)($e['qty'] ?? 0);
+                }
+            }
+            $qty = min($qty, max(0, ticketAvailable($id) - $otherQty));
+        }
         if ($qty === 0) {
             $cart = array_values(array_filter($cart, fn($e) => !entryMatches($e, $type, $id, $opt)));
         } else {
@@ -228,7 +246,9 @@ switch ($action) {
         requireCsrf();
         $type = ($_POST['type'] ?? 'concession') === 'ticket' ? 'ticket' : 'concession';
         $id   = (int)($_POST['id'] ?? 0);
-        $opt  = ($type === 'concession' && isset($_POST['option']) && $_POST['option'] !== '') ? $_POST['option'] : null;
+        $opt  = $type === 'ticket'
+            ? normalizeTicketAge($_POST['option'] ?? null)
+            : (($_POST['option'] ?? '') !== '' ? $_POST['option'] : null);
         $_SESSION['cart'] = array_values(array_filter(
             $_SESSION['cart'] ?? [],
             fn($e) => !entryMatches($e, $type, $id, $opt)

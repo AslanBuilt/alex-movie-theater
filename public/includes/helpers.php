@@ -86,3 +86,15 @@ function tryDb(callable $fn, $fallback = [])
         return $fallback;
     }
 }
+
+/** Normalize any ticket-age input to 'Adult' or 'Child' — anything else defaults to Adult. */
+function normalizeTicketAge(?string $age): string
+{
+    return $age === 'Child' ? 'Child' : 'Adult';
+}
+
+/** Server-side ticket price for an age, sourced from the config constants — the single source of truth. */
+function ticketPrice(?string $age): float
+{
+    return normalizeTicketAge($age) === 'Child' ? TICKET_PRICE_CHILD : TICKET_PRICE_ADULT;
+}

@@ -145,19 +145,28 @@ require __DIR__ . '/templates/header.php';
 
           <!-- Quantity + checkout (shown after time selection) -->
           <div id="ticket-purchase-box" style="display:none; margin-top:1.5rem;">
-            <div style="display:flex; align-items:center; gap:1rem; flex-wrap:wrap; margin-bottom:1rem;">
-              <label style="font-weight:700; color:var(--color-text);">Tickets:</label>
-              <div class="qty-control">
-                <button type="button" id="qty-dec" class="qty-btn" aria-label="Fewer tickets">&#8722;</button>
-                <span id="qty-display" style="min-width:2rem; text-align:center; font-weight:700;">1</span>
-                <button type="button" id="qty-inc" class="qty-btn" aria-label="More tickets">&#43;</button>
+            <div style="display:flex; flex-direction:column; gap:0.75rem; margin-bottom:1rem;">
+              <div style="display:flex; align-items:center; gap:1rem; flex-wrap:wrap;">
+                <label style="font-weight:700; color:var(--color-text); min-width:120px;">Adult ($<?= number_format(TICKET_PRICE_ADULT, 2) ?>):</label>
+                <div class="qty-control">
+                  <button type="button" id="qty-adult-dec" class="qty-btn" aria-label="Fewer adult tickets">&#8722;</button>
+                  <span id="qty-adult-display" style="min-width:2rem; text-align:center; font-weight:700;">1</span>
+                  <button type="button" id="qty-adult-inc" class="qty-btn" aria-label="More adult tickets">&#43;</button>
+                </div>
               </div>
-              <span id="ticket-total" style="font-size:1.1rem; font-weight:700; color:var(--color-crimson);">$5.00</span>
+              <div style="display:flex; align-items:center; gap:1rem; flex-wrap:wrap;">
+                <label style="font-weight:700; color:var(--color-text); min-width:120px;">Child ($<?= number_format(TICKET_PRICE_CHILD, 2) ?>):</label>
+                <div class="qty-control">
+                  <button type="button" id="qty-child-dec" class="qty-btn" aria-label="Fewer child tickets">&#8722;</button>
+                  <span id="qty-child-display" style="min-width:2rem; text-align:center; font-weight:700;">0</span>
+                  <button type="button" id="qty-child-inc" class="qty-btn" aria-label="More child tickets">&#43;</button>
+                </div>
+              </div>
+              <span id="ticket-total" style="font-size:1.1rem; font-weight:700; color:var(--color-crimson);">$<?= number_format(TICKET_PRICE_ADULT, 2) ?></span>
             </div>
             <div style="display:flex; gap:1rem; flex-wrap:wrap;">
-              <button type="button" id="btn-add-ticket-cart" class="btn btn-crimson btn-add-cart"
-                      data-type="ticket" data-open-cart="1"
-                      data-name="<?= e($movie['title']) ?> ticket"
+              <button type="button" id="btn-add-ticket-cart" class="btn btn-crimson"
+                      data-open-cart="1"
                       data-track="add-ticket-cart"
                       data-track-label="<?= e($movie['title']) ?>">
                 Add to Cart
@@ -168,7 +177,7 @@ require __DIR__ . '/templates/header.php';
                 Buy Now
               </a>
             </div>
-            <p style="margin-top:0.75rem; font-size:0.8rem; color:var(--color-text-muted);">Add to cart to combine with concessions, or buy now for tickets only. Adults $5 &bull; Children $3.</p>
+            <p style="margin-top:0.75rem; font-size:0.8rem; color:var(--color-text-muted);">Add to cart to combine with concessions, or buy now for tickets only. Adults $<?= number_format(TICKET_PRICE_ADULT, 2) ?> &bull; Children $<?= number_format(TICKET_PRICE_CHILD, 2) ?>.</p>
           </div>
 
         <?php elseif (!empty($legShowtimes)): ?>
@@ -236,32 +245,33 @@ require __DIR__ . '/templates/header.php';
 
 <script>
 (function () {
-  var TICKET_PRICE = 5.00;
+  var TICKET_PRICE = { Adult: <?= json_encode(TICKET_PRICE_ADULT) ?>, Child: <?= json_encode(TICKET_PRICE_CHILD) ?> };
   var selectedShowtimeId = 0;
   var selectedTime = '';
-  var qty = 1;
+  var qtyAdult = 1;
+  var qtyChild = 0;
   var maxQty = 1;
 
-  var dayTabs   = document.getElementById('showtime-day-tabs');
-  var timeBtns  = document.getElementById('showtime-time-btns');
-  var purchBox  = document.getElementById('ticket-purchase-box');
-  var qtyDisp   = document.getElementById('qty-display');
-  var totalDisp = document.getElementById('ticket-total');
-  var btnDec    = document.getElementById('qty-dec');
-  var btnInc    = document.getElementById('qty-inc');
+  var dayTabs    = document.getElementById('showtime-day-tabs');
+  var timeBtns   = document.getElementById('showtime-time-btns');
+  var purchBox   = document.getElementById('ticket-purchase-box');
+  var adultDisp  = document.getElementById('qty-adult-display');
+  var childDisp  = document.getElementById('qty-child-display');
+  var totalDisp  = document.getElementById('ticket-total');
+  var btnAdultDec = document.getElementById('qty-adult-dec');
+  var btnAdultInc = document.getElementById('qty-adult-inc');
+  var btnChildDec = document.getElementById('qty-child-dec');
+  var btnChildInc = document.getElementById('qty-child-inc');
   var btnCheckout = document.getElementById('btn-proceed-checkout');
   var btnAddCart  = document.getElementById('btn-add-ticket-cart');
 
-  // Keep the Add-to-Cart button's data-* in sync with the current selection so
-  // cart.js (which reads them on click) adds the right showtime + quantity.
-  function syncAddCart() {
-    if (!btnAddCart) return;
-    if (selectedShowtimeId > 0) {
-      btnAddCart.dataset.id  = selectedShowtimeId;
-      btnAddCart.dataset.qty = qty;
-    } else {
-      delete btnAddCart.dataset.id;
-    }
+  function totalQty()   { return qtyAdult + qtyChild; }
+  function totalPrice() { return qtyAdult * TICKET_PRICE.Adult + qtyChild * TICKET_PRICE.Child; }
+
+  function updateDisplay() {
+    if (adultDisp) adultDisp.textContent = qtyAdult;
+    if (childDisp) childDisp.textContent = qtyChild;
+    if (totalDisp) totalDisp.textContent = '$' + totalPrice().toFixed(2);
   }
 
   if (!dayTabs || !timeBtns) return;
@@ -314,7 +324,6 @@ require __DIR__ . '/templates/header.php';
     }
     if (purchBox) purchBox.style.display = 'none';
     selectedShowtimeId = 0;
-    syncAddCart();
   });
 
   // Time button clicks
@@ -328,32 +337,62 @@ require __DIR__ . '/templates/header.php';
     selectedShowtimeId = parseInt(btn.getAttribute('data-showtime-id') || '0', 10);
     selectedTime       = btn.getAttribute('data-time') || '';
     maxQty = Math.min(10, parseInt(btn.getAttribute('data-available') || '10', 10));
-    qty = 1;
-    if (qtyDisp) qtyDisp.textContent = qty;
-    if (totalDisp) totalDisp.textContent = '$' + (qty * TICKET_PRICE).toFixed(2);
+    qtyAdult = Math.min(1, maxQty);
+    qtyChild = 0;
+    updateDisplay();
     if (purchBox && selectedShowtimeId > 0) purchBox.style.display = 'block';
-    syncAddCart();
   });
 
-  // Quantity controls
-  if (btnDec) btnDec.addEventListener('click', function () {
-    if (qty > 1) { qty--; update(); }
+  // Quantity controls — always keep at least 1 ticket total selected.
+  if (btnAdultDec) btnAdultDec.addEventListener('click', function () {
+    if (qtyAdult > 0 && totalQty() > 1) { qtyAdult--; updateDisplay(); }
   });
-  if (btnInc) btnInc.addEventListener('click', function () {
-    if (qty < maxQty) { qty++; update(); }
+  if (btnAdultInc) btnAdultInc.addEventListener('click', function () {
+    if (totalQty() < maxQty) { qtyAdult++; updateDisplay(); }
   });
-
-  function update() {
-    if (qtyDisp) qtyDisp.textContent = qty;
-    if (totalDisp) totalDisp.textContent = '$' + (qty * TICKET_PRICE).toFixed(2);
-    syncAddCart();
-  }
+  if (btnChildDec) btnChildDec.addEventListener('click', function () {
+    if (qtyChild > 0 && totalQty() > 1) { qtyChild--; updateDisplay(); }
+  });
+  if (btnChildInc) btnChildInc.addEventListener('click', function () {
+    if (totalQty() < maxQty) { qtyChild++; updateDisplay(); }
+  });
 
   // Checkout button
   if (btnCheckout) btnCheckout.addEventListener('click', function (e) {
     e.preventDefault();
     if (!selectedShowtimeId) return;
-    window.location.href = 'checkout.php?showtime=' + selectedShowtimeId + '&qty=' + qty + '&t=' + encodeURIComponent(selectedTime);
+    window.location.href = 'checkout.php?showtime=' + selectedShowtimeId +
+      '&qty_adult=' + qtyAdult + '&qty_child=' + qtyChild + '&t=' + encodeURIComponent(selectedTime);
+  });
+
+  // Add to cart button — adds Adult and/or Child as separate cart entries.
+  // Chained (not parallel): both POSTs share one PHP session, so concurrent
+  // requests race on which response (and its cart snapshot) renders last.
+  if (btnAddCart) btnAddCart.addEventListener('click', function (e) {
+    e.preventDefault();
+    if (!selectedShowtimeId || !window.AlexCart) return;
+    var origText = btnAddCart.textContent;
+    btnAddCart.disabled = true;
+    btnAddCart.textContent = 'Adding…';
+    var results = [];
+    var chain = Promise.resolve();
+    if (qtyAdult > 0) chain = chain.then(function () {
+      return window.AlexCart.addItem('ticket', selectedShowtimeId, qtyAdult, 'Adult').then(function (r) { results.push(r); });
+    });
+    if (qtyChild > 0) chain = chain.then(function () {
+      return window.AlexCart.addItem('ticket', selectedShowtimeId, qtyChild, 'Child').then(function (r) { results.push(r); });
+    });
+    chain.then(function () {
+      btnAddCart.textContent = origText;
+      btnAddCart.disabled = false;
+      var ok = results.every(function (r) { return r && r.ok !== false; });
+      if (ok) {
+        window.AlexCart.open();
+      } else if (window.AlexCart.message) {
+        var err = results.map(function (r) { return r && r.error; }).filter(Boolean)[0];
+        window.AlexCart.message(err || 'Sorry, that could not be added.');
+      }
+    });
   });
 })();
 </script>

@@ -10,8 +10,10 @@ declare(strict_types=1);
  * public/pos-preview/index.html.
  *
  * TICKET MODEL (documented assumption):
- *   Tickets use FLAT pricing — Adult $5 / Child $3 — the theater's standard.
- *   Tapping a now-showing movie opens a small Adult/Child overlay. The cart
+ *   Tickets use flat Adult/Child pricing from TICKET_PRICE_ADULT/TICKET_PRICE_CHILD
+ *   (config/config.php) — the theater's standard, single source of truth shared
+ *   with the website. Tapping a now-showing movie opens a small Adult/Child
+ *   overlay. The cart
  *   line's item_id is the movie's NEXT ACTIVE SHOWTIME with remaining capacity
  *   (the same showtime id space the website cart + Stripe webhook already use,
  *   so the existing admin Void / reporting code stays symmetric — void restores
@@ -25,10 +27,6 @@ require_once INCLUDES_PATH . '/Database.php';
 require_once INCLUDES_PATH . '/PosAuth.php';
 require_once INCLUDES_PATH . '/ConcessionRepo.php';
 require_once INCLUDES_PATH . '/MovieRepo.php';
-
-// Flat ticket pricing — keep in sync with pos-checkout.php.
-const POS_TICKET_ADULT = 5.00;
-const POS_TICKET_CHILD = 3.00;
 
 PosAuth::bootstrap();
 
@@ -166,8 +164,8 @@ foreach (MovieRepo::getNowShowing() as $movie) {
         'showtime_id' => (int)$st['id'],
         'title'       => (string)$movie['title'],
         'when'        => posShowtimeLabel($st),
-        'adult'       => POS_TICKET_ADULT,
-        'child'       => POS_TICKET_CHILD,
+        'adult'       => TICKET_PRICE_ADULT,
+        'child'       => TICKET_PRICE_CHILD,
         'remaining'   => max(0, $remaining),
         'image'       => posterUrl($movie['poster_path'] ?? ''),
     ];
