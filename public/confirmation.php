@@ -133,7 +133,7 @@ require __DIR__ . '/templates/header.php';
             <div class="ticket-card">
               <img src="<?= e(QrCode::pngDataUri((string)$t['ticket_token'])) ?>" alt="Ticket QR code">
               <div class="ticket-meta">
-                <div class="movie"><?= e((string)$t['movie_title']) ?></div>
+                <div class="movie"><?= e((string)($t['ticket_type'] ?? 'Adult')) ?> Ticket &mdash; <?= e((string)$t['movie_title']) ?></div>
                 <div><?= e((string)$t['when']) ?></div>
                 <div class="num">Ticket <?= (int)$t['seq'] ?> of <?= (int)$t['seq_total'] ?></div>
               </div>

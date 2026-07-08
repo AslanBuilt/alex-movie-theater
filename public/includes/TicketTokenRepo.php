@@ -31,6 +31,7 @@ final class TicketTokenRepo
 
             $items = $pdo->prepare(
                 "SELECT ti.id AS transaction_item_id, ti.item_id AS showtime_id, ti.quantity,
+                        ti.selected_option AS ticket_type,
                         s.movie_id, m.title AS movie_title, s.showtime_date, s.showtime_time, s.label
                  FROM transaction_items ti
                  JOIN showtimes s ON s.id = ti.item_id
@@ -79,6 +80,7 @@ final class TicketTokenRepo
                         'when'           => self::formatWhen($row),
                         'seq'            => $seqByShowtime[$sid],
                         'seq_total'      => $totalByShowtime[$sid],
+                        'ticket_type'    => normalizeTicketAge($row['ticket_type'] ?? null),
                         'token_status'   => 'valid',
                     ];
                 }
@@ -97,10 +99,11 @@ final class TicketTokenRepo
             $pdo  = Database::getInstance();
             $stmt = $pdo->prepare(
                 "SELECT tt.ticket_token, tt.token_status, tt.showtime_id, m.title AS movie_title,
-                        s.showtime_date, s.showtime_time, s.label
+                        s.showtime_date, s.showtime_time, s.label, ti.selected_option AS ticket_type
                  FROM ticket_tokens tt
                  LEFT JOIN movies m ON m.id = tt.movie_id
                  LEFT JOIN showtimes s ON s.id = tt.showtime_id
+                 LEFT JOIN transaction_items ti ON ti.id = tt.transaction_item_id
                  WHERE tt.transaction_id = :id
                  ORDER BY tt.token_id ASC"
             );
@@ -120,9 +123,10 @@ final class TicketTokenRepo
                 $sid = (int)$row['showtime_id'];
                 $seqByShowtime[$sid] = ($seqByShowtime[$sid] ?? 0) + 1;
                 $result[] = $row + [
-                    'when'      => self::formatWhen($row),
-                    'seq'       => $seqByShowtime[$sid],
-                    'seq_total' => $totalByShowtime[$sid],
+                    'when'        => self::formatWhen($row),
+                    'seq'         => $seqByShowtime[$sid],
+                    'seq_total'   => $totalByShowtime[$sid],
+                    'ticket_type' => normalizeTicketAge($row['ticket_type'] ?? null),
                 ];
             }
             return $result;

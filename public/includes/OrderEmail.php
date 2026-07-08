@@ -79,11 +79,13 @@ final class OrderEmail
                 . '</td></tr>';
             $ticketsText .= "\nYour Tickets (show at the door):\n";
             foreach ($tickets as $i => $t) {
+                $age      = (string)($t['ticket_type'] ?? 'Adult');
                 $movie    = (string)($t['movie_title'] ?? 'Movie');
                 $when     = (string)($t['when'] ?? '');
                 $seq      = (int)($t['seq'] ?? ($i + 1));
                 $seqTotal = (int)($t['seq_total'] ?? count($tickets));
-                $plainLabel = $movie . ($when !== '' ? ' — ' . $when : '') . ' - Ticket ' . $seq . ' of ' . $seqTotal;
+                $heading    = $age . ' Ticket — ' . $movie;
+                $plainLabel = $heading . ($when !== '' ? "\n" . $when : '') . ' - Ticket ' . $seq . ' of ' . $seqTotal;
 
                 $cid = 'ticket' . ($i + 1) . '_' . substr((string)($t['ticket_token'] ?? ''), 0, 8);
                 $inlineImages[] = [
@@ -94,9 +96,11 @@ final class OrderEmail
 
                 $ticketsHtml .=
                     '<tr><td style="padding:0 28px 18px;text-align:center">'
+                    . '<div style="font-size:14px;font-weight:bold;color:' . $ink . ';margin-bottom:2px">' . $e($heading) . '</div>'
+                    . ($when !== '' ? '<div style="font-size:13px;color:' . $muted . ';margin-bottom:8px">' . $e($when) . '</div>' : '')
                     . '<img src="cid:' . $cid . '" width="180" height="180" alt="Ticket QR code" '
                     . 'style="display:block;margin:0 auto 8px;border:1px solid ' . $line . ';border-radius:6px">'
-                    . '<div style="font-size:13px;color:' . $muted . '">' . $e($plainLabel) . '</div>'
+                    . '<div style="font-size:12px;color:' . $muted . '">Ticket ' . $seq . ' of ' . $seqTotal . '</div>'
                     . '</td></tr>';
                 $ticketsText .= '  - ' . $plainLabel . "\n";
             }
