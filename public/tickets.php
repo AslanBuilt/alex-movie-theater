@@ -1,11 +1,15 @@
 ﻿<?php
 require_once __DIR__ . '/config/config.php';
+require_once INCLUDES_PATH . '/Database.php';
+require_once INCLUDES_PATH . '/MovieRepo.php';
 
 $showCart = true;
 $pageTitle = 'Buy Tickets | The Alex — Alexandria, Indiana';
 $pageDescription = 'Tickets at The Alex in Alexandria, Indiana. Adults $5, Children $3. Buy at the door or reserve by phone at 765-620-9093.';
 $pageKeywords = 'The Alex tickets, movie tickets Alexandria Indiana, cheap movie tickets';
 $canonical = SITE_URL . 'tickets';
+
+$nowShowing = tryDb(fn() => MovieRepo::getNowShowing());
 
 require TEMPLATES_PATH . '/header.php';
 ?>
@@ -60,10 +64,28 @@ require TEMPLATES_PATH . '/header.php';
             <p>The theatre reserves the right to adjust showtimes, screens, or auditoriums based on equipment issues or when ticket sales exceed capacity. We appreciate your flexibility and understanding.</p>
         </div>
 
-        <div style="text-align:center; margin-top:3rem;">
-            <p class="text-secondary mb-2">Looking for what's playing this week?</p>
-            <a href="<?= url() ?>" class="btn btn-crimson">View Showtimes</a>
+        <div class="section-header" style="margin-top:3rem;">
+            <p class="section-label">Now Showing</p>
+            <h2 class="section-title">Pick a Movie to See Times &amp; Buy</h2>
+            <div class="section-divider"></div>
         </div>
+
+        <?php if (!empty($nowShowing)): ?>
+            <div class="info-grid">
+                <?php foreach ($nowShowing as $movie): ?>
+                    <?php $mid = (int) ($movie['id'] ?? 0); $title = (string) ($movie['title'] ?? 'Movie'); ?>
+                    <div class="info-card">
+                        <h3><?= e($title) ?></h3>
+                        <a href="movie.php?id=<?= $mid ?>" class="btn btn-crimson" style="display:inline-block; margin-top:1rem;">Showtimes &amp; Tickets</a>
+                    </div>
+                <?php endforeach; ?>
+            </div>
+        <?php else: ?>
+            <div style="text-align:center;">
+                <p class="text-secondary mb-2">Nothing listed online right now &mdash; call us to check what's playing.</p>
+                <a href="tel:<?= e(SITE_PHONE) ?>" class="btn btn-crimson"><?= e(SITE_PHONE) ?></a>
+            </div>
+        <?php endif; ?>
     </div>
 </section>
 

@@ -2544,6 +2544,101 @@ abbr.required {
     box-shadow: 0 2px 8px rgba(139,29,51,0.25);
 }
 
+/* ── Ticket type cards (Adult/Child selector) ── */
+.ticket-type-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.ticket-type-card {
+    flex: 1 1 200px;
+    min-width: 200px;
+    background: var(--bg-card);
+    border: 2px solid var(--border);
+    border-radius: 8px;
+    padding: 1.25rem;
+    text-align: center;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.ticket-type-card.is-active {
+    border-color: var(--crimson);
+    box-shadow: 0 2px 8px rgba(139,29,51,0.15);
+}
+
+.ticket-type-name {
+    font-size: 1rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-primary);
+    margin-bottom: 0.35rem;
+}
+
+.ticket-type-subtitle {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    margin-bottom: 0.35rem;
+}
+
+.ticket-type-price {
+    font-size: 1.375rem;
+    font-weight: 700;
+    color: var(--crimson);
+    margin-bottom: 1rem;
+}
+
+.ticket-type-card .qty-control {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+}
+
+.ticket-type-card .qty-btn {
+    width: 44px;
+    height: 44px;
+    flex: 0 0 44px;
+    border: none;
+    border-radius: 50%;
+    background: var(--crimson);
+    color: #FFFFFF;
+    font-size: 1.25rem;
+    line-height: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.ticket-type-card .qty-btn:hover {
+    background: var(--crimson-dark);
+}
+
+.ticket-type-card .qty-value {
+    display: inline-block;
+    min-width: 40px;
+    font-size: 1.5rem;
+    font-weight: 700;
+    text-align: center;
+    color: var(--text-primary);
+}
+
+.ticket-total {
+    text-align: center;
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 1rem;
+}
+
+.ticket-total #ticket-total {
+    color: var(--crimson);
+}
+
 /* ── Event Feature Card ── */
 .event-feature-card {
     border: 1px solid var(--border);

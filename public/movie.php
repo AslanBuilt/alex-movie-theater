@@ -145,25 +145,28 @@ require __DIR__ . '/templates/header.php';
 
           <!-- Quantity + checkout (shown after time selection) -->
           <div id="ticket-purchase-box" style="display:none; margin-top:1.5rem;">
-            <div style="display:flex; flex-direction:column; gap:0.75rem; margin-bottom:1rem;">
-              <div style="display:flex; align-items:center; gap:1rem; flex-wrap:wrap;">
-                <label style="font-weight:700; color:var(--color-text); min-width:120px;">Adult ($<?= number_format(TICKET_PRICE_ADULT, 2) ?>):</label>
+            <div class="ticket-type-row">
+              <div class="ticket-type-card is-active" id="ticket-card-adult">
+                <div class="ticket-type-name">Adult</div>
+                <div class="ticket-type-price">$<?= number_format(TICKET_PRICE_ADULT, 2) ?></div>
                 <div class="qty-control">
                   <button type="button" id="qty-adult-dec" class="qty-btn" aria-label="Fewer adult tickets">&#8722;</button>
-                  <span id="qty-adult-display" style="min-width:2rem; text-align:center; font-weight:700;">1</span>
+                  <span id="qty-adult-display" class="qty-value">1</span>
                   <button type="button" id="qty-adult-inc" class="qty-btn" aria-label="More adult tickets">&#43;</button>
                 </div>
               </div>
-              <div style="display:flex; align-items:center; gap:1rem; flex-wrap:wrap;">
-                <label style="font-weight:700; color:var(--color-text); min-width:120px;">Child ($<?= number_format(TICKET_PRICE_CHILD, 2) ?>):</label>
+              <div class="ticket-type-card" id="ticket-card-child">
+                <div class="ticket-type-name">Child</div>
+                <div class="ticket-type-subtitle">Ages 12 &amp; under</div>
+                <div class="ticket-type-price">$<?= number_format(TICKET_PRICE_CHILD, 2) ?></div>
                 <div class="qty-control">
                   <button type="button" id="qty-child-dec" class="qty-btn" aria-label="Fewer child tickets">&#8722;</button>
-                  <span id="qty-child-display" style="min-width:2rem; text-align:center; font-weight:700;">0</span>
+                  <span id="qty-child-display" class="qty-value">0</span>
                   <button type="button" id="qty-child-inc" class="qty-btn" aria-label="More child tickets">&#43;</button>
                 </div>
               </div>
-              <span id="ticket-total" style="font-size:1.1rem; font-weight:700; color:var(--color-crimson);">$<?= number_format(TICKET_PRICE_ADULT, 2) ?></span>
             </div>
+            <p class="ticket-total">Total: <span id="ticket-total">$<?= number_format(TICKET_PRICE_ADULT, 2) ?></span></p>
             <div style="display:flex; gap:1rem; flex-wrap:wrap;">
               <button type="button" id="btn-add-ticket-cart" class="btn btn-crimson"
                       data-open-cart="1"
@@ -177,7 +180,7 @@ require __DIR__ . '/templates/header.php';
                 Buy Now
               </a>
             </div>
-            <p style="margin-top:0.75rem; font-size:0.8rem; color:var(--color-text-muted);">Add to cart to combine with concessions, or buy now for tickets only. Adults $<?= number_format(TICKET_PRICE_ADULT, 2) ?> &bull; Children $<?= number_format(TICKET_PRICE_CHILD, 2) ?>.</p>
+            <p style="margin-top:0.75rem; font-size:0.8rem; color:var(--text-muted);">Add to cart to combine with concessions, or buy now for tickets only. Adults $<?= number_format(TICKET_PRICE_ADULT, 2) ?> &bull; Children $<?= number_format(TICKET_PRICE_CHILD, 2) ?>.</p>
           </div>
 
         <?php elseif (!empty($legShowtimes)): ?>
@@ -264,6 +267,8 @@ require __DIR__ . '/templates/header.php';
   var btnChildInc = document.getElementById('qty-child-inc');
   var btnCheckout = document.getElementById('btn-proceed-checkout');
   var btnAddCart  = document.getElementById('btn-add-ticket-cart');
+  var cardAdult   = document.getElementById('ticket-card-adult');
+  var cardChild   = document.getElementById('ticket-card-child');
 
   function totalQty()   { return qtyAdult + qtyChild; }
   function totalPrice() { return qtyAdult * TICKET_PRICE.Adult + qtyChild * TICKET_PRICE.Child; }
@@ -272,6 +277,8 @@ require __DIR__ . '/templates/header.php';
     if (adultDisp) adultDisp.textContent = qtyAdult;
     if (childDisp) childDisp.textContent = qtyChild;
     if (totalDisp) totalDisp.textContent = '$' + totalPrice().toFixed(2);
+    if (cardAdult) cardAdult.classList.toggle('is-active', qtyAdult > 0);
+    if (cardChild) cardChild.classList.toggle('is-active', qtyChild > 0);
   }
 
   if (!dayTabs || !timeBtns) return;
