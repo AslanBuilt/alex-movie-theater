@@ -88,13 +88,24 @@ function admin_page_url(array $overrides, string $base): string
     });
     return $base . (empty($current) ? '' : ('?' . http_build_query($current)));
 }
+// Drag-to-reorder only makes sense against the complete, unfiltered movie
+// list — reordering a filtered/paginated subset would silently collide with
+// sort_order values of movies not currently on screen.
+$canArrange = $totalPages <= 1 && $q === '' && $status === '';
 ?>
 <div class="admin-page-header">
     <h1>Movies</h1>
     <div class="admin-page-actions">
+        <?php if ($canArrange) : ?>
+            <button type="button" class="btn btn-outline btn-sm" id="arrange-toggle">Arrange Order &#8597;</button>
+            <button type="button" class="btn btn-primary btn-sm" id="save-order" hidden>Save Order</button>
+            <button type="button" class="btn btn-outline btn-sm" id="cancel-order" hidden>Cancel</button>
+        <?php endif; ?>
         <a class="btn btn-primary" href="movie-edit.php">New movie</a>
     </div>
 </div>
+
+<div id="reorder-status" aria-live="polite"></div>
 
 <form method="get" class="filter-bar">
     <div class="form-group grow">
@@ -116,7 +127,7 @@ function admin_page_url(array $overrides, string $base): string
     </div>
 </form>
 
-<div class="admin-table-wrap">
+<div class="admin-table-wrap" id="movies-table-wrap" data-csrf="<?= e($auth->generateCsrfToken()) ?>">
     <table class="admin-table">
         <thead>
             <tr>
@@ -137,8 +148,9 @@ function admin_page_url(array $overrides, string $base): string
             <?php
                 $posterUrl  = posterUrl((string)($row['poster_path'] ?? ''));
             ?>
-            <tr>
+            <tr class="movie-row" data-movie-id="<?= (int)$row['id'] ?>">
                 <td style="width:52px; padding:0.5rem 0.75rem;">
+                    <span class="drag-handle" aria-hidden="true" style="display:none; cursor:grab; margin-right:0.4rem; user-select:none;">&#8942;&#8942;</span>
                     <?php if ($posterUrl !== ''): ?>
                         <img src="<?= e($posterUrl) ?>" alt="" style="width:40px; height:56px; object-fit:cover; border-radius:3px; display:block;">
                     <?php else: ?>
@@ -182,5 +194,7 @@ function admin_page_url(array $overrides, string $base): string
        href="<?= e(admin_page_url(['page' => $nextPage], 'movies.php')) ?>">Next</a>
 </nav>
 <?php endif; ?>
+
+<script src="../assets/js/admin-movies.js" defer></script>
 
 <?php require_once __DIR__ . '/includes/admin-footer.php'; ?>
