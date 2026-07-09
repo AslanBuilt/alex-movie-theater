@@ -90,6 +90,14 @@ if (!columnExists($conn, 'showtimes', 'showtime_time')) {
     $log[] = 'skip showtimes.showtime_time (exists)';
 }
 
+// ── events.event_time ───────────────────────────────────────────────────────
+if (!columnExists($conn, 'events', 'event_time')) {
+    runQ($conn, "ALTER TABLE `events` ADD COLUMN `event_time` TIME NULL AFTER `event_date`", 'events.event_time');
+    $log[] = 'added events.event_time';
+} else {
+    $log[] = 'skip events.event_time (exists)';
+}
+
 if (!columnExists($conn, 'showtimes', 'available_tickets')) {
     runQ($conn, "ALTER TABLE `showtimes` ADD COLUMN `available_tickets` INT NOT NULL DEFAULT 50 AFTER `showtime_time`", 'showtimes.available_tickets');
     $log[] = 'added showtimes.available_tickets';
@@ -159,14 +167,17 @@ if (!tableExists($conn, 'transactions')) {
         CREATE TABLE `transactions` (
             `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
             `transaction_ref` VARCHAR(20) NOT NULL,
-            `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-            `type` ENUM('ticket','concession','combo') NOT NULL,
-            `source_channel` ENUM('website','kiosk','staff') NOT NULL DEFAULT 'website',
-            `total_amount` DECIMAL(8,2) NOT NULL,
-            `payment_status` ENUM('paid','pending','failed','voided') NOT NULL DEFAULT 'pending',
-            `payment_method` VARCHAR(50) NOT NULL DEFAULT 'mock',
-            `customer_name` VARCHAR(100) NULL,
-            `customer_email` VARCHAR(150) NULL,
+                `daily_order_number` SMALLINT UNSIGNED NULL,
+                `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                `type` ENUM('ticket','concession','combo') NOT NULL,
+                `source_channel` ENUM('website','kiosk','staff','staff_register') NOT NULL DEFAULT 'website',
+                `total_amount` DECIMAL(8,2) NOT NULL,
+                `payment_status` ENUM('paid','pending','failed','voided') NOT NULL DEFAULT 'pending',
+                `payment_method` VARCHAR(50) NOT NULL DEFAULT 'mock',
+                `stripe_payment_intent_id` VARCHAR(255) NULL,
+                `gateway_ref` VARCHAR(255) NULL,
+                `customer_name` VARCHAR(100) NULL,
+                `customer_email` VARCHAR(150) NULL,
             PRIMARY KEY (`id`),
             UNIQUE KEY `uq_transaction_ref` (`transaction_ref`),
             KEY `idx_txn_created` (`created_at`),
@@ -199,6 +210,49 @@ if (tableExists($conn, 'transactions') && !columnExists($conn, 'transactions', '
     $log[] = 'added transactions.stripe_payment_intent_id';
 } else {
     $log[] = 'skip transactions.stripe_payment_intent_id (exists)';
+}
+
+if (tableExists($conn, 'transactions') && !columnExists($conn, 'transactions', 'gateway_ref')) {
+    runQ($conn,
+        "ALTER TABLE `transactions`
+         ADD COLUMN `gateway_ref` VARCHAR(255) NULL AFTER `stripe_payment_intent_id`",
+        'transactions.gateway_ref');
+    $log[] = 'added transactions.gateway_ref';
+} else {
+    $log[] = 'skip transactions.gateway_ref (exists)';
+}
+
+if (tableExists($conn, 'transactions') && !columnExists($conn, 'transactions', 'daily_order_number')) {
+    runQ($conn,
+        "ALTER TABLE `transactions`
+         ADD COLUMN `daily_order_number` SMALLINT UNSIGNED NULL AFTER `transaction_ref`",
+        'transactions.daily_order_number');
+    $log[] = 'added transactions.daily_order_number';
+} else {
+    $log[] = 'skip transactions.daily_order_number (exists)';
+}
+
+if (tableExists($conn, 'transactions') && enumHasValue($conn, 'transactions', 'source_channel', 'staff_register') === false) {
+    runQ($conn,
+        "ALTER TABLE `transactions`
+         MODIFY `source_channel` ENUM('website','kiosk','staff','staff_register') NOT NULL DEFAULT 'website'",
+        'transactions.source_channel');
+    $log[] = 'updated transactions.source_channel enum';
+} else {
+    $log[] = 'skip transactions.source_channel update (exists)';
+}
+
+if (!tableExists($conn, 'daily_order_counters')) {
+    runQ($conn, "
+        CREATE TABLE `daily_order_counters` (
+            `order_date` DATE NOT NULL,
+            `next_number` SMALLINT UNSIGNED NOT NULL DEFAULT 1,
+            PRIMARY KEY (`order_date`)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+    ", 'create daily_order_counters');
+    $log[] = 'created daily_order_counters';
+} else {
+    $log[] = 'skip daily_order_counters (exists)';
 }
 
 // ── webhook_events: idempotency ledger for Stripe webhooks ────────────────────
@@ -457,6 +511,34 @@ if (!tableExists($conn, 'admin_login_attempts')) {
     $log[] = 'created admin_login_attempts';
 } else {
     $log[] = 'skip admin_login_attempts (exists)';
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// Kiosk + Fulfillment shared order numbering
+// ═══════════════════════════════════════════════════════════════════════════
+
+if (tableExists($conn, 'transactions') && !columnExists($conn, 'transactions', 'daily_order_number')) {
+    runQ($conn,
+        "ALTER TABLE `transactions`
+         ADD COLUMN `daily_order_number` SMALLINT UNSIGNED NULL AFTER `transaction_ref`",
+        'transactions.daily_order_number'
+    );
+    $log[] = 'added transactions.daily_order_number';
+} else {
+    $log[] = 'skip transactions.daily_order_number (exists)';
+}
+
+if (!tableExists($conn, 'daily_order_counters')) {
+    runQ($conn, "
+        CREATE TABLE `daily_order_counters` (
+            `order_date` DATE NOT NULL,
+            `next_number` SMALLINT UNSIGNED NOT NULL DEFAULT 0,
+            PRIMARY KEY (`order_date`)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+    ", 'create daily_order_counters');
+    $log[] = 'created daily_order_counters';
+} else {
+    $log[] = 'skip daily_order_counters (exists)';
 }
 
 $conn->close();
