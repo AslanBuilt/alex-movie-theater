@@ -1,0 +1,139 @@
+/**
+ * admin-print.css — print-only overrides for public/admin/reports.php.
+ *
+ * The admin theme is dark-on-near-black (see admin/css/admin.css:
+ * --text-primary: #F2E8DC on --bg-primary: #0C0807). Printed as-is that's
+ * either unreadable or (worse) a page of solid black ink. This file forces
+ * a plain white/black report layout and hides everything that only makes
+ * sense on screen (nav, date-range controls, action buttons).
+ *
+ * admin/reports.php's inline style="" attributes (color:var(--crimson) etc.)
+ * win over plain element selectors on specificity grounds, so most rules
+ * here need !important to actually take effect in print.
+ *
+ * Chart canvases are raster/vector pixels baked in by admin-charts.js at
+ * render time, not something this stylesheet can recolor — admin-charts.js
+ * listens for the browser's beforeprint/afterprint events and re-renders
+ * the charts in a light-on-white palette itself. This file only handles
+ * the surrounding HTML.
+ */
+
+@media print {
+  * {
+    box-shadow: none !important;
+    text-shadow: none !important;
+  }
+
+  html, body.admin-body {
+    background: #ffffff !important;
+    color: #111111 !important;
+  }
+
+  /* ── Hide anything that isn't part of the report itself ── */
+  .admin-sidebar,
+  .sidebar-toggle,
+  .admin-page-actions,
+  .reports-tabs,
+  #rangeForm,
+  #reportsError,
+  .no-print,
+  a.btn,
+  button {
+    display: none !important;
+  }
+
+  .admin-layout {
+    display: block !important;
+  }
+
+  .admin-content {
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+  }
+
+  /* ── Force light theme on every surface a chart/table sits on ── */
+  .policy-box,
+  .report-chart-section,
+  .report-reorder-now,
+  .admin-table,
+  .admin-table-wrap {
+    background: #ffffff !important;
+    color: #111111 !important;
+    border-color: #999999 !important;
+    box-shadow: none !important;
+  }
+
+  h1, h2, h3, h4,
+  p, span, td, th, label {
+    color: #111111 !important;
+  }
+
+  .admin-table th {
+    background: #eeeeee !important;
+    color: #111111 !important;
+  }
+
+  .admin-table tr {
+    background: #ffffff !important;
+  }
+
+  /* Low-stock / incomplete highlighting still needs to read on paper —
+     swap the on-screen dark-red-on-black tint for a light tint + bold. */
+  .admin-table tr[style*="background:rgba(180,0,0"] {
+    background: #fbe0e0 !important;
+  }
+
+  /* ── Full-width charts, one report section per printed page ── */
+  .report-chart-section {
+    page-break-inside: avoid;
+    break-inside: avoid;
+    width: 100% !important;
+  }
+
+  div[style*="grid-template-columns:repeat(auto-fit"] {
+    display: block !important;
+  }
+
+  div[style*="grid-template-columns:repeat(auto-fit"] > * {
+    width: 100% !important;
+    margin-bottom: 1.5rem;
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+
+  canvas {
+    max-width: 100% !important;
+  }
+
+  /* ── Force-expand every "View data table" details block and the
+     Reorder-Now list so nothing collapsible is missing from the printout.
+     <details> without [open] hides its children via a UA stylesheet rule
+     (details:not([open]) > *:not(summary) { display:none }); overriding
+     that rule directly is the only way to force it open in CSS, since
+     print media can't set the `open` attribute itself. ── */
+  details.report-data-table {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+
+  details.report-data-table > summary {
+    display: none !important;
+  }
+
+  details.report-data-table > * {
+    display: block !important;
+  }
+
+  .report-reorder-now {
+    page-break-inside: avoid;
+    break-inside: avoid;
+    display: block !important;
+  }
+
+  /* Section-to-section page breaks so a chart's paired data table doesn't
+     get orphaned onto the next page by itself. */
+  .report-chart-section + .report-chart-section {
+    page-break-before: auto;
+  }
+}
