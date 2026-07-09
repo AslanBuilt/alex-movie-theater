@@ -1,8 +1,14 @@
 ﻿<?php
 require_once __DIR__ . '/config/config.php';
+require_once INCLUDES_PATH . '/Database.php';
+require_once INCLUDES_PATH . '/EventRepo.php';
+
 $pageTitle = 'Free Senior Movie | The Alex — Alexandria, Indiana';
 $pageDescription = 'Free monthly movie screenings for seniors 55 and up at The Alex in Alexandria, Indiana. No reservation needed. Sponsored by Senior Essential Connections.';
 $currentPage = 'senior-movie';
+
+$nextShowing = tryDb(fn () => EventRepo::getNextSeniorShowing(), null);
+
 require __DIR__ . '/templates/header.php';
 ?>
 
@@ -22,6 +28,45 @@ require __DIR__ . '/templates/header.php';
     <div class="senior-banner">
       <img src="assets/images/hero-3.webp" alt="The Alex auditorium interior" loading="lazy">
     </div>
+
+    <div class="section-header">
+      <p class="section-label">Next Screening</p>
+      <h2 class="section-title">Coming Up</h2>
+      <div class="section-divider"></div>
+    </div>
+
+    <?php if ($nextShowing !== null) :
+        $movieTitle = trim((string)($nextShowing['movie_title'] ?? ''));
+        $status     = (string)($nextShowing['status'] ?? 'tba');
+        $dateStr    = '';
+        if (!empty($nextShowing['showing_date'])) {
+            $ts = strtotime((string)$nextShowing['showing_date']);
+            if ($ts !== false) {
+                $dateStr = date('l, F j, Y', $ts);
+            }
+        }
+        $timeStr = trim((string)($nextShowing['showing_time'] ?? ''));
+        $notes   = trim((string)($nextShowing['notes'] ?? ''));
+    ?>
+      <div class="info-card" style="max-width:700px; margin-bottom:2.5rem;">
+        <h3><?= $movieTitle !== '' ? e($movieTitle) : 'Movie to be announced' ?></h3>
+        <p>
+          <?php if ($status === 'tba' || $dateStr === '') : ?>
+            Date &amp; time to be announced &mdash; check back soon or call the theatre.
+          <?php else : ?>
+            <?= e($dateStr) ?><?= $timeStr !== '' ? ' &middot; ' . e($timeStr) : '' ?>
+          <?php endif; ?>
+        </p>
+        <?php if ($notes !== '') : ?>
+          <p style="color:var(--text-secondary);"><?= nl2br(e($notes)) ?></p>
+        <?php endif; ?>
+      </div>
+    <?php else : ?>
+      <div class="info-card" style="max-width:700px; margin-bottom:2.5rem;">
+        <h3>Check back soon</h3>
+        <p>We haven&rsquo;t announced our next free senior screening yet &mdash; call the theatre at <a href="tel:765-620-9093">(765) 620-9093</a> or check back here.</p>
+      </div>
+    <?php endif; ?>
 
     <div class="section-header">
       <p class="section-label">About the Program</p>

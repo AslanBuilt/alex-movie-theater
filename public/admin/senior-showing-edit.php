@@ -46,11 +46,31 @@ if ($isEdit) {
     $pageTitle = 'New Senior Showing';
 }
 
+// movie_title is a plain string column (not a foreign key) — schema.sql has
+// no movies.id relation here — so the dropdown below is a convenience for
+// picking a title already in the system, with a free-text "Other" escape
+// hatch for titles that aren't (or never will be) a `movies` row.
+$nowShowingMovies = [];
+try {
+    $stmt = $db->query("SELECT id, title FROM movies WHERE status = 'now_showing' ORDER BY title ASC");
+    $nowShowingMovies = $stmt ? $stmt->fetchAll(PDO::FETCH_ASSOC) : [];
+} catch (PDOException $e) {
+    error_log('senior-showing-edit movie list load failed: ' . $e->getMessage());
+    $nowShowingMovies = [];
+}
+$nowShowingTitles = array_map(static fn ($m) => (string)$m['title'], $nowShowingMovies);
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!$auth->validateCsrf((string)($_POST['csrf_token'] ?? ''))) {
         $errors[] = 'Your session expired. Please try again.';
     } else {
-        $old['movie_title']  = trim((string)($_POST['movie_title'] ?? ''));
+        $selectedTitle = trim((string)($_POST['movie_title_select'] ?? ''));
+        $customTitle   = trim((string)($_POST['movie_title_other'] ?? ''));
+        if ($selectedTitle !== '' && $selectedTitle !== '__other__') {
+            $old['movie_title'] = $selectedTitle;
+        } else {
+            $old['movie_title'] = $customTitle;
+        }
         $old['showing_date'] = trim((string)($_POST['showing_date'] ?? ''));
         $old['showing_time'] = trim((string)($_POST['showing_time'] ?? ''));
         $old['notes']        = (string)($_POST['notes'] ?? '');
@@ -136,10 +156,39 @@ $csrf = $auth->generateCsrfToken();
 <form method="post" class="admin-form" data-prevent-double="1" novalidate>
     <input type="hidden" name="csrf_token" value="<?= e($csrf) ?>">
 
+    <?php
+        $isOtherTitle = $old['movie_title'] !== '' && !in_array($old['movie_title'], $nowShowingTitles, true);
+        $selectValue  = $isOtherTitle ? '__other__' : $old['movie_title'];
+    ?>
     <div class="form-group">
-        <label for="movie_title">Movie title *</label>
-        <input type="text" name="movie_title" id="movie_title" maxlength="255" value="<?= e($old['movie_title']) ?>" required>
+        <label for="movie_title_select">Movie title *</label>
+        <select name="movie_title_select" id="movie_title_select" required>
+            <option value="" <?= $selectValue === '' ? 'selected' : '' ?>>&mdash; Select a movie &mdash;</option>
+            <?php foreach ($nowShowingMovies as $m) : ?>
+                <option value="<?= e((string)$m['title']) ?>" <?= $selectValue === (string)$m['title'] ? 'selected' : '' ?>><?= e((string)$m['title']) ?></option>
+            <?php endforeach; ?>
+            <option value="__other__" <?= $selectValue === '__other__' ? 'selected' : '' ?>>Other (type below)</option>
+        </select>
+        <small class="form-help">Pulled from movies currently marked "Now Showing." Pick "Other" for a title not in the system (this field is free text, not linked to the Movies table).</small>
+        <div id="movie_title_other_wrap" style="<?= $selectValue === '__other__' ? '' : 'display:none;' ?> margin-top:0.6rem;">
+            <input type="text" name="movie_title_other" id="movie_title_other" maxlength="255"
+                   value="<?= $isOtherTitle ? e($old['movie_title']) : '' ?>" placeholder="Enter the movie title">
+        </div>
     </div>
+
+    <script>
+    (function () {
+        var select = document.getElementById('movie_title_select');
+        var wrap   = document.getElementById('movie_title_other_wrap');
+        var other  = document.getElementById('movie_title_other');
+        if (!select || !wrap) return;
+        select.addEventListener('change', function () {
+            var isOther = select.value === '__other__';
+            wrap.style.display = isOther ? '' : 'none';
+            if (isOther && other) other.focus();
+        });
+    })();
+    </script>
 
     <div class="form-row">
         <div class="form-group">
