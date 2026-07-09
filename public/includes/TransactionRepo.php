@@ -34,6 +34,35 @@ final class TransactionRepo
     }
 
     /**
+     * Atomic per-calendar-day sequence, race-safe via MySQL upsert + LAST_INSERT_ID().
+     * Works inside an existing transaction so a rolled-back sale does not consume
+     * a daily order number.
+     */
+    public static function nextDailyOrderNumber(): int
+    {
+        $pdo  = Database::getInstance();
+        $stmt = $pdo->prepare(
+            "INSERT INTO daily_order_counters (order_date, next_number)
+             VALUES (CURDATE(), LAST_INSERT_ID(1))
+             ON DUPLICATE KEY UPDATE next_number = LAST_INSERT_ID(next_number + 1)"
+        );
+        $stmt->execute();
+        return (int)$pdo->lastInsertId();
+    }
+
+    /**
+     * Assign the next daily order number to an existing transaction record.
+     */
+    public static function assignDailyOrderNumber(int $id): int
+    {
+        $n    = self::nextDailyOrderNumber();
+        $pdo  = Database::getInstance();
+        $stmt = $pdo->prepare('UPDATE transactions SET daily_order_number = :n WHERE id = :id');
+        $stmt->execute([':n' => $n, ':id' => $id]);
+        return $n;
+    }
+
+    /**
      * Add a line item to an existing transaction.
      */
     public static function addItem(int $transactionId, array $item): bool

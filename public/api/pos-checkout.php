@@ -32,6 +32,7 @@ require_once INCLUDES_PATH . '/Database.php';
 require_once INCLUDES_PATH . '/PosAuth.php';
 require_once INCLUDES_PATH . '/RateLimiter.php';
 require_once INCLUDES_PATH . '/TicketTokenRepo.php';
+require_once INCLUDES_PATH . '/TransactionRepo.php';
 
 header('Content-Type: application/json');
 header('Cache-Control: no-store');
@@ -248,20 +249,25 @@ try {
     $total   = round($total, 2);
     $txnType = $hasTicket && $hasConc ? 'combo' : ($hasTicket ? 'ticket' : 'concession');
 
+    // ── Assign the shout-able daily order number ('Order 47') inside the same
+    // transaction so rolled-back sales do not consume a number.
+    $dailyOrderNumber = TransactionRepo::nextDailyOrderNumber();
+
     // ── INSERT transaction ─────────────────────────────────────────────────────
     $ins = $db->prepare(
         'INSERT INTO transactions
-            (transaction_ref, type, source_channel, total_amount, payment_status, payment_method)
+            (transaction_ref, daily_order_number, type, source_channel, total_amount, payment_status, payment_method)
          VALUES
-            (:ref, :type, :channel, :total, :status, :method)'
+            (:ref, :daily_num, :type, :channel, :total, :status, :method)'
     );
     $ins->execute([
-        ':ref'     => $txnRef,
-        ':type'    => $txnType,
-        ':channel' => 'staff_register',
-        ':total'   => $total,
-        ':status'  => 'paid', // POS payment is taken in person at confirm time
-        ':method'  => $method === 'card' ? 'card_mock' : 'cash',
+        ':ref'       => $txnRef,
+        ':daily_num' => $dailyOrderNumber,
+        ':type'      => $txnType,
+        ':channel'   => 'staff_register',
+        ':total'     => $total,
+        ':status'    => 'paid', // POS payment is taken in person at confirm time
+        ':method'    => $method === 'card' ? 'card_mock' : 'cash',
     ]);
     $txnId = (int)$db->lastInsertId();
     if ($txnId < 1) {

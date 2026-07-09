@@ -3,6 +3,8 @@ Allow: /
 Disallow: /fulfillment.php
 Disallow: /checkin.php
 Disallow: /pos/
+Disallow: /kiosk/
+Disallow: /admin/
 Disallow: /api/
 
 Sitemap: https://parityrfp.com/cs/alex-movie-theater/sitemap.php

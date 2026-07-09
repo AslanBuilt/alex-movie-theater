@@ -1,0 +1,491 @@
+:root {
+  color-scheme: light;
+  font-family: 'Lato', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: #f6f2ec;
+  color: #171717;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  min-height: 100%;
+}
+
+body {
+  background: linear-gradient(180deg, #fffaf4 0%, #f0e4da 100%);
+  overflow: hidden;
+}
+
+button {
+  font: inherit;
+}
+
+.kiosk-shell {
+  position: relative;
+  min-height: 100vh;
+  padding: 0;
+}
+
+.kiosk-screen {
+  display: none;
+  min-height: 100vh;
+  width: 100%;
+  padding: 2rem;
+}
+
+.kiosk-screen.show {
+  display: block;
+}
+
+.kiosk-screen-welcome {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+}
+
+.welcome-logo {
+  max-width: 180px;
+  border-radius: 1rem;
+  box-shadow: 0 18px 48px rgba(36, 30, 23, 0.16);
+}
+
+.welcome-copy h1 {
+  font-size: clamp(3rem, 4vw, 5rem);
+  margin: 1.5rem 0 0.5rem;
+}
+
+.welcome-copy p {
+  font-size: 1.2rem;
+  margin: 0;
+  max-width: 36rem;
+  color: #4b4440;
+}
+
+.welcome-cta {
+  margin-top: 3rem;
+  padding: 1rem 2rem;
+  border-radius: 999px;
+  background: #7c3aed;
+  color: #fff;
+  font-size: 1.2rem;
+  letter-spacing: 0.02em;
+}
+
+.welcome-ticker {
+  margin-top: 2rem;
+  padding: 1rem 1.5rem;
+  width: min(100%, 680px);
+  border-radius: 16px;
+  background: #ffffffcc;
+  box-shadow: inset 0 0 0 1px rgba(124,58,237,0.12);
+  color: #5c4a76;
+  font-size: 1rem;
+}
+
+.kiosk-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.kiosk-brand {
+  font-size: 2rem;
+  font-weight: 700;
+}
+
+.kiosk-subtitle {
+  margin-top: 0.35rem;
+  color: #5f5b57;
+}
+
+.kiosk-action,
+.btn,
+.payment-option,
+.option-btn,
+.btn-add,
+.qty-btn,
+.rm-btn,
+.pin-key {
+  cursor: pointer;
+}
+
+.kiosk-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.tab {
+  border: 1px solid rgba(0,0,0,0.08);
+  background: #fff;
+  color: #2b2b2b;
+  border-radius: 999px;
+  padding: 0.85rem 1.25rem;
+  font-size: 1rem;
+}
+
+.tab.active {
+  background: #7c3aed;
+  color: #fff;
+  border-color: transparent;
+}
+
+.kiosk-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 1rem;
+}
+
+.item-card {
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+  border-radius: 24px;
+  box-shadow: 0 16px 40px rgba(33, 26, 19, 0.08);
+  overflow: hidden;
+}
+
+.item-art {
+  min-height: 180px;
+  background-color: #efe1d6;
+  background-size: cover;
+  background-position: center;
+}
+
+.item-body {
+  padding: 1.25rem;
+  display: grid;
+  gap: 0.85rem;
+}
+
+.item-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+.item-meta {
+  color: #6c5e57;
+  min-height: 2rem;
+}
+
+.item-bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: #4c433f;
+  font-weight: 600;
+}
+
+.ticket-prices,
+.item-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.ticket-action,
+.btn-add,
+.option-btn,
+.payment-option,
+.kiosk-action,
+.btn,
+.rm-btn,
+.qty-btn,
+.pin-key {
+  border: none;
+  border-radius: 16px;
+  padding: 0.85rem 1rem;
+  font-size: 1rem;
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+
+.ticket-action,
+.btn-add,
+.option-btn,
+.payment-option,
+.kiosk-action,
+.pin-key {
+  background: #ede0f9;
+  color: #3f2f6c;
+}
+
+.ticket-action:hover,
+.btn-add:hover,
+.option-btn:hover,
+.payment-option:hover,
+.kiosk-action:hover,
+.pin-key:hover,
+.rm-btn:hover,
+.qty-btn:hover {
+  transform: translateY(-1px);
+}
+
+.btn {
+  background: #7c3aed;
+  color: #fff;
+  min-width: 140px;
+}
+
+.btn-secondary {
+  background: #fff;
+  color: #3f2f6c;
+  border: 1px solid rgba(124, 58, 237, 0.2);
+}
+
+.btn-primary {
+  background: #7c3aed;
+  color: #fff;
+}
+
+.btn.disabled,
+.payment-option.active {
+  opacity: 0.6;
+}
+
+.btn-add {
+  background: #7c3aed;
+  color: #fff;
+  grid-column: span 2;
+}
+
+.item-actions {
+  gap: 0.5rem;
+}
+
+.kiosk-footer {
+  margin-top: 1.75rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  justify-content: flex-end;
+}
+
+.kiosk-footer-summary {
+  flex: 1 1 100%;
+  align-self: center;
+  color: #4b4541;
+}
+
+.cart-body,
+.payment-summary,
+.confirmation-body {
+  background: #fff;
+  border-radius: 24px;
+  padding: 1.5rem;
+  box-shadow: 0 14px 34px rgba(33, 26, 19, 0.08);
+  min-height: 40vh;
+}
+
+.cart-line,
+.confirmation-line,
+.payment-summary-line {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 0;
+  border-bottom: 1px solid rgba(0,0,0,0.05);
+}
+
+.cart-line:last-child,
+.payment-summary-line:last-child,
+.confirmation-line:last-child {
+  border-bottom: none;
+}
+
+.cart-line-main {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.cart-line-title,
+.ticket-type {
+  font-weight: 700;
+}
+
+.cart-line-meta,
+.ticket-when,
+.ticket-seq,
+.kiosk-subtitle,
+.confirmation-ticket-header {
+  color: #5f5b57;
+}
+
+.cart-line-controls {
+  display: grid;
+  gap: 0.5rem;
+  justify-items: end;
+  align-items: center;
+}
+
+.qty-btn,
+.rm-btn {
+  background: #efe1d6;
+  color: #3f2f6c;
+  min-width: 2.5rem;
+}
+
+.rm-btn {
+  background: transparent;
+  color: #7c3aed;
+  font-weight: 700;
+}
+
+.cart-line-price,
+.payment-summary-total {
+  font-weight: 700;
+}
+
+.payment-options {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.payment-panel {
+  background: #fff;
+  border-radius: 24px;
+  padding: 1.5rem;
+  box-shadow: inset 0 1px 0 rgba(0,0,0,0.04);
+  margin-bottom: 1.5rem;
+}
+
+.payment-panel.hidden {
+  display: none;
+}
+
+.payment-hint {
+  margin: 0 0 1rem;
+  color: #5f5b57;
+}
+
+.pin-display {
+  text-align: center;
+  font-size: 2rem;
+  letter-spacing: 0.35rem;
+  background: #f6f2ec;
+  border-radius: 1rem;
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+.pin-pad {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.pin-key {
+  min-height: 4rem;
+  font-size: 1.25rem;
+  background: #f2e8ff;
+  color: #3f2f6c;
+}
+
+.kiosk-toast {
+  position: fixed;
+  left: 50%;
+  bottom: 2rem;
+  transform: translateX(-50%);
+  padding: 1rem 1.5rem;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.8);
+  color: #fff;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+}
+
+.kiosk-toast.show {
+  opacity: 1;
+}
+
+.empty-state {
+  padding: 3rem;
+  text-align: center;
+  color: #645b55;
+}
+
+.confirm-number {
+  font-size: 1.4rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+}
+
+.confirm-note {
+  margin-bottom: 1.5rem;
+  padding: 1rem 1.25rem;
+  border-radius: 1rem;
+  background: #f7f0ff;
+  color: #5c3ba3;
+}
+
+.confirm-note.hidden {
+  display: none;
+}
+
+.confirmation-list {
+  display: grid;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.confirmation-ticket-header {
+  font-size: 1.15rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+}
+
+.ticket-card {
+  display: grid;
+  grid-template-columns: 140px 1fr;
+  gap: 1rem;
+  align-items: center;
+  padding: 1rem;
+  background: #fff;
+  border-radius: 24px;
+  box-shadow: 0 12px 28px rgba(33, 26, 19, 0.08);
+  margin-bottom: 1rem;
+}
+
+.ticket-qr img {
+  width: 100%;
+  height: auto;
+  border-radius: 18px;
+  background: #f6f2ec;
+}
+
+.ticket-meta {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.ticket-film {
+  font-weight: 700;
+}
+
+@media (max-width: 900px) {
+  .kiosk-screen {
+    padding: 1rem;
+  }
+  .kiosk-grid,
+  .payment-options,
+  .ticket-prices {
+    grid-template-columns: 1fr;
+  }
+  .kiosk-footer {
+    justify-content: center;
+  }
+  .ticket-card {
+    grid-template-columns: 1fr;
+  }
+}
