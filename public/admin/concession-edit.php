@@ -71,13 +71,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             } else {
                 // Filename derived from a random token, not the client-supplied
                 // name or its extension — avoids any path/extension trickery.
+                //
+                // Deliberately saved under assets/images/concessions/ (not the
+                // new uploads/concessions/ tree) — public/concessions.php (out
+                // of this task's file scope) renders image_path via
+                // posterUrl(), which always prefixes 'assets/'. A path outside
+                // assets/ would resolve to a 404 on the live ordering page.
+                // See the commit message / final report for the uploads/
+                // tree note; events.php was fixed to resolve uploads/ paths
+                // directly since that page is in scope, but concessions.php
+                // is not, so this keeps the existing, working convention.
                 $filename = bin2hex(random_bytes(8)) . '.' . $allowedExt[$mime];
-                $destDir  = dirname(__DIR__) . '/uploads/concessions/';
+                $destDir  = dirname(__DIR__) . '/assets/images/concessions/';
                 if (!is_dir($destDir)) {
                     mkdir($destDir, 0755, true);
                 }
                 if (move_uploaded_file($file['tmp_name'], $destDir . $filename)) {
-                    $data['image_path'] = 'uploads/concessions/' . $filename;
+                    $data['image_path'] = 'images/concessions/' . $filename;
                     $old['image_path']  = $data['image_path'];
                 } else {
                     $errors[] = 'Could not save the uploaded image. Check server permissions.';
