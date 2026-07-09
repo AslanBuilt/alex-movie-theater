@@ -1,8 +1,35 @@
 ﻿<?php
 require_once __DIR__ . '/config/config.php';
+require_once INCLUDES_PATH . '/Database.php';
+require_once INCLUDES_PATH . '/EventRepo.php';
+
 $pageTitle = 'Events | The Alex — Alexandria, Indiana';
 $pageDescription = 'Special events at The Alex in Alexandria, Indiana. Escape room experiences, special screenings, and more.';
 $currentPage = 'events';
+
+$events = tryDb(fn () => EventRepo::getUpcoming());
+
+/**
+ * Resolve a stored event image_path to a displayable <img src>. Uploads
+ * from event-edit.php live under uploads/events/ (outside assets/), so they
+ * need url() rather than posterUrl()'s assets/-prefixing behavior. Pasted
+ * absolute URLs still resolve correctly via posterUrl().
+ */
+function eventsPageImageUrl(string $path): string
+{
+    $path = trim($path);
+    if ($path === '') {
+        return '';
+    }
+    if (preg_match('#^(https?:)?//#i', $path) === 1) {
+        return $path;
+    }
+    if (strncasecmp($path, 'uploads/', 8) === 0) {
+        return url($path);
+    }
+    return posterUrl($path);
+}
+
 require __DIR__ . '/templates/header.php';
 ?>
 
@@ -23,15 +50,39 @@ require __DIR__ . '/templates/header.php';
       <div class="section-divider"></div>
     </div>
 
+    <?php if (empty($events)) : ?>
+      <div class="info-card" style="max-width:640px; margin:0 auto 2.5rem; text-align:center;">
+        <h3>No events scheduled right now</h3>
+        <p>Check back soon &mdash; or follow us on Facebook and Instagram, where we post new events first.</p>
+      </div>
+    <?php else : foreach ($events as $ev) :
+        $imgUrl  = eventsPageImageUrl((string)($ev['image_path'] ?? ''));
+        $badge   = trim((string)($ev['badge'] ?? ''));
+        $dateStr = '';
+        if (!empty($ev['event_date'])) {
+            $ts = strtotime((string)$ev['event_date']);
+            if ($ts !== false) {
+                $dateStr = date('F j, Y', $ts);
+            }
+        }
+    ?>
     <div class="event-feature-card">
       <div class="event-feature-img">
-        <span class="screen-badge" style="background:var(--crimson-dark); z-index:2; top:0.75rem; left:0.75rem; right:auto;">Coming Soon</span>
-        <img src="assets/images/escape-room.webp" alt="Escape From The Lockdown Theatre" loading="lazy">
+        <?php if ($badge !== '') : ?>
+          <span class="screen-badge" style="background:var(--crimson-dark); z-index:2; top:0.75rem; left:0.75rem; right:auto;"><?= e($badge) ?></span>
+        <?php endif; ?>
+        <?php if ($imgUrl !== '') : ?>
+          <img src="<?= e($imgUrl) ?>" alt="<?= e((string)$ev['title']) ?>" loading="lazy">
+        <?php else : ?>
+          <div class="movie-poster-placeholder"><?= e((string)$ev['title']) ?></div>
+        <?php endif; ?>
       </div>
       <div class="event-feature-body">
-        <h2>Escape From The &ldquo;Lockdown Theatre&rdquo;</h2>
-        <p class="event-meta">Date &amp; details to be announced &middot; Follow our socials for the announcement</p>
-        <p>An immersive escape room experience set inside The Alex itself. A one-of-a-kind night out &mdash; details coming soon.</p>
+        <h2><?= e((string)$ev['title']) ?></h2>
+        <p class="event-meta"><?= $dateStr !== '' ? e($dateStr) : 'Date &amp; details to be announced' ?> &middot; Follow our socials for updates</p>
+        <?php if (!empty($ev['description'])) : ?>
+          <p><?= nl2br(e((string)$ev['description'])) ?></p>
+        <?php endif; ?>
         <div class="contact-social" style="margin-top:1.25rem;">
           <div class="social-links">
             <a href="https://www.facebook.com/TheAlexandriaTheatre" target="_blank" rel="noopener">Facebook</a>
@@ -40,6 +91,7 @@ require __DIR__ . '/templates/header.php';
         </div>
       </div>
     </div>
+    <?php endforeach; endif; ?>
 
     <div class="section-header">
       <p class="section-label">Every Month</p>
