@@ -132,8 +132,11 @@
   }
 
   /* Section-to-section page breaks so a chart's paired data table doesn't
-     get orphaned onto the next page by itself. */
+     get orphaned onto the next page by itself. "auto" is a no-op (it just
+     means "let the browser decide", same as not setting it at all) — this
+     needs "always" to actually force one report-chart-section per page. */
   .report-chart-section + .report-chart-section {
-    page-break-before: auto;
+    page-break-before: always;
+    break-before: page;
   }
 }
