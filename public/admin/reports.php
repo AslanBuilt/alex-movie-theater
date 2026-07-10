@@ -156,6 +156,13 @@ $lowStockIds = array_column($lowStock, 'id');
       </div>
     </div>
     <details class="report-data-table"><summary>View data table</summary><div id="chartInventoryTable"></div></details>
+    <?php if (!empty($inventory) && !array_filter($inventory, static fn($i) => $i['reorder_point'] !== null)): ?>
+      <p style="color:var(--cream-dim); font-size:0.8rem; margin-top:0.5rem;">
+        &#9888; Bars show grey because no reorder points are set yet. Go to
+        <a href="concessions.php" style="color:var(--crimson-light);">Concessions</a>
+        &rarr; edit each item &rarr; set a Reorder Point to enable red/yellow/green stock alerts.
+      </p>
+    <?php endif; ?>
   </section>
 
   <h3 style="margin-bottom:0.75rem;">Full Inventory</h3>

@@ -17,7 +17,7 @@
   var PALETTE = ['#8B1D33', '#3a5a7a', '#6a4a8a', '#4a7a5a', '#a8632a', '#7a4a4a', '#4a7a7a', '#8a7a3a'];
   var COLOR_THIS_WEEK = '#8B1A2E';
   var COLOR_LAST_WEEK = '#D4B5BC';
-  var COLOR_GREY = '#6b6258';
+  var COLOR_GREY = '#5a6478';
 
   var charts = {}; // id -> Chart instance, so print-mode can restyle + update them all
   var printMode = false;
@@ -144,16 +144,22 @@
           {
             label: 'This Week', data: revenueWeek.thisWeek,
             backgroundColor: COLOR_THIS_WEEK, borderRadius: 4,
-            datalabels: { display: true, anchor: 'end', align: 'top', formatter: money, font: { size: 13 } }
+            datalabels: { display: true, anchor: 'end', align: 'top', clip: false, formatter: money, font: { size: 13 } }
           },
           {
             label: 'Last Week', data: revenueWeek.lastWeek,
             backgroundColor: COLOR_LAST_WEEK, borderColor: '#8B1A2E', borderWidth: 2, borderDash: [5, 3], borderRadius: 4,
-            datalabels: { display: true, anchor: 'end', align: 'top', formatter: money, font: { size: 13 }, color: '#3A2418' }
+            // Label color matches this dataset's own bar color (COLOR_LAST_WEEK)
+            // instead of the old hardcoded #3A2418 — that dark brown measured
+            // ~1.25:1 contrast against the card background, effectively invisible.
+            datalabels: { display: true, anchor: 'end', align: 'top', clip: false, formatter: money, font: { size: 13 }, color: COLOR_LAST_WEEK }
           }
         ]
       },
       options: {
+        // Top padding gives the tallest bar's datalabel room to render above
+        // the chart area instead of clipping against the canvas edge.
+        layout: { padding: { top: 24 } },
         plugins: {
           legend: { position: 'bottom' },
           tooltip: { callbacks: { label: function (c) { return c.dataset.label + ': ' + money(c.parsed.y); } } }
