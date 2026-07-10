@@ -55,11 +55,15 @@ body{
 @keyframes slideIn{ from{ opacity:0; transform:translateY(12px); } to{ opacity:1; transform:none; } }
 .order-card.leaving{ animation:slideOut .35s ease forwards; }
 @keyframes slideOut{ to{ transform:translateX(40px); opacity:0; } }
-@media (prefers-reduced-motion: reduce){ .order-card, .order-card.leaving{ animation:none; } }
+.order-card.just-arrived{ animation:slideIn .35s ease, flash .9s ease .35s; }
+@keyframes flash{ 0%,100%{ box-shadow:var(--shadow); } 40%{ box-shadow:0 0 0 4px var(--c-kiosk),var(--shadow); } }
+@media (prefers-reduced-motion: reduce){ .order-card, .order-card.leaving, .order-card.just-arrived{ animation:none; } }
 
 .order-card-top{ display:flex; justify-content:space-between; align-items:flex-start; gap:var(--s2); }
 .order-id{ font-size:2rem; font-weight:800; line-height:1; }
 .order-time{ color:var(--c-text-muted); font-size:1rem; white-space:nowrap; padding-top:0.3rem; }
+.order-time.warn{ color:#b45309; font-weight:700; }
+.order-time.late{ color:var(--c-brand-dark); font-weight:800; }
 
 .channel-badge{
   display:inline-block; padding:0.3rem 0.75rem; border-radius:999px;

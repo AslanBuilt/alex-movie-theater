@@ -116,6 +116,12 @@ header('X-Robots-Tag: noindex, nofollow');
   function checkEmpty() {
     empty.hidden = grid.children.length > 0;
   }
+  function applyFilterVisibility() {
+    Array.prototype.forEach.call(grid.children, function (card) {
+      var channel = card.getAttribute('data-channel');
+      card.hidden = curFilter !== 'all' && channel !== curFilter;
+    });
+  }
   function render(orders) {
     var seenIds = {};
     orders.forEach(function (order) { seenIds[order.id] = true; });
