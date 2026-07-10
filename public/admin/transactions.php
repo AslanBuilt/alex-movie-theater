@@ -98,7 +98,7 @@ function orderNumberLabel(?int $dailyOrderNumber, string $ref): string
 
 <!-- Filters -->
 <form method="GET" style="margin-bottom:1.5rem; display:flex; gap:0.75rem; flex-wrap:wrap; align-items:center;">
-  <select name="status" onchange="this.form.submit()" style="padding:0.4rem 0.75rem;">
+  <select name="status" class="form-input" onchange="this.form.submit()" style="min-height:44px;">
     <option value="" <?= $statusFilter === '' ? 'selected' : '' ?>>All statuses</option>
     <option value="paid"    <?= $statusFilter === 'paid'    ? 'selected' : '' ?>>Paid</option>
     <option value="pending" <?= $statusFilter === 'pending' ? 'selected' : '' ?>>Pending</option>
