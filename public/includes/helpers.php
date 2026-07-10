@@ -98,3 +98,72 @@ function ticketPrice(?string $age): float
 {
     return normalizeTicketAge($age) === 'Child' ? TICKET_PRICE_CHILD : TICKET_PRICE_ADULT;
 }
+
+/**
+ * Relative "time ago" string for a MySQL DATETIME string (e.g. "just now",
+ * "12 minutes ago", "3 hours ago"). Falls back to an absolute date once
+ * older than a week — "52 weeks ago" is less useful than a real date at
+ * that distance. Returns '—' for an unparsable value rather than throwing,
+ * since this is purely a display helper used inline in admin tables.
+ */
+function timeAgo(string $datetime): string
+{
+    $ts = strtotime($datetime);
+    if ($ts === false) {
+        return '—';
+    }
+
+    $diff = time() - $ts;
+    if ($diff < 0) {
+        $diff = 0;
+    }
+
+    if ($diff < 60) {
+        return 'just now';
+    }
+    if ($diff < 3600) {
+        $mins = (int)floor($diff / 60);
+        return $mins . ' minute' . ($mins === 1 ? '' : 's') . ' ago';
+    }
+    if ($diff < 86400) {
+        $hours = (int)floor($diff / 3600);
+        return $hours . ' hour' . ($hours === 1 ? '' : 's') . ' ago';
+    }
+    if ($diff < 604800) {
+        $days = (int)floor($diff / 86400);
+        return $days . ' day' . ($days === 1 ? '' : 's') . ' ago';
+    }
+    return date('M j, Y', $ts);
+}
+
+/**
+ * One-line item summary for admin list views, e.g. "2 tickets + 3 items" —
+ * tickets counted separately from everything else (concessions) so the
+ * summary reads at a glance without opening the full line-item breakdown.
+ * Takes the same item rows TransactionRepo::getItems()/getItemsForTransactions()
+ * return (each with 'item_type' and 'quantity').
+ *
+ * @param array<int, array<string, mixed>> $items
+ */
+function summarizeLineItems(array $items): string
+{
+    $ticketQty = 0;
+    $otherQty  = 0;
+    foreach ($items as $li) {
+        $qty = (int)($li['quantity'] ?? 0);
+        if (($li['item_type'] ?? '') === 'ticket') {
+            $ticketQty += $qty;
+        } else {
+            $otherQty += $qty;
+        }
+    }
+
+    $parts = [];
+    if ($ticketQty > 0) {
+        $parts[] = $ticketQty . ' ticket' . ($ticketQty === 1 ? '' : 's');
+    }
+    if ($otherQty > 0) {
+        $parts[] = $otherQty . ' item' . ($otherQty === 1 ? '' : 's');
+    }
+    return $parts ? implode(' + ', $parts) : 'No items';
+}

@@ -718,4 +718,76 @@ final class TransactionRepo
             return [];
         }
     }
+
+    /**
+     * Data for the four summary cards atop admin/transactions.php: today's
+     * order count (any status — a raw "how many orders came in today"
+     * figure), today's revenue and this week's revenue (paid only, same
+     * DATE(created_at) = CURDATE() / YEARWEEK(...,1) convention as
+     * getSummaryStats()/occupancy.php), and how many transactions are
+     * currently sitting in 'pending' (not date-bound — that's an actionable
+     * "needs attention" count regardless of when the order was placed).
+     * Single-query CASE-WHEN, same style as getSummaryStats()/getSalesReport().
+     */
+    public static function getDashboardSummary(): array
+    {
+        $out = [
+            'today_orders'  => 0,
+            'today_revenue' => 0.0,
+            'week_revenue'  => 0.0,
+            'pending_count' => 0,
+        ];
+        try {
+            $pdo  = Database::getInstance();
+            $stmt = $pdo->query(
+                "SELECT
+                    COUNT(CASE WHEN DATE(created_at) = CURDATE() THEN 1 END) AS today_orders,
+                    SUM(CASE WHEN DATE(created_at) = CURDATE() AND payment_status = 'paid' THEN total_amount ELSE 0 END) AS today_revenue,
+                    SUM(CASE WHEN YEARWEEK(created_at, 1) = YEARWEEK(CURDATE(), 1) AND payment_status = 'paid' THEN total_amount ELSE 0 END) AS week_revenue,
+                    COUNT(CASE WHEN payment_status = 'pending' THEN 1 END) AS pending_count
+                 FROM transactions"
+            );
+            $row = $stmt->fetch();
+            if ($row) {
+                $out['today_orders']  = (int)($row['today_orders'] ?? 0);
+                $out['today_revenue'] = (float)($row['today_revenue'] ?? 0);
+                $out['week_revenue']  = (float)($row['week_revenue'] ?? 0);
+                $out['pending_count'] = (int)($row['pending_count'] ?? 0);
+            }
+        } catch (\Throwable $e) {
+            error_log('[TransactionRepo::getDashboardSummary] ' . $e->getMessage());
+        }
+        return $out;
+    }
+
+    /**
+     * Line items for a batch of transactions, keyed by transaction_id. Batches
+     * admin/transactions.php's list-page item summaries and expandable detail
+     * panels into one query instead of one getItems() call per row — same
+     * batching pattern as getCheckinSummaries().
+     *
+     * @param array<int,int> $transactionIds
+     * @return array<int, array<int, array<string, mixed>>>
+     */
+    public static function getItemsForTransactions(array $transactionIds): array
+    {
+        $transactionIds = array_values(array_unique(array_map('intval', $transactionIds)));
+        if (!$transactionIds) return [];
+        try {
+            $pdo          = Database::getInstance();
+            $placeholders = implode(',', array_fill(0, count($transactionIds), '?'));
+            $stmt         = $pdo->prepare(
+                "SELECT * FROM transaction_items WHERE transaction_id IN ($placeholders) ORDER BY transaction_id ASC, id ASC"
+            );
+            $stmt->execute($transactionIds);
+            $out = [];
+            foreach ($stmt->fetchAll() as $row) {
+                $out[(int)$row['transaction_id']][] = $row;
+            }
+            return $out;
+        } catch (\Throwable $e) {
+            error_log('[TransactionRepo::getItemsForTransactions] ' . $e->getMessage());
+            return [];
+        }
+    }
 }
