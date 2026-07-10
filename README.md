@@ -148,6 +148,8 @@ alex-movie-theater/
 | Employee POS register | https://parityrfp.com/cs/alex-movie-theater/pos/ | Staff at counter | PIN login (see local ops notes) |
 | Order fulfillment display | https://parityrfp.com/cs/alex-movie-theater/fulfillment.php | Back of house staff | No login |
 | Admin panel | https://parityrfp.com/cs/alex-movie-theater/admin/ | Owner / manager | Password login (see local ops notes) |
+| Admin — reports & charts | https://parityrfp.com/cs/alex-movie-theater/admin/reports.php | Owner / manager | Password login |
+| Admin — transactions | https://parityrfp.com/cs/alex-movie-theater/admin/transactions.php | Owner / manager | Password login |
 
 ## Demo Sequence
 
