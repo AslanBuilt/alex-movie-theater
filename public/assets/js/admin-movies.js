@@ -255,6 +255,8 @@
             var text = 'Will create ' + dates.length + ' showtime' + (dates.length === 1 ? '' : 's') + ': ' + sample + '.';
             if (duration > 0) {
                 text += ' Starts ' + formatClock(startMinutes) + ', ends around ' + formatClock(startMinutes + duration) + ' each night.';
+            } else {
+                text += ' Set a duration on the movie to calculate an end time.';
             }
             preview.textContent = text;
         }

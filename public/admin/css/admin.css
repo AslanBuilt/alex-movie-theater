@@ -350,6 +350,21 @@ h3 { font-size: 1.2rem; }
     color: var(--text-secondary);
 }
 
+/* Cross-category drag-to-reorder rejection feedback (concessions.php) —
+   the list is sorted category-then-order, so a drop target in a different
+   category can't accept the dragged row; shake it to signal the reject. */
+@keyframes admin-row-shake {
+    0%, 100% { transform: translateX(0); }
+    20% { transform: translateX(-6px); }
+    40% { transform: translateX(6px); }
+    60% { transform: translateX(-4px); }
+    80% { transform: translateX(4px); }
+}
+
+.admin-table tbody tr.shake {
+    animation: admin-row-shake 0.4s ease-in-out;
+}
+
 .empty-state {
     padding: 3rem 1rem;
     text-align: center;
