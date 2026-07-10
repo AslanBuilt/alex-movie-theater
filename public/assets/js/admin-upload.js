@@ -124,7 +124,7 @@
             });
             row.addEventListener('dragover', function (e) {
                 e.preventDefault();
-                if (this !== dragSrc) {
+                if (this !== dragSrc && dragSrc && dragSrc.dataset.category === this.dataset.category) {
                     this.style.background = 'var(--bg-card-hover)';
                 }
             });
@@ -135,6 +135,16 @@
                 e.preventDefault();
                 this.style.background = '';
                 if (dragSrc && dragSrc !== this) {
+                    if (dragSrc.dataset.category !== this.dataset.category) {
+                        // Cross-category drop: the list is sorted category-then-order,
+                        // so moving a row across categories would silently revert on
+                        // the next page load. Reject the move and give brief feedback
+                        // instead of pretending the reorder happened.
+                        var shakeTarget = this;
+                        shakeTarget.classList.add('shake');
+                        setTimeout(function () { shakeTarget.classList.remove('shake'); }, 400);
+                        return;
+                    }
                     var list   = this.parentNode;
                     var srcIdx = Array.prototype.indexOf.call(list.children, dragSrc);
                     var tgtIdx = Array.prototype.indexOf.call(list.children, this);

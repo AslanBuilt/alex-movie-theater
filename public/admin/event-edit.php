@@ -11,6 +11,7 @@ $old = [
     'title'       => '',
     'description' => '',
     'event_date'  => '',
+    'event_time'  => '',
     'badge'       => '',
     'image_path'  => '',
     'status'      => 'upcoming',
@@ -34,6 +35,7 @@ if ($isEdit) {
             'title'       => (string)$row['title'],
             'description' => (string)($row['description'] ?? ''),
             'event_date'  => (string)($row['event_date'] ?? ''),
+            'event_time'  => (string)($row['event_time'] ?? ''),
             'badge'       => (string)($row['badge'] ?? ''),
             'image_path'  => (string)($row['image_path'] ?? ''),
             'status'      => (string)$row['status'],
@@ -57,6 +59,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $old['title']       = trim((string)($_POST['title'] ?? ''));
         $old['description'] = trim((string)($_POST['description'] ?? ''));
         $old['event_date']  = trim((string)($_POST['event_date'] ?? ''));
+        $old['event_time']  = trim((string)($_POST['event_time'] ?? ''));
         $old['badge']       = trim((string)($_POST['badge'] ?? ''));
         $old['image_path']  = trim((string)($_POST['image_path'] ?? ''));
         $old['status']      = (string)($_POST['status'] ?? 'upcoming');
@@ -131,6 +134,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                 title = :title,
                                 description = :description,
                                 event_date = :event_date,
+                                event_time = :event_time,
                                 badge = :badge,
                                 image_path = :image_path,
                                 status = :status,
@@ -142,6 +146,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         ':title'       => $old['title'],
                         ':description' => $old['description'] !== '' ? $old['description'] : null,
                         ':event_date'  => $old['event_date'] !== '' ? $old['event_date'] : null,
+                        ':event_time'  => $old['event_time'] !== '' ? $old['event_time'] : null,
                         ':badge'       => $old['badge'] !== '' ? $old['badge'] : null,
                         ':image_path'  => $old['image_path'] !== '' ? $old['image_path'] : null,
                         ':status'      => $old['status'],
@@ -151,14 +156,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $_SESSION['flash'] = ['type' => 'success', 'message' => 'Event updated.'];
                 } else {
                     $sql = 'INSERT INTO events
-                                (title, description, event_date, badge, image_path, status, sort_order, created_at, updated_at)
+                                (title, description, event_date, event_time, badge, image_path, status, sort_order, created_at, updated_at)
                             VALUES
-                                (:title, :description, :event_date, :badge, :image_path, :status, :sort_order, NOW(), NOW())';
+                                (:title, :description, :event_date, :event_time, :badge, :image_path, :status, :sort_order, NOW(), NOW())';
                     $stmt = $db->prepare($sql);
                     $stmt->execute([
                         ':title'       => $old['title'],
                         ':description' => $old['description'] !== '' ? $old['description'] : null,
                         ':event_date'  => $old['event_date'] !== '' ? $old['event_date'] : null,
+                        ':event_time'  => $old['event_time'] !== '' ? $old['event_time'] : null,
                         ':badge'       => $old['badge'] !== '' ? $old['badge'] : null,
                         ':image_path'  => $old['image_path'] !== '' ? $old['image_path'] : null,
                         ':status'      => $old['status'],
@@ -233,6 +239,10 @@ $csrf = $auth->generateCsrfToken();
         <div class="form-group">
             <label for="event_date">Event date *</label>
             <input type="date" name="event_date" id="event_date" value="<?= e($old['event_date']) ?>" required>
+        </div>
+        <div class="form-group">
+            <label for="event_time">Event time</label>
+            <input type="time" name="event_time" id="event_time" value="<?= e($old['event_time']) ?>">
         </div>
         <div class="form-group">
             <label for="status">Status</label>

@@ -40,7 +40,7 @@ $items = $repo->getAll();
       </thead>
       <tbody>
         <?php foreach ($items as $item): ?>
-          <tr class="concession-row" data-concession-id="<?= (int)$item['id'] ?>">
+          <tr class="concession-row" data-concession-id="<?= (int)$item['id'] ?>" data-category="<?= e($item['category']) ?>">
             <td><?= e($item['category']) ?></td>
             <td>
               <span class="drag-handle" aria-hidden="true" style="display:none; cursor:grab; margin-right:0.4rem; user-select:none;">&#8942;&#8942;</span>

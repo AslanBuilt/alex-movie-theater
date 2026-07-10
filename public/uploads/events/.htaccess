@@ -1,4 +1,4 @@
 <FilesMatch "\.php$">
-    Deny from all
+    Require all denied
 </FilesMatch>
 Options -Indexes
