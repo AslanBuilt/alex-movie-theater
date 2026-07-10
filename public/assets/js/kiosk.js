@@ -438,7 +438,9 @@
   }
 
   function showConfirmation(body) {
-    els.confirmRef.textContent = body.transaction_ref || '—';
+    els.confirmRef.textContent = body.daily_order_number
+      ? ('#' + body.daily_order_number)
+      : (body.transaction_ref || '—');
     els.confirmNote.classList.toggle('hidden', !body.items.some(function (item) { return item.item_type === 'concession'; }));
     els.confirmSubtitle.textContent = body.items.some(function (item) { return item.item_type === 'ticket'; })
       ? 'Show each QR code at the door.'

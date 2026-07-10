@@ -102,6 +102,8 @@ switch ($event['type'] ?? '') {
             break; // already handled
         }
 
+        TransactionRepo::assignDailyOrderNumber((int)$txn['id']);
+
         // ShowtimeRepo::decrementTickets() is the atomic capacity claim (single
         // UPDATE...WHERE, per backend-commerce-concurrency) — its bool return is
         // the only thing standing between "sold out" and a phantom double-sale.
