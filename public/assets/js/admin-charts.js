@@ -169,40 +169,47 @@
     });
   }
 
-  // ── Chart 2: this month, line + area, with average reference line ─────────
-  function renderChartMonth(revenueMonth) {
+  // ── Chart 2: this month vs last month, both by day-of-month ────────────────
+  function renderChartMonth(revenueMonth, lastMonthData, currentLabel, lastLabel) {
     var canvas = document.getElementById('chartMonth');
-    var avg = revenueMonth.average;
-    buildDataTable('chartMonthTable', ['Day', 'Revenue'], revenueMonth.labels.map(function (d, i) {
-      return [d, money(revenueMonth.data[i])];
+    buildDataTable('chartMonthTable', ['Day', currentLabel || 'This Month', lastLabel || 'Last Month'], revenueMonth.labels.map(function (d, i) {
+      return [d, money(revenueMonth.data[i]), money((lastMonthData || [])[i] || 0)];
     }));
+    var titleEl = document.getElementById('chartMonthTitle');
+    if (titleEl) {
+      titleEl.textContent = 'Revenue by Day — ' + (currentLabel || 'This Month') + ' vs. ' + (lastLabel || 'Last Month');
+    }
     if (!canvas || typeof Chart === 'undefined') return;
     destroyChart('chartMonth');
-    var avgLine = revenueMonth.labels.map(function () { return avg; });
-    var lastIdx = avgLine.length - 1;
+
+    // lastMonthData is always a complete month (28-31 days); revenueMonth.data
+    // only covers days elapsed so far this month, which is always <= that —
+    // except on the last day of a longer month than last month. Use the
+    // longer of the two for day-of-month labels so neither series is cut off.
+    var dayCount = Math.max(revenueMonth.data.length, (lastMonthData || []).length);
+    var labels = [];
+    for (var i = 1; i <= dayCount; i++) labels.push(i);
+
+    var datasets = [
+      {
+        type: 'line', label: currentLabel || 'This Month', data: revenueMonth.data,
+        borderColor: '#8B1D33', backgroundColor: 'rgba(139,29,51,0.18)', fill: true, tension: 0.25, pointRadius: 3,
+        order: 2, datalabels: { display: false }
+      }
+    ];
+    if (lastMonthData && lastMonthData.some(function (v) { return v > 0; })) {
+      datasets.push({
+        type: 'line', label: lastLabel || 'Last Month', data: lastMonthData,
+        borderColor: '#C8B8A8', backgroundColor: 'transparent', borderDash: [5, 3], borderWidth: 2, pointRadius: 2, fill: false,
+        order: 1, datalabels: { display: false }
+      });
+    }
+
     charts.chartMonth = new Chart(canvas, {
-      data: {
-        labels: revenueMonth.labels,
-        datasets: [
-          {
-            type: 'line', label: 'Revenue', data: revenueMonth.data,
-            borderColor: '#8B1D33', backgroundColor: 'rgba(139,29,51,0.18)', fill: true, tension: 0.25, pointRadius: 3,
-            order: 2, datalabels: { display: false }
-          },
-          {
-            type: 'line', label: 'Average', data: avgLine,
-            borderColor: '#C8B8A8', borderDash: [6, 4], borderWidth: 2, pointRadius: 0, fill: false, order: 1,
-            datalabels: {
-              display: function (ctx) { return ctx.dataIndex === lastIdx; },
-              align: 'top', formatter: function () { return 'Avg: ' + money(avg); },
-              color: '#C8B8A8', font: { size: 13, weight: 'bold' }
-            }
-          }
-        ]
-      },
+      data: { labels: labels, datasets: datasets },
       options: {
         plugins: {
-          legend: { display: false },
+          legend: { position: 'bottom', labels: { color: '#ffffff' } },
           tooltip: { callbacks: { label: function (c) { return c.dataset.label + ': ' + money(c.parsed.y); } } }
         },
         scales: { y: { beginAtZero: true, ticks: { callback: money } } }
@@ -242,7 +249,7 @@
     });
   }
 
-  // ── Chart: daily transactions by channel (stacked) + revenue (line) ────────
+  // ── Chart: daily transaction count by channel (stacked bars) ──────────────
   function renderChartTransactions(d) {
     var canvas = document.getElementById('chartTransactions');
     if (!d || !d.length) return;
@@ -251,54 +258,29 @@
     }));
     if (!canvas || typeof Chart === 'undefined') return;
     destroyChart('chartTransactions');
-    var labels  = d.map(function (r) { return r.day; });
-    var revenue = d.map(function (r) { return r.revenue; });
-    var online  = d.map(function (r) { return r.online; });
-    var walkin  = d.map(function (r) { return r.walkin; });
-    var kiosk   = d.map(function (r) { return r.kiosk; });
 
     charts.chartTransactions = new Chart(canvas, {
       data: {
-        labels: labels,
+        labels: d.map(function (r) { return r.day; }),
         datasets: [
-          { type: 'bar', label: 'Online', data: online, backgroundColor: '#3a5a7a', stack: 'txn', datalabels: { display: false } },
-          { type: 'bar', label: 'Walk-Up', data: walkin, backgroundColor: '#4a7a5a', stack: 'txn', datalabels: { display: false } },
-          { type: 'bar', label: 'Kiosk', data: kiosk, backgroundColor: '#6a4a8a', stack: 'txn', datalabels: { display: false } },
-          {
-            type: 'line', label: 'Revenue', data: revenue, yAxisID: 'yRevenue',
-            borderColor: COLOR_THIS_WEEK, backgroundColor: 'rgba(139,26,46,0.1)', fill: true, tension: 0.3,
-            pointRadius: 3, pointBackgroundColor: COLOR_THIS_WEEK, datalabels: { display: false }
-          }
+          { type: 'bar', label: 'Online', data: d.map(function (r) { return r.online; }), backgroundColor: '#3a5a7a', stack: 'txn', datalabels: { display: false } },
+          { type: 'bar', label: 'Walk-Up', data: d.map(function (r) { return r.walkin; }), backgroundColor: '#4a7a5a', stack: 'txn', datalabels: { display: false } },
+          { type: 'bar', label: 'Kiosk', data: d.map(function (r) { return r.kiosk; }), backgroundColor: '#6a4a8a', stack: 'txn', datalabels: { display: false } }
         ]
       },
       options: {
-        interaction: { mode: 'index', intersect: false },
         plugins: {
           legend: { position: 'bottom', labels: { color: '#ffffff', font: { size: 12 } } },
           datalabels: { display: false },
           tooltip: {
             callbacks: {
-              label: function (c) {
-                if (c.dataset.label === 'Revenue') return 'Revenue: ' + money(c.parsed.y);
-                return c.dataset.label + ': ' + c.parsed.y + ' order' + (c.parsed.y !== 1 ? 's' : '');
-              }
+              label: function (c) { return c.dataset.label + ': ' + c.parsed.y + ' order' + (c.parsed.y !== 1 ? 's' : ''); }
             }
           }
         },
         scales: {
           x: { stacked: true, ticks: { color: '#ffffff', font: { size: 11 }, maxRotation: 45 }, grid: { color: 'rgba(255,255,255,0.05)' } },
-          y: {
-            stacked: true, position: 'left', beginAtZero: true,
-            title: { display: true, text: 'Transactions', color: '#ffffff', font: { size: 12 } },
-            ticks: { color: '#ffffff', stepSize: 1, precision: 0 },
-            grid: { color: 'rgba(255,255,255,0.1)' }
-          },
-          yRevenue: {
-            position: 'right', beginAtZero: true,
-            title: { display: true, text: 'Revenue', color: '#ffffff', font: { size: 12 } },
-            ticks: { color: '#ffffff', callback: money },
-            grid: { drawOnChartArea: false }
-          }
+          y: { stacked: true, beginAtZero: true, ticks: { color: '#ffffff', stepSize: 1, precision: 0 }, grid: { color: 'rgba(255,255,255,0.1)' } }
         }
       }
     });
@@ -630,7 +612,7 @@
         }
         renderKpiStrip(data.summary);
         renderChartWeek(data.revenueWeek);
-        renderChartMonth(data.revenueMonth);
+        renderChartMonth(data.revenueMonth, data.revenueLastMonth, data.currentMonthLabel, data.lastMonthLabel);
         renderChartMonthly(data.revenueMonthly);
         renderChartTransactions(data.transactionSummary);
         renderChartCategory(data.byCategory);
@@ -676,46 +658,64 @@
   // ── Print: canvas colors are baked-in pixels, not CSS — swap to a
   // light-on-white palette before printing and back after, or dark theme
   // text would be invisible on paper even with admin-print.css in place. ──
+  var _printPaletteActive = false;
+
   function setPrintPalette(isPrint) {
     if (typeof Chart === 'undefined') return;
-    printMode = isPrint;
-    // On-screen: pure white text/grid for readability against this theme's
-    // dark card background (.policy-box / .report-chart-section render on
-    // --bg-card: #1C1410 — white is the highest-contrast choice there).
-    // Print: unchanged, still light-on-white per admin-print.css.
-    var axisColor = isPrint ? '#111111' : '#ffffff';
-    var gridColor = isPrint ? 'rgba(0,0,0,0.15)' : 'rgba(255,255,255,0.1)';
-    Chart.defaults.color = axisColor;
-    Chart.defaults.borderColor = isPrint ? '#CCCCCC' : 'rgba(255,255,255,0.1)';
-    Object.keys(charts).forEach(function (id) {
-      var chart = charts[id];
-      if (id === 'chartCategory') {
-        chart._centerTotalColor = isPrint ? '#111111' : '#ffffff';
-      }
-      // Belt-and-suspenders: set tick/grid color explicitly on every scale
-      // rather than relying solely on the Chart.defaults.color/borderColor
-      // globals above — grid-line color resolution doesn't reliably fall
-      // through to Chart.defaults.borderColor the same way tick text does,
-      // so an already-configured scale with no explicit color could stay
-      // on its on-screen color even after the global default changes.
-      var scales = (chart.options && chart.options.scales) || {};
-      Object.keys(scales).forEach(function (axis) {
-        var scale = scales[axis];
-        if (!scale) return;
-        scale.ticks = scale.ticks || {};
-        scale.ticks.color = axisColor;
-        scale.grid = scale.grid || {};
-        scale.grid.color = gridColor;
+    // Guard against re-entrant calls — chart.update() below was observed to
+    // recurse back into this function (Uncaught RangeError: Maximum call
+    // stack size exceeded, inside Chart.js's own option-resolution internals)
+    // when called across multiple charts sharing mutated scale objects.
+    if (_printPaletteActive) return;
+    _printPaletteActive = true;
+    try {
+      printMode = isPrint;
+      // On-screen: pure white text/grid for readability against this theme's
+      // dark card background (.policy-box / .report-chart-section render on
+      // --bg-card: #1C1410 — white is the highest-contrast choice there).
+      // Print: unchanged, still light-on-white per admin-print.css.
+      var axisColor = isPrint ? '#111111' : '#ffffff';
+      var gridColor = isPrint ? 'rgba(0,0,0,0.15)' : 'rgba(255,255,255,0.1)';
+      Chart.defaults.color = axisColor;
+      Chart.defaults.borderColor = isPrint ? '#CCCCCC' : 'rgba(255,255,255,0.1)';
+      Object.keys(charts).forEach(function (id) {
+        var chart = charts[id];
+        if (!chart) return;
+        if (id === 'chartCategory') {
+          chart._centerTotalColor = isPrint ? '#111111' : '#ffffff';
+        }
+        // Belt-and-suspenders: set tick/grid color explicitly on every scale
+        // rather than relying solely on the Chart.defaults.color/borderColor
+        // globals above — grid-line color resolution doesn't reliably fall
+        // through to Chart.defaults.borderColor the same way tick text does,
+        // so an already-configured scale with no explicit color could stay
+        // on its on-screen color even after the global default changes.
+        var scales = (chart.options && chart.options.scales) || {};
+        Object.keys(scales).forEach(function (axis) {
+          var scale = scales[axis];
+          if (!scale) return;
+          scale.ticks = scale.ticks || {};
+          scale.ticks.color = axisColor;
+          scale.grid = scale.grid || {};
+          scale.grid.color = gridColor;
+        });
+        if (chart.options && chart.options.plugins) {
+          if (chart.options.plugins.legend && chart.options.plugins.legend.labels) {
+            chart.options.plugins.legend.labels.color = axisColor;
+          }
+        }
+        // 'none' mode skips Chart.js's animation and draws synchronously.
+        // With the default animated update(), the redraw is scheduled on a
+        // requestAnimationFrame and hasn't actually painted new pixels yet
+        // by the time this function returns — which matters a lot for print,
+        // since the beforeprint canvas→image snapshot below runs immediately
+        // after this and would otherwise capture the *previous* (on-screen)
+        // palette baked into the printed PNG instead of the print palette.
+        chart.update('none');
       });
-      // 'none' mode skips Chart.js's animation and draws synchronously.
-      // With the default animated update(), the redraw is scheduled on a
-      // requestAnimationFrame and hasn't actually painted new pixels yet
-      // by the time this function returns — which matters a lot for print,
-      // since the beforeprint canvas→image snapshot below runs immediately
-      // after this and would otherwise capture the *previous* (on-screen)
-      // palette baked into the printed PNG instead of the print palette.
-      chart.update('none');
-    });
+    } finally {
+      _printPaletteActive = false;
+    }
   }
   window.addEventListener('afterprint', function () { setPrintPalette(false); });
 
@@ -786,6 +786,17 @@
   // fires afterprint, so newly-created charts on a fresh page load would
   // render in the library default instead of this theme's screen palette.
   setPrintPalette(false);
+  var printBtn = document.getElementById('btn-print-report');
+  if (printBtn) {
+    printBtn.addEventListener('click', function () {
+      if (typeof window.printAdminReport === 'function') {
+        window.printAdminReport();
+      } else {
+        window.print();
+      }
+    });
+  }
+
   wireRangeSelector();
   loadAndRender();
 })();

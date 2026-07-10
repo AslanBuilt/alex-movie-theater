@@ -123,6 +123,24 @@ for ($i = 0; $i < $daysSoFar; $i++) {
 }
 $monthAverage = count($monthData) > 0 ? round(array_sum($monthData) / count($monthData), 2) : 0.0;
 
+// Last month, day-of-month indexed (1..N) so it lines up against this
+// month's same-day labels when both are plotted on one chart for the
+// "This Month" range. Uses last month's FULL day count, not $daysSoFar —
+// unlike this month (still in progress), last month is complete.
+$lastMonthAnchor  = (clone $today)->modify('first day of last month');
+$lastMonthDayCount = (int)$lastMonthAnchor->format('t');
+$lastMonthByDate  = [];
+foreach (TransactionRepo::getRevenueByDayLastMonth() as $r) {
+    $lastMonthByDate[(string)$r['day']] = (float)$r['revenue'];
+}
+$lastMonthData = [];
+for ($i = 0; $i < $lastMonthDayCount; $i++) {
+    $d               = (clone $lastMonthAnchor)->modify("+$i days");
+    $lastMonthData[] = round($lastMonthByDate[$d->format('Y-m-d')] ?? 0, 2);
+}
+$lastMonthLabel    = $lastMonthAnchor->format('F Y');
+$currentMonthLabel = $today->format('F Y');
+
 $revenueMonthly = TransactionRepo::getRevenueByMonthYearComparison();
 
 // Daily transactions/revenue — fixed 14-day trailing window (not affected by
@@ -225,6 +243,9 @@ echo json_encode([
         'data'    => $monthData,
         'average' => $monthAverage,
     ],
+    'revenueLastMonth'  => $lastMonthData,
+    'currentMonthLabel' => $currentMonthLabel,
+    'lastMonthLabel'    => $lastMonthLabel,
     'byCategory' => [
         'labels'  => $catLabels,
         'data'    => $catData,

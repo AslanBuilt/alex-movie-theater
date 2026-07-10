@@ -75,7 +75,7 @@ $lowStockIds = array_column($lowStock, 'id');
       <button type="submit" class="btn btn-secondary btn-sm" style="min-height:44px;">Apply</button>
     </div>
     <span id="rangeLoading" style="display:none; color:var(--text-muted); font-size:0.85rem;" role="status" aria-live="polite">Loading…</span>
-    <button type="button" class="btn btn-secondary" style="min-height:44px; margin-left:auto;" onclick="(window.printAdminReport || window.print)()">Print Report</button>
+    <button type="button" id="btn-print-report" class="btn btn-secondary" style="min-height:44px; margin-left:auto;">Print Report</button>
   </form>
 
   <!-- KPI strip -->
@@ -95,7 +95,7 @@ $lowStockIds = array_column($lowStock, 'id');
     </p>
 
     <section class="policy-box report-chart-section">
-      <h3 style="margin:0 0 0.75rem; font-size:0.95rem;">Revenue by Day — This Month</h3>
+      <h3 id="chartMonthTitle" style="margin:0 0 0.75rem; font-size:0.95rem;">Revenue by Day — This Month vs. Last Month</h3>
       <canvas id="chartMonth" height="320" role="img" aria-label="Line chart of daily revenue this month, with an average reference line"></canvas>
       <details class="report-data-table"><summary>View data table</summary><div id="chartMonthTable"></div></details>
     </section>
@@ -107,7 +107,7 @@ $lowStockIds = array_column($lowStock, 'id');
       <details class="report-data-table"><summary>View data table</summary><div id="chartMonthlyTable"></div></details>
     </section>
 
-    <section class="policy-box report-chart-section" style="grid-column: 1 / -1;">
+    <section class="policy-box report-chart-section">
       <h3 style="margin:0 0 0.25rem; font-size:0.95rem;">Daily Transactions &amp; Revenue</h3>
       <p style="margin:0 0 0.75rem; font-size:0.85rem; color:var(--cream-dim);">Last 14 days, stacked by channel — line shows total revenue</p>
       <canvas id="chartTransactions" height="260" role="img" aria-label="Stacked bar and line chart of daily transactions and revenue by channel"></canvas>

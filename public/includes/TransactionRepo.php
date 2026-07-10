@@ -387,6 +387,27 @@ final class TransactionRepo
         }
     }
 
+    /** Revenue per day for the previous calendar month. Sparse — only days with sales. */
+    public static function getRevenueByDayLastMonth(): array
+    {
+        try {
+            $pdo  = Database::getInstance();
+            $stmt = $pdo->query(
+                "SELECT DATE(created_at) AS day, SUM(total_amount) AS revenue
+                 FROM transactions
+                 WHERE payment_status = 'paid'
+                   AND YEAR(created_at) = YEAR(CURDATE() - INTERVAL 1 MONTH)
+                   AND MONTH(created_at) = MONTH(CURDATE() - INTERVAL 1 MONTH)
+                 GROUP BY DATE(created_at)
+                 ORDER BY day ASC"
+            );
+            return $stmt->fetchAll();
+        } catch (\Throwable $e) {
+            error_log('[TransactionRepo::getRevenueByDayLastMonth] ' . $e->getMessage());
+            return [];
+        }
+    }
+
     /**
      * Revenue + order count for today / this week / this month / all-time,
      * in one query. Same CASE-WHEN-over-one-query style as getSalesReport().
