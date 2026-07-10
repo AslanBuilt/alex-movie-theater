@@ -699,15 +699,24 @@ final class TransactionRepo
         }
     }
 
-    /** Per-ticket check-in detail for one transaction (admin detail view). */
+    /**
+     * Per-ticket check-in detail for one transaction (admin detail view).
+     * Includes transaction_item_id and the line item's selected_option
+     * (Adult/Child) so the caller can group multiple tokens under the
+     * single line item they were issued from (one ticket_tokens row per
+     * physical ticket, but one transaction_items row per line — a
+     * quantity-3 "Adult" line has 3 tokens sharing one transaction_item_id).
+     */
     public static function getTicketTokens(int $transactionId): array
     {
         try {
             $pdo  = Database::getInstance();
             $stmt = $pdo->prepare(
-                "SELECT tt.ticket_token, tt.token_status, tt.checked_in_at, tt.checked_in_terminal, m.title AS movie_title
+                "SELECT tt.ticket_token, tt.token_status, tt.checked_in_at, tt.checked_in_terminal,
+                        tt.transaction_item_id, ti.selected_option, m.title AS movie_title
                  FROM ticket_tokens tt
                  LEFT JOIN movies m ON m.id = tt.movie_id
+                 LEFT JOIN transaction_items ti ON ti.id = tt.transaction_item_id
                  WHERE tt.transaction_id = :id
                  ORDER BY tt.token_id ASC"
             );

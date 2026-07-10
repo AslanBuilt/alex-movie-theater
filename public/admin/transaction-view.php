@@ -27,6 +27,14 @@ foreach ($txn['items'] ?? [] as $li) {
     $ticketGroups[$key]['lines'][] = $li;
     $ticketGroups[$key]['total'] = ($ticketGroups[$key]['total'] ?? 0) + (float)$li['subtotal'];
 }
+
+// Group check-in tokens by the transaction_item_id (line item) they were
+// issued from — a quantity-N ticket line has N ticket_tokens rows sharing
+// one transaction_item_id, so this is a 1:many, not 1:1, mapping.
+$ticketsByItem = [];
+foreach ($tickets as $tk) {
+    $ticketsByItem[(int)$tk['transaction_item_id']][] = $tk;
+}
 ?>
 
 <div class="admin-page-header">
@@ -117,32 +125,38 @@ foreach ($txn['items'] ?? [] as $li) {
   <p style="color:var(--color-text-muted);">No line items recorded.</p>
 <?php endif; ?>
 
-<?php if (!empty($tickets)): ?>
-  <h3 style="margin:2rem 0 0.75rem;">Check-In Details</h3>
-  <table class="admin-table">
-    <thead>
-      <tr><th>#</th><th>Movie</th><th>Status</th><th>Checked In At</th><th>Terminal</th></tr>
-    </thead>
-    <tbody>
-      <?php foreach ($tickets as $i => $tk): ?>
-        <tr>
-          <td>Ticket <?= $i + 1 ?></td>
-          <td><?= e((string)($tk['movie_title'] ?? '—')) ?></td>
-          <td>
+<?php if (!empty($ticketsByItem)): ?>
+  <h3 style="margin:2rem 0 0.75rem;">Check-In Status</h3>
+  <?php foreach ($ticketsByItem as $itemId => $tokensForItem):
+      $first = $tokensForItem[0];
+  ?>
+    <div class="policy-box" style="margin-bottom:1rem;">
+      <p style="font-weight:700; margin:0 0 0.5rem;">
+        <?= e((string)($first['movie_title'] ?? '—')) ?>
+        &mdash; <?= e((string)($first['selected_option'] ?: 'Ticket')) ?>
+        (&times;<?= count($tokensForItem) ?>)
+      </p>
+      <?php foreach ($tokensForItem as $i => $tk): ?>
+        <div style="display:flex; justify-content:space-between; align-items:center; padding:0.35rem 0; padding-left:1rem; <?= $i > 0 ? 'border-top:1px solid rgba(0,0,0,0.06);' : '' ?>">
+          <span>Ticket <?= $i + 1 ?></span>
+          <span>
             <?php if ($tk['token_status'] === 'used'): ?>
-              <span class="badge badge-success">Checked In</span>
+              <span class="badge badge-success">
+                &#10003; Checked in <?= $tk['checked_in_at'] ? '&mdash; ' . e(date('M j \a\t g:i A', strtotime((string)$tk['checked_in_at']))) : '' ?>
+              </span>
+              <?php if ($tk['checked_in_terminal']): ?>
+                <span style="font-size:0.78rem; color:var(--color-text-muted); margin-left:0.4rem;"><?= e((string)$tk['checked_in_terminal']) ?></span>
+              <?php endif; ?>
             <?php elseif ($tk['token_status'] === 'voided'): ?>
               <span class="badge badge-muted">Voided</span>
             <?php else: ?>
-              <span class="badge badge-muted">Not Yet</span>
+              <span class="badge badge-muted">Not yet scanned</span>
             <?php endif; ?>
-          </td>
-          <td><?= $tk['checked_in_at'] ? e(date('M j, Y g:i A', strtotime((string)$tk['checked_in_at']))) : '—' ?></td>
-          <td><?= $tk['checked_in_terminal'] ? e((string)$tk['checked_in_terminal']) : '—' ?></td>
-        </tr>
+          </span>
+        </div>
       <?php endforeach; ?>
-    </tbody>
-  </table>
+    </div>
+  <?php endforeach; ?>
 <?php endif; ?>
 
 <div style="margin-top:2.5rem; padding-top:1.5rem; border-top:1px solid rgba(0,0,0,0.1);">

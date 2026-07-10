@@ -24,9 +24,10 @@ try {
     $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     $attStmt = $db->prepare(
-        "SELECT tt.token_status, t.customer_name, t.customer_email
+        "SELECT tt.token_status, tt.checked_in_at, t.customer_name, t.customer_email, ti.selected_option
          FROM ticket_tokens tt
          JOIN transactions t ON t.id = tt.transaction_id
+         LEFT JOIN transaction_items ti ON ti.id = tt.transaction_item_id
          WHERE tt.showtime_id = :sid AND tt.token_status != 'voided'
          ORDER BY t.customer_name ASC"
     );
@@ -131,13 +132,15 @@ $now = (new DateTime())->format('M j, Y g:i A');
         <?php if (!empty($st['attendees'])): ?>
         <div class="occ-attendees">
             <table>
-                <thead><tr><th>Name</th><th>Email</th><th>Status</th></tr></thead>
+                <thead><tr><th>Name</th><th>Email</th><th>Age Tier</th><th>Status</th><th>Checked In At</th></tr></thead>
                 <tbody>
                 <?php foreach ($st['attendees'] as $a): ?>
                     <tr>
                         <td><?= e((string)($a['customer_name'] ?: 'Walk-up guest')) ?></td>
                         <td><?= e((string)($a['customer_email'] ?: '—')) ?></td>
+                        <td><?= e((string)($a['selected_option'] ?: '—')) ?></td>
                         <td><?= $a['token_status'] === 'used' ? 'Checked in' : 'Not yet arrived' ?></td>
+                        <td><?= $a['checked_in_at'] ? e(date('g:i A', strtotime((string)$a['checked_in_at']))) : '—' ?></td>
                     </tr>
                 <?php endforeach; ?>
                 </tbody>

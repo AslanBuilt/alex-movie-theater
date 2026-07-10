@@ -9,6 +9,7 @@ $nowShowingCount  = 0;
 $comingSoonCount  = 0;
 $archivedCount    = 0;
 $totalEvents      = 0;
+$checkinsToday    = 0;
 $recentMovies     = [];
 $recentEvents     = [];
 
@@ -26,6 +27,10 @@ try {
     $archivedCount = (int)$stmt->fetchColumn();
 
     $totalEvents = (int)$db->query('SELECT COUNT(*) FROM events')->fetchColumn();
+
+    $checkinsToday = (int)$db->query(
+        "SELECT COUNT(*) FROM ticket_tokens WHERE token_status = 'used' AND DATE(checked_in_at) = CURDATE()"
+    )->fetchColumn();
 
     $stmt = $db->prepare(
         'SELECT id, title, status, updated_at
@@ -99,6 +104,10 @@ $chartData = [
     <div class="stat-card">
         <div class="stat-number"><?= e((string)$totalEvents) ?></div>
         <div class="stat-label">Total Events</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-number"><?= e((string)$checkinsToday) ?></div>
+        <div class="stat-label">Check-ins Today</div>
     </div>
 </div>
 
