@@ -623,7 +623,6 @@
       chart.update('none');
     });
   }
-  window.addEventListener('beforeprint', function () { setPrintPalette(true); });
   window.addEventListener('afterprint', function () { setPrintPalette(false); });
 
   // ── Print step 2: canvas → static <img> snapshot ───────────────────────
@@ -670,8 +669,22 @@
     canvasPrintSwaps = [];
   }
 
-  window.addEventListener('beforeprint', swapCanvasesForPrint);
   window.addEventListener('afterprint', restoreCanvasesAfterPrint);
+
+  // ── Print trigger — deterministic, not native-event-timed ─────────────────
+  // The native 'beforeprint' event fired setPrintPalette + swapCanvasesForPrint
+  // above in earlier builds, but that races against the browser's own print
+  // snapshot: 'beforeprint' can fire, and the print engine can capture the
+  // page, before the DOM has actually reflowed the newly-inserted <img>
+  // elements — producing blank charts in the printed/PDF output even though
+  // both functions ran without error. Calling this explicitly from the Print
+  // button, then delaying window.print() by one tick, gives the browser a
+  // guaranteed paint before the snapshot is taken.
+  window.printAdminReport = function () {
+    setPrintPalette(true);
+    swapCanvasesForPrint();
+    setTimeout(function () { window.print(); }, 150);
+  };
 
   // ── Init ────────────────────────────────────────────────────────────────
   // Apply the on-screen palette up front — without this, Chart.defaults.color
