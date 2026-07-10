@@ -144,15 +144,15 @@
           {
             label: 'This Week', data: revenueWeek.thisWeek,
             backgroundColor: COLOR_THIS_WEEK, borderRadius: 4,
-            datalabels: { display: true, anchor: 'end', align: 'top', clip: false, formatter: function (v) { return v > 0 ? money(v) : ''; }, font: { size: 13 } }
+            // Labels hidden by default — adjacent bars near the same height
+            // (e.g. both near the axis max) collided into unreadable
+            // overlapping text. Value is still available via the tooltip.
+            datalabels: { display: false }
           },
           {
             label: 'Last Week', data: revenueWeek.lastWeek,
             backgroundColor: COLOR_LAST_WEEK, borderColor: '#8B1A2E', borderWidth: 2, borderDash: [5, 3], borderRadius: 4,
-            // Label color matches this dataset's own bar color (COLOR_LAST_WEEK)
-            // instead of the old hardcoded #3A2418 — that dark brown measured
-            // ~1.25:1 contrast against the card background, effectively invisible.
-            datalabels: { display: true, anchor: 'end', align: 'top', clip: false, formatter: function (v) { return v > 0 ? money(v) : ''; }, font: { size: 13 }, color: COLOR_LAST_WEEK }
+            datalabels: { display: false }
           }
         ]
       },
@@ -621,13 +621,30 @@
     // dark card background (.policy-box / .report-chart-section render on
     // --bg-card: #1C1410 — white is the highest-contrast choice there).
     // Print: unchanged, still light-on-white per admin-print.css.
-    Chart.defaults.color = isPrint ? '#111111' : '#ffffff';
+    var axisColor = isPrint ? '#111111' : '#ffffff';
+    var gridColor = isPrint ? 'rgba(0,0,0,0.15)' : 'rgba(255,255,255,0.1)';
+    Chart.defaults.color = axisColor;
     Chart.defaults.borderColor = isPrint ? '#CCCCCC' : 'rgba(255,255,255,0.1)';
     Object.keys(charts).forEach(function (id) {
       var chart = charts[id];
       if (id === 'chartCategory') {
         chart._centerTotalColor = isPrint ? '#111111' : '#ffffff';
       }
+      // Belt-and-suspenders: set tick/grid color explicitly on every scale
+      // rather than relying solely on the Chart.defaults.color/borderColor
+      // globals above — grid-line color resolution doesn't reliably fall
+      // through to Chart.defaults.borderColor the same way tick text does,
+      // so an already-configured scale with no explicit color could stay
+      // on its on-screen color even after the global default changes.
+      var scales = (chart.options && chart.options.scales) || {};
+      Object.keys(scales).forEach(function (axis) {
+        var scale = scales[axis];
+        if (!scale) return;
+        scale.ticks = scale.ticks || {};
+        scale.ticks.color = axisColor;
+        scale.grid = scale.grid || {};
+        scale.grid.color = gridColor;
+      });
       // 'none' mode skips Chart.js's animation and draws synchronously.
       // With the default animated update(), the redraw is scheduled on a
       // requestAnimationFrame and hasn't actually painted new pixels yet
