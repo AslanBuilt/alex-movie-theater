@@ -292,6 +292,29 @@ h3 { font-size: 1.2rem; }
     margin-top: 2rem;
 }
 
+/* ---------- Policy boxes / report chart sections ----------
+   Used across public-site policy blocks and admin/reports.php's chart
+   cards. Neither had any rules here before — chart sections were sitting
+   directly on the page's own --bg-primary with no card boundary, and no
+   minimum height, which is why the charts read as small and undifferentiated
+   from one another. */
+
+.policy-box {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 1.25rem 1.5rem;
+}
+
+.report-chart-section {
+    min-height: 460px;
+    margin-bottom: 0.5rem;
+}
+
+.report-chart-section canvas {
+    max-width: 100%;
+}
+
 /* ---------- Tables ---------- */
 
 .admin-table-wrap {
@@ -363,6 +386,47 @@ h3 { font-size: 1.2rem; }
 
 .admin-table tbody tr.shake {
     animation: admin-row-shake 0.4s ease-in-out;
+}
+
+/* ---------- Expandable transaction rows (transactions.php) ---------- */
+
+.txn-row {
+    cursor: pointer;
+}
+
+.txn-expand-icon {
+    display: inline-block;
+    color: var(--text-secondary);
+    transition: transform 0.15s;
+}
+
+.txn-row[aria-expanded="true"] .txn-expand-icon {
+    transform: rotate(90deg);
+}
+
+.txn-order-ref {
+    display: block;
+    font-size: 0.72rem;
+    color: var(--text-secondary);
+    margin-top: 0.2rem;
+}
+
+.txn-detail-row td {
+    background: var(--bg-secondary);
+    padding: 1.25rem 1.5rem;
+    cursor: default;
+}
+
+.txn-detail-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 1.5rem;
+}
+
+@media (max-width: 720px) {
+    .txn-detail-grid {
+        grid-template-columns: 1fr;
+    }
 }
 
 .empty-state {
@@ -676,6 +740,25 @@ h3 { font-size: 1.2rem; }
 .badge-warning {
     background: #5a4019;
     color: #f0c674;
+}
+
+/* Source-channel badges (transactions.php row enrichment). Colors copied
+   verbatim from assets/css/fulfillment.css's --c-online/--c-walkup/--c-kiosk
+   tokens (the order-fulfillment board) rather than invented here, so the
+   same channel reads as the same color across every ops/admin screen. */
+.badge-online {
+    background: #dbeafe;
+    color: #1d4ed8;
+}
+
+.badge-walkup {
+    background: #dcfce7;
+    color: #15803d;
+}
+
+.badge-kiosk {
+    background: #ede9fe;
+    color: #7c3aed;
 }
 
 /* Transaction payment-status badges */

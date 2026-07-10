@@ -139,25 +139,30 @@ alex-movie-theater/
 
 ## Operational Screens
 
-All paths are relative to the production base path `/cs/alex-movie-theater/` (e.g. Admin panel = `https://parityrfp.com/cs/alex-movie-theater/admin/`).
-
-| Screen | URL | Who uses it | Access |
-|--------|-----|-------------|--------|
-| Public website | `/` | Customers | Public |
-| Movie detail + tickets | `/movie.php?id=N` | Customers | Public |
-| Ticket check-in kiosk | `/checkin.php` | Staff at entrance | No login |
-| Customer ordering kiosk | `/kiosk/` | Customers at concession stand | No login |
-| Employee POS register | `/pos/` | Staff at counter | PIN login |
-| Order fulfillment display | `/fulfillment.php` | Back of house staff | No login |
-| Admin panel | `/admin/` | Owner / manager | Password login |
+| Screen | Live URL | Who uses it | Access |
+|--------|----------|-------------|--------|
+| Public website | https://parityrfp.com/cs/alex-movie-theater/ | Customers | Public |
+| Buy tickets | https://parityrfp.com/cs/alex-movie-theater/tickets.php | Customers | Public |
+| Ticket check-in kiosk | https://parityrfp.com/cs/alex-movie-theater/checkin.php | Staff at entrance | No login |
+| Customer ordering kiosk | https://parityrfp.com/cs/alex-movie-theater/kiosk/ | Customers at concession stand | No login |
+| Employee POS register | https://parityrfp.com/cs/alex-movie-theater/pos/ | Staff at counter | PIN login (see local ops notes) |
+| Order fulfillment display | https://parityrfp.com/cs/alex-movie-theater/fulfillment.php | Back of house staff | No login |
+| Admin panel | https://parityrfp.com/cs/alex-movie-theater/admin/ | Owner / manager | Password login (see local ops notes) |
 
 ## Demo Sequence
 
-1. Customer buys tickets online → confirmation page shows QR codes
-2. Customer arrives → scans QR at `/checkin.php` → green welcome
-3. Customer orders concessions → self-serve at `/kiosk/` OR employee rings up at `/pos/`
-4. Order appears on `/fulfillment.php` → staff marks complete
-5. Owner reviews everything in `/admin/` → reports + inventory
+1. **Customer buys online** → https://parityrfp.com/cs/alex-movie-theater/
+   Picks movie → selects Adult/Child tickets → pays → gets QR codes on confirmation page
+2. **Customer arrives** → https://parityrfp.com/cs/alex-movie-theater/checkin.php
+   Scans QR code → green welcome → walks in
+3. **Customer orders concessions (self-serve)** → https://parityrfp.com/cs/alex-movie-theater/kiosk/
+   Picks items → pays cash (staff enters PIN) or card → gets order number
+4. **Employee rings up walk-up** → https://parityrfp.com/cs/alex-movie-theater/pos/
+   PIN login → add items → checkout
+5. **Staff fulfills orders** → https://parityrfp.com/cs/alex-movie-theater/fulfillment.php
+   Order appears → items listed → Mark Complete → drops off screen
+6. **Owner reviews everything** → https://parityrfp.com/cs/alex-movie-theater/admin/
+   Reports + charts + inventory + transactions
 
 ---
 
