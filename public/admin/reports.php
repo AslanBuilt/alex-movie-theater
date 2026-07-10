@@ -212,6 +212,6 @@ $lowStockIds = array_column($lowStock, 'id');
 <script>window.ADMIN_REPORTS_TAB = <?= json_encode($tab) ?>;</script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.5.0/chart.umd.min.js" integrity="sha512-Y51n9mtKTVBh3Jbx5pZSJNDDMyY+yGe77DGtBPzRlgsf/YLCh13kSZ3JmfHGzYFCmOndraf0sQgfM654b7dJ3w==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-datalabels/2.2.0/chartjs-plugin-datalabels.min.js" integrity="sha512-JPcRR8yFa8mmCsfrw4TNte1ZvF1e3+1SdGMslZvmrzDYxS69J7J49vkFL8u6u8PlPJK+H3voElBtUCzaXj+6ig==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-<script src="../assets/js/admin-charts.js" defer></script>
+<script src="../assets/js/admin-charts.js?v=<?= @filemtime(__DIR__ . '/../assets/js/admin-charts.js') ?>" defer></script>
 
 <?php require_once __DIR__ . '/includes/admin-footer.php'; ?>
