@@ -144,7 +144,7 @@
           {
             label: 'This Week', data: revenueWeek.thisWeek,
             backgroundColor: COLOR_THIS_WEEK, borderRadius: 4,
-            datalabels: { display: true, anchor: 'end', align: 'top', clip: false, formatter: money, font: { size: 13 } }
+            datalabels: { display: true, anchor: 'end', align: 'top', clip: false, formatter: function (v) { return v > 0 ? money(v) : ''; }, font: { size: 13 } }
           },
           {
             label: 'Last Week', data: revenueWeek.lastWeek,
@@ -152,7 +152,7 @@
             // Label color matches this dataset's own bar color (COLOR_LAST_WEEK)
             // instead of the old hardcoded #3A2418 — that dark brown measured
             // ~1.25:1 contrast against the card background, effectively invisible.
-            datalabels: { display: true, anchor: 'end', align: 'top', clip: false, formatter: money, font: { size: 13 }, color: COLOR_LAST_WEEK }
+            datalabels: { display: true, anchor: 'end', align: 'top', clip: false, formatter: function (v) { return v > 0 ? money(v) : ''; }, font: { size: 13 }, color: COLOR_LAST_WEEK }
           }
         ]
       },
