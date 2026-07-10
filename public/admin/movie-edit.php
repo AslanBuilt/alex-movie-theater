@@ -115,6 +115,67 @@ function movie_edit_generate_dates(string $start, string $end, array $days): arr
     return $out;
 }
 
+/**
+ * True when GD on this server can both read the given source MIME type and
+ * write WebP output. Checked before attempting a conversion so a missing GD
+ * build/format support surfaces as a specific inline error instead of a
+ * generic "conversion failed" message or a fatal call to an undefined
+ * function.
+ */
+function movie_edit_webp_conversion_supported(string $mime): bool
+{
+    if (!function_exists('imagewebp')) {
+        return false;
+    }
+    return match ($mime) {
+        'image/jpeg' => function_exists('imagecreatefromjpeg'),
+        'image/png'  => function_exists('imagecreatefrompng'),
+        'image/webp' => function_exists('imagecreatefromwebp'),
+        'image/gif'  => function_exists('imagecreatefromgif'),
+        default      => false,
+    };
+}
+
+/**
+ * Converts an uploaded jpeg/png/webp/gif image to WebP via GD and writes it
+ * to $destPath. Returns false (never throws) on any failure — an unreadable
+ * or corrupt source, or imagewebp() itself failing — and logs the specific
+ * reason. Callers must not update poster_path when this returns false, so a
+ * failed conversion never clobbers an existing good poster.
+ */
+function convertToWebP(string $tmpPath, string $destPath, string $mime): bool
+{
+    // move_uploaded_file() implicitly guarded against reading an arbitrary
+    // path via is_uploaded_file(); GD's imagecreatefrom*() has no such
+    // guard, so it's checked explicitly before ever touching $tmpPath.
+    if (!is_uploaded_file($tmpPath)) {
+        error_log("convertToWebP: refused non-upload path $tmpPath");
+        return false;
+    }
+    $img = match ($mime) {
+        'image/jpeg' => @imagecreatefromjpeg($tmpPath),
+        'image/png'  => @imagecreatefrompng($tmpPath),
+        'image/webp' => @imagecreatefromwebp($tmpPath),
+        'image/gif'  => @imagecreatefromgif($tmpPath),
+        default      => false,
+    };
+    if ($img === false) {
+        error_log("convertToWebP: unsupported or unreadable mime $mime for $tmpPath");
+        return false;
+    }
+    if (in_array($mime, ['image/png', 'image/gif'], true)) {
+        imagepalettetotruecolor($img);
+        imagealphablending($img, true);
+        imagesavealpha($img, true);
+    }
+    $ok = imagewebp($img, $destPath, 85);
+    imagedestroy($img);
+    if (!$ok) {
+        error_log("convertToWebP: imagewebp() write failed for $destPath (source mime $mime)");
+    }
+    return $ok;
+}
+
 if ($isEdit) {
     try {
         $stmt = $db->prepare('SELECT * FROM movies WHERE id = :id LIMIT 1');
@@ -190,20 +251,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $errors[] = 'Poster must be a JPG, PNG, GIF, or WebP image.';
                 } elseif ($file['size'] > $maxBytes) {
                     $errors[] = 'Poster image must be under 8 MB.';
+                } elseif (!movie_edit_webp_conversion_supported($mime)) {
+                    // Missing GD / missing WebP support in this server's GD build —
+                    // a specific, actionable message rather than a generic failure
+                    // or a fatal call to an undefined image function.
+                    $errors[] = "This server's image library can't convert this image to WebP right now. Please contact the site administrator.";
+                    error_log("movie-edit poster upload: WebP conversion unsupported for mime $mime (imagewebp available: " . (function_exists('imagewebp') ? 'yes' : 'no') . ')');
                 } else {
-                    $ext      = pathinfo((string)$file['name'], PATHINFO_EXTENSION);
+                    // Destination filename is always .webp, regardless of the
+                    // uploaded file's original extension — the file is converted,
+                    // not just renamed.
                     $safeName = preg_replace('/[^a-z0-9_-]/', '', strtolower(str_replace(' ', '-', $old['title'])));
                     $safeName = $safeName ?: 'poster';
-                    $filename = $safeName . '-' . time() . '.' . strtolower($ext);
+                    $filename = $safeName . '-' . time() . '.webp';
                     $destDir  = dirname(__DIR__) . '/assets/images/posters/';
-                    if (!is_dir($destDir)) {
-                        mkdir($destDir, 0755, true);
-                    }
-                    $dest = $destDir . $filename;
-                    if (move_uploaded_file($file['tmp_name'], $dest)) {
-                        $old['poster_path'] = 'images/posters/' . $filename;
+                    if (!is_dir($destDir) && !mkdir($destDir, 0755, true) && !is_dir($destDir)) {
+                        $errors[] = 'Could not create the posters directory. Check server permissions.';
                     } else {
-                        $errors[] = 'Could not save the uploaded image. Check server permissions.';
+                        $dest = $destDir . $filename;
+                        if (convertToWebP($file['tmp_name'], $dest, $mime)) {
+                            // Only overwrite poster_path on success — a failed
+                            // conversion must never clobber an existing good poster.
+                            $old['poster_path'] = 'images/posters/' . $filename;
+                        } else {
+                            $errors[] = 'Could not convert the uploaded image to WebP. Please try a different file.';
+                        }
                     }
                 }
             }
@@ -477,19 +549,26 @@ $csrf = $auth->generateCsrfToken();
         <small class="form-help">Set a duration to enable automatic end-time calculation for showtimes.</small>
     </div>
 
+    <?php $hasPoster = $old['poster_path'] !== ''; ?>
     <div class="form-group">
         <label for="poster_file">Upload Poster Image</label>
-        <input type="file" name="poster_file" id="poster_file" accept="image/jpeg,image/png,image/gif,image/webp" style="color:var(--text-primary);">
-        <small class="form-help">Upload JPG, PNG, or WebP (max 8 MB). Overwrites the path below if provided.</small>
-        <?php if ($old['poster_path'] !== ''): ?>
-            <div style="margin-top:0.6rem; display:flex; align-items:center; gap:0.75rem; flex-wrap:wrap;">
-                <img src="<?= e(posterUrl($old['poster_path'])) ?>" alt="Current poster" id="poster-preview"
-                     style="height:80px; width:56px; object-fit:cover; border-radius:3px; border:1px solid var(--border);">
-                <span style="font-size:0.8rem; color:var(--text-secondary);">Current poster</span>
+        <div class="admin-upload-zone" id="poster-image-zone" data-upload-zone
+             data-input-id="poster_file" data-preview-id="poster-preview"
+             data-placeholder-id="poster-placeholder" data-label-id="poster-current-label"
+             tabindex="0" role="button" aria-label="Upload poster image — drag and drop or click to choose a file">
+            <input type="file" id="poster_file" name="poster_file"
+                   accept="image/jpeg,image/png,image/gif,image/webp" hidden>
+            <img id="poster-preview" src="<?= $hasPoster ? e(posterUrl($old['poster_path'])) : '' ?>"
+                 alt="Current poster" class="admin-upload-preview" style="<?= $hasPoster ? '' : 'display:none;' ?>">
+            <div id="poster-placeholder" class="admin-upload-placeholder" style="<?= $hasPoster ? 'display:none;' : '' ?>">
+                <strong>Drag &amp; drop a poster image here</strong><br>
+                <span>or click to browse — JPG, PNG, GIF, or WebP, max 8&nbsp;MB. Converted to WebP automatically.</span>
             </div>
-        <?php else: ?>
-            <img id="poster-preview" src="" alt="" style="display:none; height:80px; width:56px; object-fit:cover; border-radius:3px; border:1px solid var(--border); margin-top:0.6rem;">
-        <?php endif; ?>
+        </div>
+        <div id="poster-current-label" class="form-help" style="<?= $hasPoster ? '' : 'display:none;' ?>">
+            Current poster — click above to change it.
+        </div>
+        <small class="form-help">Overwrites the path below if provided.</small>
     </div>
 
     <div class="form-group">
@@ -562,6 +641,35 @@ $csrf = $auth->generateCsrfToken();
     </div>
     <?php endif; ?>
 
+    <style>
+        .admin-upload-zone {
+            border: 2px dashed var(--border);
+            border-radius: 6px;
+            padding: 1rem;
+            text-align: center;
+            cursor: pointer;
+            transition: border-color 0.15s ease, background-color 0.15s ease;
+        }
+        .admin-upload-zone:focus-visible,
+        .admin-upload-zone.is-dragover {
+            border-color: var(--crimson, #a3123a);
+            background: rgba(163, 18, 58, 0.06);
+        }
+        .admin-upload-zone .admin-upload-preview {
+            max-height: 140px;
+            max-width: 100%;
+            border-radius: 4px;
+            display: block;
+            margin: 0 auto 0.5rem;
+            object-fit: cover;
+        }
+        .admin-upload-zone .admin-upload-placeholder {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            line-height: 1.5;
+        }
+    </style>
+
     <div class="form-actions">
         <button type="submit" class="btn btn-primary"><?= $isEdit ? 'Save changes' : 'Create movie' ?></button>
         <a class="btn btn-outline" href="movies.php">Cancel</a>
@@ -569,5 +677,6 @@ $csrf = $auth->generateCsrfToken();
 </form>
 
 <script src="../assets/js/admin-movies.js" defer></script>
+<script src="../assets/js/admin-upload.js" defer></script>
 
 <?php require_once __DIR__ . '/includes/admin-footer.php'; ?>
