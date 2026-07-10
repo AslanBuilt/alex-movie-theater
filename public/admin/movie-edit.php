@@ -476,6 +476,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     } catch (\Throwable $e) {
         error_log('movie-edit POST handling failed: ' . $e->getMessage());
+        file_put_contents(
+            dirname(__DIR__) . '/upload-debug.txt',
+            date('Y-m-d H:i:s') . ' | ' . $e->getMessage() . ' | ' . $e->getFile() . ':' . $e->getLine() . "\n",
+            FILE_APPEND
+        );
         $errors[] = 'An unexpected error occurred while processing your submission. Please try again.';
     }
 }
