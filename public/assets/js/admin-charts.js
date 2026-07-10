@@ -283,40 +283,65 @@
   }
 
   // ── Chart 4 (movies): stacked adult/child bars + poster thumbnails ────────
+  // Poster rows live in a separate column (#chartMoviesPosters) beside the
+  // canvas rather than drawn on it, so they need to be sized/positioned to
+  // land exactly where Chart.js puts each category's bar. The canvas's
+  // *total* height isn't the same as the actual bar-plotting area — Chart.js
+  // reserves extra space below it for the x-axis ticks and the bottom
+  // legend — so computing row height from raw canvas height (the old
+  // approach) drifted out of alignment with the real bars, especially as
+  // the category count changed. Reading the chart's own chartArea (the
+  // rendered plot rectangle) after each layout — via the afterLayout plugin
+  // hook, which fires on the initial render *and* every later resize —
+  // keeps the poster rows pinned to the bars instead of a canvas-height
+  // guess.
+  function layoutMoviePosterRows(topMovies, rowHeights, topOffsetPx) {
+    var posterCol = document.getElementById('chartMoviesPosters');
+    if (!posterCol) return;
+    posterCol.innerHTML = '';
+    if (topOffsetPx > 0) {
+      posterCol.appendChild(el('div', { style: 'height:' + topOffsetPx + 'px; flex-shrink:0;' }));
+    }
+    topMovies.forEach(function (m, i) {
+      var wrap = el('div', { class: 'report-poster-row', style: 'height:' + rowHeights[i] + 'px;' });
+      if (m.poster_path) {
+        // poster_path arrives pre-resolved to an absolute URL by
+        // includes/helpers.php's posterUrl() (server-side), so it's used
+        // as-is here — no relative-path guessing on the client.
+        wrap.appendChild(el('img', {
+          src: m.poster_path,
+          alt: m.item_name + ' poster',
+          style: 'max-height:100%; max-width:100%; object-fit:cover; border-radius:3px;',
+          onerror: "this.style.display='none';"
+        }));
+      }
+      posterCol.appendChild(wrap);
+    });
+  }
+
   function renderChartMovies(topMovies) {
     var canvas = document.getElementById('chartMovies');
-    var posterCol = document.getElementById('chartMoviesPosters');
     buildDataTable('chartMoviesTable', ['Movie', 'Adult', 'Child', 'Total Tickets', 'Revenue'], topMovies.map(function (m) {
       return [m.item_name, String(m.adult_count), String(m.child_count), String(m.total_qty), money(m.total_revenue)];
     }));
 
-    if (posterCol) {
-      posterCol.innerHTML = '';
-      var rowH = topMovies.length ? Math.max(44, Math.floor(320 / topMovies.length)) : 44;
-      topMovies.forEach(function (m) {
-        var wrap = el('div', { class: 'report-poster-row', style: 'height:' + rowH + 'px;' });
-        if (m.poster_path) {
-          // poster_path arrives pre-resolved to an absolute URL by
-          // includes/helpers.php's posterUrl() (server-side), so it's used
-          // as-is here — no relative-path guessing on the client.
-          wrap.appendChild(el('img', {
-            src: m.poster_path,
-            alt: m.item_name + ' poster',
-            style: 'max-height:100%; max-width:100%; object-fit:cover; border-radius:3px;',
-            onerror: "this.style.display='none';"
-          }));
-        }
-        posterCol.appendChild(wrap);
-      });
-      canvas && (canvas.height = Math.max(260, rowH * (topMovies.length || 1)));
-    }
-
-    if (!canvas || typeof Chart === 'undefined') return;
+    var n = topMovies.length;
     destroyChart('chartMovies');
-    if (!topMovies.length) {
-      buildDataTable('chartMoviesTable', ['Movie', 'Adult', 'Child', 'Total Tickets', 'Revenue'], []);
+
+    if (!canvas || typeof Chart === 'undefined' || !n) {
+      // No chart to align posters against (library missing, or nothing to
+      // plot this period) — fall back to even spacing so the column isn't
+      // left in a stale state from the previous render.
+      var fallbackRowH = n ? Math.max(44, Math.floor(320 / n)) : 44;
+      layoutMoviePosterRows(topMovies, topMovies.map(function () { return fallbackRowH; }), 0);
       return;
     }
+
+    // Seed height before layout runs; refined against the chart's real
+    // plot area (chartArea) in the afterLayout hook below.
+    var seedRowH = Math.max(44, Math.floor(320 / n));
+    canvas.height = Math.max(260, seedRowH * n);
+
     charts.chartMovies = new Chart(canvas, {
       type: 'bar',
       data: {
@@ -340,8 +365,31 @@
           legend: { position: 'bottom' },
           datalabels: { display: true, formatter: function (v) { return v > 0 ? v : ''; } }
         },
-        scales: { x: { beginAtZero: true, stacked: true, ticks: { precision: 0 } }, y: { stacked: true } }
-      }
+        scales: {
+          x: { beginAtZero: true, stacked: true, ticks: { precision: 0 } },
+          y: {
+            stacked: true,
+            ticks: {
+              // Chart.js doesn't truncate long category labels on its own —
+              // a long movie title would otherwise just run past/under the
+              // axis with no visual indicator that it was cut off.
+              callback: function (value) {
+                var lbl = this.getLabelForValue(value);
+                return lbl.length > 24 ? lbl.slice(0, 23) + '…' : lbl;
+              }
+            }
+          }
+        }
+      },
+      plugins: [{
+        id: 'moviePosterAlign',
+        afterLayout: function (chart) {
+          var area = chart.chartArea;
+          if (!area || area.bottom <= area.top) return;
+          var rowH = (area.bottom - area.top) / n;
+          layoutMoviePosterRows(topMovies, topMovies.map(function () { return rowH; }), area.top);
+        }
+      }]
     });
   }
 
@@ -435,6 +483,13 @@
   }
 
   // ── KPI strip ────────────────────────────────────────────────────────────
+  // Reuses the same .stat-card/.stat-number/.stat-label classes admin/
+  // index.php and admin/transactions.php already use for their summary
+  // cards, rather than a one-off .policy-box + inline-color combo — the
+  // previous inline styles used --crimson (low contrast on --bg-card) for
+  // the number and --text-muted (very low contrast, meant for tiny
+  // de-emphasized micro-labels elsewhere in the admin panel) for the label
+  // and transaction count, which read as hard to read against the dark card.
   function renderKpiStrip(summary) {
     var strip = document.getElementById('kpiStrip');
     if (!strip) return;
@@ -445,10 +500,10 @@
     periods.forEach(function (p) {
       var key = p[0], label = p[1];
       var d = summary[key] || { total: 0, count: 0 };
-      var box = el('div', { class: 'policy-box', style: 'text-align:center;' }, [
-        el('p', { text: label, style: 'font-size:0.78rem; color:var(--text-muted); margin:0 0 0.25rem;' }),
-        el('p', { text: money(d.total), style: 'font-size:1.6rem; font-weight:700; color:var(--crimson); margin:0;' }),
-        el('p', { text: d.count + ' transaction' + (d.count !== 1 ? 's' : ''), style: 'font-size:0.78rem; color:var(--text-muted); margin:0.25rem 0 0;' })
+      var box = el('div', { class: 'stat-card', style: 'text-align:center;' }, [
+        el('p', { class: 'stat-number', text: money(d.total), style: 'margin:0 0 0.35rem;' }),
+        el('p', { class: 'stat-label', text: label, style: 'margin:0 0 0.35rem;' }),
+        el('p', { text: d.count + ' transaction' + (d.count !== 1 ? 's' : ''), style: 'font-size:0.78rem; color:var(--cream-dim); margin:0;' })
       ]);
       strip.appendChild(box);
     });
@@ -552,11 +607,65 @@
       if (id === 'chartCategory') {
         chart._centerTotalColor = isPrint ? '#111111' : '#ffffff';
       }
-      chart.update();
+      // 'none' mode skips Chart.js's animation and draws synchronously.
+      // With the default animated update(), the redraw is scheduled on a
+      // requestAnimationFrame and hasn't actually painted new pixels yet
+      // by the time this function returns — which matters a lot for print,
+      // since the beforeprint canvas→image snapshot below runs immediately
+      // after this and would otherwise capture the *previous* (on-screen)
+      // palette baked into the printed PNG instead of the print palette.
+      chart.update('none');
     });
   }
   window.addEventListener('beforeprint', function () { setPrintPalette(true); });
   window.addEventListener('afterprint', function () { setPrintPalette(false); });
+
+  // ── Print step 2: canvas → static <img> snapshot ───────────────────────
+  // <canvas> is a known cross-browser print liability on top of the color
+  // problem above: some engines rasterize it at screen resolution (blurry
+  // paper output), others snapshot the page for printing before the canvas
+  // has (re)painted at all (blank paper output). Swapping each chart's
+  // canvas for a plain <img> built from its own pixels sidesteps both.
+  // This only produces the correct result because it's registered as a
+  // *second* 'beforeprint' listener — same-event listeners run in
+  // registration order, so setPrintPalette(true) above (which now redraws
+  // synchronously via update('none')) has already finished recoloring
+  // every chart by the time toDataURL() below reads its pixels.
+  var canvasPrintSwaps = [];
+
+  function swapCanvasesForPrint() {
+    canvasPrintSwaps = [];
+    Object.keys(charts).forEach(function (id) {
+      var chart = charts[id];
+      var canvas = chart && chart.canvas;
+      if (!canvas || !canvas.parentNode) return;
+      var dataUrl;
+      try {
+        dataUrl = canvas.toDataURL('image/png', 1.0);
+      } catch (e) {
+        return; // e.g. a tainted canvas — leave the live canvas in place for print
+      }
+      var img = el('img', {
+        src: dataUrl,
+        alt: canvas.getAttribute('aria-label') || '',
+        style: 'max-width:100%; height:auto; display:block;'
+      });
+      canvas.parentNode.insertBefore(img, canvas);
+      canvas.style.display = 'none';
+      canvasPrintSwaps.push({ canvas: canvas, img: img });
+    });
+  }
+
+  function restoreCanvasesAfterPrint() {
+    canvasPrintSwaps.forEach(function (pair) {
+      if (pair.img.parentNode) pair.img.parentNode.removeChild(pair.img);
+      pair.canvas.style.display = '';
+    });
+    canvasPrintSwaps = [];
+  }
+
+  window.addEventListener('beforeprint', swapCanvasesForPrint);
+  window.addEventListener('afterprint', restoreCanvasesAfterPrint);
 
   // ── Init ────────────────────────────────────────────────────────────────
   // Apply the on-screen palette up front — without this, Chart.defaults.color

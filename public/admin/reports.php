@@ -86,7 +86,7 @@ $lowStockIds = array_column($lowStock, 'id');
 
     <section class="policy-box report-chart-section">
       <h3 style="margin:0 0 0.25rem; font-size:0.95rem;">Revenue by Day — This Week vs. Last Week</h3>
-      <p id="chartWeekSummary" class="report-chart-summary" style="margin:0 0 0.75rem; font-size:0.85rem; color:var(--text-secondary);"></p>
+      <p id="chartWeekSummary" class="report-chart-summary" style="margin:0 0 0.75rem; font-size:0.85rem; color:var(--cream-dim);"></p>
       <canvas id="chartWeek" height="320" role="img" aria-label="Bar chart comparing daily revenue this week to last week"></canvas>
       <details class="report-data-table"><summary>View data table</summary><div id="chartWeekTable"></div></details>
     </section>
