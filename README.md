@@ -13,12 +13,6 @@ Website for **Alex Movie Theatre** in Alexandria, Indiana. Two-screen independen
 | **Production Site (PHP/MySQL)** | https://parityrfp.com/cs/alex-movie-theater/ |
 | **Production Admin** | https://parityrfp.com/cs/alex-movie-theater/admin/ |
 
-https://parityrfp.com/cs/alex-movie-theater/checkin.php
-https://parityrfp.com/cs/alex-movie-theater/kiosk/
-https://parityrfp.com/cs/alex-movie-theater/pos/
-https://parityrfp.com/cs/alex-movie-theater/fulfillment.php
-https://parityrfp.com/cs/alex-movie-theater/admin/reports.php
-https://parityrfp.com/cs/alex-movie-theater/admin/transactions.php
 
 
 > GitHub Pages serves the static version (no database). The production site on parityrfp.com runs full PHP + MySQL with live data.
