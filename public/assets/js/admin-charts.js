@@ -19,8 +19,7 @@
   var COLOR_LAST_WEEK = '#D4B5BC';
   var COLOR_GREY = '#5a6478';
 
-  var charts = {}; // id -> Chart instance, so print-mode can restyle + update them all
-  var printMode = false;
+  var charts = {}; // id -> Chart instance, so print can snapshot them all
 
   function onReportsPage() {
     return !!document.getElementById('chartWeek') || !!document.getElementById('chartInventory');
@@ -50,7 +49,19 @@
   }
 
   function money(v) {
-    var n = Number(v) || 0;
+    var n;
+    try {
+      // Number(v) on some objects (e.g. a Chart.js internal context/proxy
+      // passed in by mistake) can itself throw "Cannot convert object to
+      // primitive value" rather than returning NaN — guard the coercion
+      // itself, not just the result, so this formatter never crashes.
+      n = (v !== null && typeof v === 'object')
+        ? (typeof v.y === 'number' ? v.y : NaN)
+        : Number(v);
+    } catch (e) {
+      n = NaN;
+    }
+    if (typeof n !== 'number' || isNaN(n)) n = 0;
     var sign = n < 0 ? '-' : '';
     return sign + '$' + Math.abs(n).toFixed(2);
   }
@@ -667,81 +678,19 @@
     });
   }
 
-  // ── Print: canvas colors are baked-in pixels, not CSS — swap to a
-  // light-on-white palette before printing and back after, or dark theme
-  // text would be invisible on paper even with admin-print.css in place. ──
-  var _printPaletteActive = false;
-
-  function setPrintPalette(isPrint) {
-    if (typeof Chart === 'undefined') return;
-    // Guard against re-entrant calls — chart.update() below was observed to
-    // recurse back into this function (Uncaught RangeError: Maximum call
-    // stack size exceeded, inside Chart.js's own option-resolution internals)
-    // when called across multiple charts sharing mutated scale objects.
-    if (_printPaletteActive) return;
-    _printPaletteActive = true;
-    try {
-      printMode = isPrint;
-      // On-screen: pure white text/grid for readability against this theme's
-      // dark card background (.policy-box / .report-chart-section render on
-      // --bg-card: #1C1410 — white is the highest-contrast choice there).
-      // Print: unchanged, still light-on-white per admin-print.css.
-      var axisColor = isPrint ? '#111111' : '#ffffff';
-      var gridColor = isPrint ? 'rgba(0,0,0,0.15)' : 'rgba(255,255,255,0.1)';
-      Chart.defaults.color = axisColor;
-      Chart.defaults.borderColor = isPrint ? '#CCCCCC' : 'rgba(255,255,255,0.1)';
-      Object.keys(charts).forEach(function (id) {
-        var chart = charts[id];
-        if (!chart) return;
-        if (id === 'chartCategory') {
-          chart._centerTotalColor = isPrint ? '#111111' : '#ffffff';
-        }
-        // Belt-and-suspenders: set tick/grid color explicitly on every scale
-        // rather than relying solely on the Chart.defaults.color/borderColor
-        // globals above — grid-line color resolution doesn't reliably fall
-        // through to Chart.defaults.borderColor the same way tick text does,
-        // so an already-configured scale with no explicit color could stay
-        // on its on-screen color even after the global default changes.
-        var scales = (chart.options && chart.options.scales) || {};
-        Object.keys(scales).forEach(function (axis) {
-          var scale = scales[axis];
-          if (!scale) return;
-          scale.ticks = scale.ticks || {};
-          scale.ticks.color = axisColor;
-          scale.grid = scale.grid || {};
-          scale.grid.color = gridColor;
-        });
-        if (chart.options && chart.options.plugins) {
-          if (chart.options.plugins.legend && chart.options.plugins.legend.labels) {
-            chart.options.plugins.legend.labels.color = axisColor;
-          }
-        }
-        // 'none' mode skips Chart.js's animation and draws synchronously.
-        // With the default animated update(), the redraw is scheduled on a
-        // requestAnimationFrame and hasn't actually painted new pixels yet
-        // by the time this function returns — which matters a lot for print,
-        // since the beforeprint canvas→image snapshot below runs immediately
-        // after this and would otherwise capture the *previous* (on-screen)
-        // palette baked into the printed PNG instead of the print palette.
-        chart.update('none');
-      });
-    } finally {
-      _printPaletteActive = false;
-    }
-  }
-  window.addEventListener('afterprint', function () { setPrintPalette(false); });
-
-  // ── Print step 2: canvas → static <img> snapshot ───────────────────────
-  // <canvas> is a known cross-browser print liability on top of the color
-  // problem above: some engines rasterize it at screen resolution (blurry
-  // paper output), others snapshot the page for printing before the canvas
-  // has (re)painted at all (blank paper output). Swapping each chart's
-  // canvas for a plain <img> built from its own pixels sidesteps both.
-  // This only produces the correct result because it's registered as a
-  // *second* 'beforeprint' listener — same-event listeners run in
-  // registration order, so setPrintPalette(true) above (which now redraws
-  // synchronously via update('none')) has already finished recoloring
-  // every chart by the time toDataURL() below reads its pixels.
+  // ── Print: canvas → static <img> snapshot, no chart recoloring ─────────────
+  // Earlier builds recolored each live chart for print by mutating
+  // chart.options.scales in place and calling chart.update('none') — that
+  // was the actual cause of two separate confirmed crashes (a stack overflow
+  // inside Chart.js's own option-resolution internals, and a "cannot convert
+  // object to primitive" thrown from a tick callback mid-resolution), not a
+  // simple re-entrancy bug — a recursion guard around setPrintPalette did not
+  // fix it because the second call itself was corrupting state, not calling
+  // itself. Snapshotting each canvas exactly as currently rendered (no
+  // mutation, no update()) sidesteps the whole class of problem. Legibility
+  // of the white-on-dark on-screen palette is handled in admin-print.css by
+  // keeping a dark backdrop behind the snapshot image instead of forcing a
+  // light background the source pixels were never drawn for.
   var canvasPrintSwaps = [];
 
   function swapCanvasesForPrint() {
@@ -759,6 +708,7 @@
       var img = el('img', {
         src: dataUrl,
         alt: canvas.getAttribute('aria-label') || '',
+        'class': 'print-canvas-img',
         style: 'max-width:100%; height:auto; display:block;'
       });
       canvas.parentNode.insertBefore(img, canvas);
@@ -775,29 +725,16 @@
     canvasPrintSwaps = [];
   }
 
-  window.addEventListener('afterprint', restoreCanvasesAfterPrint);
-
-  // ── Print trigger — deterministic, not native-event-timed ─────────────────
-  // The native 'beforeprint' event fired setPrintPalette + swapCanvasesForPrint
-  // above in earlier builds, but that races against the browser's own print
-  // snapshot: 'beforeprint' can fire, and the print engine can capture the
-  // page, before the DOM has actually reflowed the newly-inserted <img>
-  // elements — producing blank charts in the printed/PDF output even though
-  // both functions ran without error. Calling this explicitly from the Print
-  // button, then delaying window.print() by one tick, gives the browser a
-  // guaranteed paint before the snapshot is taken.
   window.printAdminReport = function () {
-    setPrintPalette(true);
     swapCanvasesForPrint();
-    setTimeout(function () { window.print(); }, 150);
+    // One tick so the browser has actually painted the newly-inserted <img>
+    // elements before the print snapshot is taken.
+    setTimeout(function () {
+      window.print();
+      setTimeout(restoreCanvasesAfterPrint, 1000);
+    }, 150);
   };
 
-  // ── Init ────────────────────────────────────────────────────────────────
-  // Apply the on-screen palette up front — without this, Chart.defaults.color
-  // stays at Chart.js's own built-in default until the first print cycle
-  // fires afterprint, so newly-created charts on a fresh page load would
-  // render in the library default instead of this theme's screen palette.
-  setPrintPalette(false);
   var printBtn = document.getElementById('btn-print-report');
   if (printBtn) {
     printBtn.addEventListener('click', function () {

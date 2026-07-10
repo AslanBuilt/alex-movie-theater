@@ -91,6 +91,19 @@
     width: 100% !important;
   }
 
+  /* Chart snapshots are no longer recolored before printing (see
+     admin-charts.js — recoloring live Chart.js instances via mutate+update()
+     caused real crashes) — they print with their on-screen white-on-dark
+     palette baked into the pixels. Forcing the surrounding
+     .report-chart-section to white (above) would make that white text
+     invisible, so the image itself keeps a dark backdrop for its own
+     transparent regions to sit on, independent of its ancestor's background. */
+  .print-canvas-img {
+    background: #1C1410 !important;
+    padding: 12px !important;
+    border-radius: 6px;
+  }
+
   div[style*="grid-template-columns:repeat(auto-fit"] {
     display: block !important;
   }
