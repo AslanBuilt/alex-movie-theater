@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-require_once __DIR__ . '/../../public/config/config.php';
+require_once __DIR__ . '/../config/config.php';
 require_once INCLUDES_PATH . '/Database.php';
 require_once INCLUDES_PATH . '/ConcessionRepo.php';
 require_once INCLUDES_PATH . '/ShowtimeRepo.php';
