@@ -105,6 +105,13 @@ $lowStockIds = array_column($lowStock, 'id');
     </section>
 
     <section class="policy-box report-chart-section">
+      <h3 style="margin:0 0 0.25rem; font-size:0.95rem;">Tickets Sold vs. Attended</h3>
+      <p style="margin:0 0 0.75rem; font-size:0.85rem; color:var(--cream-dim);">Now showing movies — sold vs scanned at door</p>
+      <canvas id="chartScanRate" height="280" role="img" aria-label="Horizontal bar chart of tickets sold vs attended per movie"></canvas>
+      <details class="report-data-table"><summary>View data table</summary><div id="chartScanRateTable"></div></details>
+    </section>
+
+    <section class="policy-box report-chart-section">
       <h3 style="margin:0 0 0.75rem; font-size:0.95rem;">Revenue by Category</h3>
       <canvas id="chartCategory" height="320" role="img" aria-label="Doughnut chart of revenue split between tickets, concessions, and combos"></canvas>
       <details class="report-data-table"><summary>View data table</summary><div id="chartCategoryTable"></div></details>

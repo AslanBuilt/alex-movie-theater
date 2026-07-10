@@ -153,6 +153,46 @@ final class TicketTokenRepo
         }
     }
 
+    /**
+     * Tickets sold vs. scanned (checked in) per now-showing movie, top N by
+     * sold count. "Sold" excludes voided tokens (refunded/cancelled — never
+     * actually admitted); "scanned" is token_status = 'used'. Joins directly
+     * through ticket_tokens.showtime_id (denormalized onto the token at
+     * mint time — see generateForTransaction()), not via transaction_items,
+     * since ticket_tokens already carries movie_id/showtime_id directly.
+     *
+     * @return array<int, array{title:string, tickets_sold:int, tickets_scanned:int}>
+     */
+    public static function getScanRateByMovie(int $limit = 5): array
+    {
+        try {
+            $pdo  = Database::getInstance();
+            $stmt = $pdo->prepare(
+                "SELECT m.title,
+                        COUNT(tt.token_id) AS tickets_sold,
+                        SUM(CASE WHEN tt.token_status = 'used' THEN 1 ELSE 0 END) AS tickets_scanned
+                 FROM movies m
+                 JOIN ticket_tokens tt ON tt.movie_id = m.id AND tt.token_status != 'voided'
+                 WHERE m.status = 'now_showing'
+                 GROUP BY m.id, m.title
+                 ORDER BY tickets_sold DESC
+                 LIMIT :lim"
+            );
+            $stmt->bindValue(':lim', $limit, PDO::PARAM_INT);
+            $stmt->execute();
+            return array_map(static function (array $r): array {
+                return [
+                    'title'           => (string)$r['title'],
+                    'tickets_sold'    => (int)$r['tickets_sold'],
+                    'tickets_scanned' => (int)$r['tickets_scanned'],
+                ];
+            }, $stmt->fetchAll(PDO::FETCH_ASSOC));
+        } catch (\Throwable $e) {
+            error_log('[TicketTokenRepo::getScanRateByMovie] ' . $e->getMessage());
+            return [];
+        }
+    }
+
     private static function formatWhen(array $row): string
     {
         $when = '';

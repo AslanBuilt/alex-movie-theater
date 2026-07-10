@@ -334,7 +334,8 @@ h3 { font-size: 1.2rem; }
 #chartCategory,
 #chartMovies,
 #chartConcessions,
-#chartTransactions {
+#chartTransactions,
+#chartScanRate {
     max-height: 280px !important;
 }
 

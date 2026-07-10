@@ -254,6 +254,46 @@
     });
   }
 
+  // ── Chart 6: tickets sold vs. scanned (attended) per now-showing movie ────
+  function renderChartScanRate(d) {
+    var canvas = document.getElementById('chartScanRate');
+    buildDataTable('chartScanRateTable', ['Movie', 'Tickets Sold', 'Tickets Scanned'], (d || []).map(function (r) {
+      return [r.title, String(r.tickets_sold), String(r.tickets_scanned)];
+    }));
+    if (!d || !d.length || !canvas || typeof Chart === 'undefined') return;
+    destroyChart('chartScanRate');
+
+    charts.chartScanRate = new Chart(canvas, {
+      type: 'bar',
+      data: {
+        labels: d.map(function (r) { return r.title.length > 20 ? r.title.slice(0, 19) + '…' : r.title; }),
+        datasets: [
+          {
+            label: 'Tickets Sold', data: d.map(function (r) { return r.tickets_sold; }),
+            backgroundColor: '#3a5a7a',
+            datalabels: { display: true, anchor: 'end', align: 'right', color: '#ffffff', font: { size: 11 } }
+          },
+          {
+            label: 'Scanned / Attended', data: d.map(function (r) { return r.tickets_scanned; }),
+            backgroundColor: COLOR_THIS_WEEK,
+            datalabels: { display: true, anchor: 'end', align: 'right', color: '#ffffff', font: { size: 11 } }
+          }
+        ]
+      },
+      options: {
+        indexAxis: 'y',
+        plugins: {
+          legend: { position: 'bottom', labels: { color: '#ffffff' } },
+          tooltip: { callbacks: { label: function (c) { return c.dataset.label + ': ' + c.parsed.x; } } }
+        },
+        scales: {
+          x: { beginAtZero: true, ticks: { color: '#ffffff', precision: 0 }, grid: { color: 'rgba(255,255,255,0.1)' } },
+          y: { ticks: { color: '#ffffff', font: { size: 12 } }, grid: { color: 'rgba(255,255,255,0.05)' } }
+        }
+      }
+    });
+  }
+
   // ── Chart 3: revenue by category, doughnut with center total ──────────────
   var centerTextPlugin = {
     id: 'centerText',
@@ -465,7 +505,7 @@
           {
             type: 'bar', label: 'Stock', data: active.map(function (i) { return i.stock_quantity; }),
             backgroundColor: barColors, borderRadius: 4, order: 2,
-            datalabels: { display: true, anchor: 'end', align: 'end', font: { size: 13 }, formatter: function (v) { return v; } }
+            datalabels: { display: true, anchor: 'end', align: 'top', clip: false, color: '#ffffff', font: { size: 12, weight: 'bold' }, formatter: function (v) { return v; } }
           },
           {
             // Same technique the pre-existing chartInventory used to draw the
@@ -479,6 +519,10 @@
         ]
       },
       options: {
+        // Top padding gives the tallest bar's datalabel room to render above
+        // the chart area instead of clipping against the canvas edge — same
+        // fix already applied to the week revenue chart.
+        layout: { padding: { top: 24 } },
         plugins: { legend: { position: 'bottom' } },
         // Not beginAtZero here — every product currently sits in a tight
         // 42-50 range with no reorder points set, so a 0-50 axis makes every
@@ -582,6 +626,7 @@
         renderChartWeek(data.revenueWeek);
         renderChartMonth(data.revenueMonth, data.revenueLastMonth, data.currentMonthLabel, data.lastMonthLabel);
         renderChartTransactions(data.transactionSummary);
+        renderChartScanRate(data.ticketScanRate);
         renderChartCategory(data.byCategory);
         renderChartMovies(data.topMovies);
         renderChartConcessions(data.topConcessions);

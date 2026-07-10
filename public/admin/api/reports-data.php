@@ -33,6 +33,7 @@ require_once INCLUDES_PATH . '/Database.php';
 require_once INCLUDES_PATH . '/AdminAuth.php';
 require_once INCLUDES_PATH . '/TransactionRepo.php';
 require_once INCLUDES_PATH . '/InventoryRepo.php';
+require_once INCLUDES_PATH . '/TicketTokenRepo.php';
 
 header('Content-Type: application/json');
 header('Cache-Control: no-store, no-cache, must-revalidate');
@@ -166,6 +167,8 @@ for ($i = 0; $i < $txnWindowDays; $i++) {
     ];
 }
 
+$ticketScanRate = TicketTokenRepo::getScanRateByMovie(5);
+
 $inventoryRaw = InventoryRepo::getFullInventory();
 $lowStock     = InventoryRepo::getLowStock();
 $lowStockIds  = array_column($lowStock, 'id');
@@ -250,6 +253,7 @@ echo json_encode([
         'noSales' => $catNoSales,
     ],
     'transactionSummary'  => $transactionSummary,
+    'ticketScanRate'      => $ticketScanRate,
     'topMovies'      => $topMoviesOut,
     'topConcessions' => $topConcessionsOut,
     'inventory'      => $inventoryOut,
