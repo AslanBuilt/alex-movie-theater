@@ -534,12 +534,27 @@
     return ENDPOINT + (qs ? '?' + qs : '');
   }
 
+  // The week-vs-last-week chart is intrinsically fixed-period (always "this
+  // week vs last week", regardless of the range selector) — but showing it
+  // unconditionally next to a "This Month" selection reads as a bug to an
+  // owner who just changed the range and still sees a week chart. Hide it
+  // outside 'week' range and explain why via a note in its place.
+  function updateRangeVisibility(range) {
+    var weekSection = document.getElementById('chart-week-section');
+    var weekNote = document.getElementById('chart-week-note');
+    if (weekSection) weekSection.style.display = range === 'week' ? '' : 'none';
+    if (weekNote) weekNote.style.display = range === 'week' ? 'none' : '';
+  }
+
   function loadAndRender() {
     var loading = document.getElementById('rangeLoading');
     if (loading) loading.style.display = 'inline';
     hideGlobalError();
 
-    fetch(buildUrl(currentRangeParams()), { credentials: 'same-origin', headers: { 'Accept': 'application/json' } })
+    var params = currentRangeParams();
+    updateRangeVisibility(params.range);
+
+    fetch(buildUrl(params), { credentials: 'same-origin', headers: { 'Accept': 'application/json' } })
       .then(function (res) {
         var contentType = res.headers.get('content-type') || '';
         if (contentType.indexOf('application/json') < 0) {

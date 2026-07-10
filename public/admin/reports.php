@@ -84,12 +84,15 @@ $lowStockIds = array_column($lowStock, 'id');
   <!-- Charts -->
   <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(360px, 1fr)); gap:1.5rem; margin-bottom:2.5rem;">
 
-    <section class="policy-box report-chart-section">
+    <section class="policy-box report-chart-section" id="chart-week-section">
       <h3 style="margin:0 0 0.25rem; font-size:0.95rem;">Revenue by Day — This Week vs. Last Week</h3>
       <p id="chartWeekSummary" class="report-chart-summary" style="margin:0 0 0.75rem; font-size:0.85rem; color:var(--cream-dim);"></p>
       <canvas id="chartWeek" height="320" role="img" aria-label="Bar chart comparing daily revenue this week to last week"></canvas>
       <details class="report-data-table"><summary>View data table</summary><div id="chartWeekTable"></div></details>
     </section>
+    <p id="chart-week-note" class="policy-box report-chart-section" style="display:none; color:var(--cream-dim); font-size:0.85rem; align-self:start;">
+      Switch the range above to "This Week" to see the week-over-week comparison chart.
+    </p>
 
     <section class="policy-box report-chart-section">
       <h3 style="margin:0 0 0.75rem; font-size:0.95rem;">Revenue by Day — This Month</h3>
