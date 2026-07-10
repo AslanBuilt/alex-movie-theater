@@ -5,11 +5,32 @@
 .banner-dismiss{margin-left:auto;background:none;border:1px solid #444;color:#aaa;padding:4px 10px;border-radius:4px;cursor:pointer;font-size:12px;}
 .banner-dismiss:hover{border-color:#888;color:#fff;}
 
+/* ============================================================
+   THE ALEX — SELF-SERVICE KIOSK
+   Shares the POS design tokens (public/assets/css/pos.css) so both
+   staff and customer-facing screens read as one system. Kiosk-only
+   difference: every tap target here is sized for an unassisted public
+   touchscreen, so the minimum hit area is larger than POS's (--tap
+   is 80px here vs POS's 64px).
+   ============================================================ */
 :root {
   color-scheme: light;
-  font-family: 'Lato', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  background: #f6f2ec;
-  color: #171717;
+  --c-bg:#eef1f5; --c-surface:#ffffff; --c-surface-2:#f8fafc;
+  --c-border:#dbe1ea; --c-border-strong:#c4ccd8;
+  --c-text:#0f172a; --c-text-2:#475569; --c-text-muted:#7c8696;
+  --c-brand:#b3122b; --c-brand-dark:#8d0e22; --c-brand-tint:#fbe9ec;
+  --c-ok:#15803d; --c-ok-bg:#dcfce7;
+  --c-low:#b45309; --c-low-bg:#fef3c7;
+  --c-out:#b91c1c; --c-out-bg:#fee2e2;
+  --c-info:#1d4ed8; --c-info-bg:#dbeafe;
+  --s1:4px; --s2:8px; --s3:16px; --s4:24px; --s5:32px;
+  --r:12px; --r-sm:8px;
+  --shadow:0 1px 2px rgba(15,23,42,.06),0 4px 12px rgba(15,23,42,.06);
+  --tap:80px;
+  --font:'Inter','Lato',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  font-family: var(--font);
+  background: var(--c-bg);
+  color: var(--c-text);
 }
 
 * {
@@ -22,12 +43,18 @@ html, body {
 }
 
 body {
-  background: linear-gradient(180deg, #fffaf4 0%, #f0e4da 100%);
+  background: var(--c-bg);
   overflow: hidden;
+  font-family: var(--font);
+  color: var(--c-text);
+  -webkit-font-smoothing: antialiased;
 }
 
 button {
   font: inherit;
+  font-family: inherit;
+  cursor: pointer;
+  touch-action: manipulation;
 }
 
 .kiosk-shell {
@@ -53,44 +80,53 @@ button {
   justify-content: center;
   align-items: center;
   text-align: center;
+  touch-action: manipulation;
 }
 
 .welcome-logo {
   max-width: 180px;
-  border-radius: 1rem;
-  box-shadow: 0 18px 48px rgba(36, 30, 23, 0.16);
+  border-radius: var(--r);
+  box-shadow: var(--shadow);
 }
 
 .welcome-copy h1 {
   font-size: clamp(3rem, 4vw, 5rem);
+  font-weight: 800;
+  letter-spacing: -0.01em;
   margin: 1.5rem 0 0.5rem;
+  color: var(--c-text);
 }
 
 .welcome-copy p {
   font-size: 1.2rem;
   margin: 0;
   max-width: 36rem;
-  color: #4b4440;
+  color: var(--c-text-2);
 }
 
 .welcome-cta {
   margin-top: 3rem;
-  padding: 1rem 2rem;
+  min-height: var(--tap);
+  display: inline-flex;
+  align-items: center;
+  padding: 0 2.5rem;
   border-radius: 999px;
-  background: #7c3aed;
+  background: var(--c-brand);
   color: #fff;
   font-size: 1.2rem;
+  font-weight: 700;
   letter-spacing: 0.02em;
+  box-shadow: var(--shadow);
 }
 
 .welcome-ticker {
   margin-top: 2rem;
   padding: 1rem 1.5rem;
   width: min(100%, 680px);
-  border-radius: 16px;
-  background: #ffffffcc;
-  box-shadow: inset 0 0 0 1px rgba(124,58,237,0.12);
-  color: #5c4a76;
+  border-radius: var(--r);
+  background: var(--c-surface);
+  box-shadow: var(--shadow);
+  color: var(--c-text-2);
   font-size: 1rem;
 }
 
@@ -104,14 +140,21 @@ button {
 
 .kiosk-brand {
   font-size: 2rem;
-  font-weight: 700;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  color: var(--c-text);
 }
 
 .kiosk-subtitle {
   margin-top: 0.35rem;
-  color: #5f5b57;
+  color: var(--c-text-muted);
 }
 
+/* ---------- shared interactive base ----------
+   Every tap target on this page routes through this base rule so
+   sizing, feedback, and touch behavior stay consistent. Minimum
+   80px tall hit area on every one (public unassisted touchscreen —
+   larger than POS's staff-operated 64px minimum, never smaller). */
 .kiosk-action,
 .btn,
 .payment-option,
@@ -119,8 +162,17 @@ button {
 .btn-add,
 .qty-btn,
 .rm-btn,
-.pin-key {
+.pin-key,
+.tab,
+.ticket-action {
   cursor: pointer;
+  touch-action: manipulation;
+  border: none;
+  border-radius: var(--r);
+  font-weight: 700;
+  min-height: var(--tap);
+  transition: transform 0.08s ease, background-color 0.12s ease, box-shadow 0.12s ease, filter 0.12s ease;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .kiosk-tabs {
@@ -131,18 +183,35 @@ button {
 }
 
 .tab {
-  border: 1px solid rgba(0,0,0,0.08);
-  background: #fff;
-  color: #2b2b2b;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1.5px solid var(--c-border-strong);
+  background: var(--c-surface);
+  color: var(--c-text-2);
   border-radius: 999px;
-  padding: 0.85rem 1.25rem;
-  font-size: 1rem;
+  padding: 0 1.5rem;
+  font-size: 1.05rem;
+}
+
+.tab:hover {
+  background: var(--c-surface-2);
+  color: var(--c-text);
+}
+
+.tab:active {
+  transform: scale(0.97);
+  background: var(--c-brand-tint);
 }
 
 .tab.active {
-  background: #7c3aed;
+  background: var(--c-brand);
   color: #fff;
-  border-color: transparent;
+  border-color: var(--c-brand);
+}
+
+.tab.active:active {
+  background: var(--c-brand-dark);
 }
 
 .kiosk-grid {
@@ -154,15 +223,16 @@ button {
 .item-card {
   display: flex;
   flex-direction: column;
-  background: #fff;
-  border-radius: 24px;
-  box-shadow: 0 16px 40px rgba(33, 26, 19, 0.08);
+  background: var(--c-surface);
+  border: 1px solid var(--c-border);
+  border-radius: var(--r);
+  box-shadow: var(--shadow);
   overflow: hidden;
 }
 
 .item-art {
   min-height: 180px;
-  background-color: #efe1d6;
+  background-color: var(--c-surface-2);
   background-size: cover;
   background-position: center;
 }
@@ -174,21 +244,28 @@ button {
 }
 
 .item-title {
-  font-size: 1.1rem;
+  font-size: 1.15rem;
   font-weight: 700;
+  color: var(--c-text);
 }
 
 .item-meta {
-  color: #6c5e57;
+  color: var(--c-text-muted);
   min-height: 2rem;
+}
+
+.item-qty {
+  color: var(--c-text-muted);
+  font-size: 0.9rem;
+  font-weight: 600;
 }
 
 .item-bottom {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  color: #4c433f;
-  font-weight: 600;
+  color: var(--c-text);
+  font-weight: 700;
 }
 
 .ticket-prices,
@@ -207,11 +284,8 @@ button {
 .rm-btn,
 .qty-btn,
 .pin-key {
-  border: none;
-  border-radius: 16px;
-  padding: 0.85rem 1rem;
-  font-size: 1rem;
-  transition: transform 0.18s ease, box-shadow 0.18s ease;
+  padding: 0.5rem 1rem;
+  font-size: 1.05rem;
 }
 
 .ticket-action,
@@ -220,8 +294,9 @@ button {
 .payment-option,
 .kiosk-action,
 .pin-key {
-  background: #ede0f9;
-  color: #3f2f6c;
+  background: var(--c-surface-2);
+  color: var(--c-text);
+  border: 1.5px solid var(--c-border-strong);
 }
 
 .ticket-action:hover,
@@ -229,27 +304,66 @@ button {
 .option-btn:hover,
 .payment-option:hover,
 .kiosk-action:hover,
-.pin-key:hover,
-.rm-btn:hover,
-.qty-btn:hover {
-  transform: translateY(-1px);
+.pin-key:hover {
+  background: var(--c-brand-tint);
+  border-color: var(--c-brand);
+  color: var(--c-brand-dark);
+}
+
+.ticket-action:active,
+.btn-add:active,
+.option-btn:active,
+.payment-option:active,
+.kiosk-action:active,
+.pin-key:active,
+.rm-btn:active,
+.qty-btn:active {
+  transform: scale(0.96);
+  background: var(--c-brand-tint);
+  border-color: var(--c-brand);
+  color: var(--c-brand-dark);
 }
 
 .btn {
-  background: #7c3aed;
+  background: var(--c-brand);
   color: #fff;
-  min-width: 140px;
+  min-width: 160px;
+  border: none;
+}
+
+.btn:hover {
+  background: var(--c-brand-dark);
+}
+
+.btn:active {
+  background: var(--c-brand-dark);
+  transform: scale(0.97);
 }
 
 .btn-secondary {
-  background: #fff;
-  color: #3f2f6c;
-  border: 1px solid rgba(124, 58, 237, 0.2);
+  background: var(--c-surface);
+  color: var(--c-text-2);
+  border: 1.5px solid var(--c-border-strong);
+}
+
+.btn-secondary:hover {
+  background: var(--c-surface-2);
+  color: var(--c-text);
+}
+
+.btn-secondary:active {
+  background: var(--c-border);
+  color: var(--c-text);
+  transform: scale(0.97);
 }
 
 .btn-primary {
-  background: #7c3aed;
+  background: var(--c-brand);
   color: #fff;
+}
+
+.btn-primary:active {
+  background: var(--c-brand-dark);
 }
 
 .btn.disabled,
@@ -257,10 +371,34 @@ button {
   opacity: 0.6;
 }
 
-.btn-add {
-  background: #7c3aed;
+.btn.disabled {
+  cursor: not-allowed;
+}
+
+.btn.disabled:active {
+  transform: none;
+}
+
+.payment-option.active {
+  background: var(--c-brand);
+  border-color: var(--c-brand);
   color: #fff;
+}
+
+.btn-add {
+  background: var(--c-brand);
+  color: #fff;
+  border: none;
   grid-column: span 2;
+}
+
+.btn-add:hover {
+  background: var(--c-brand-dark);
+}
+
+.btn-add:active {
+  background: var(--c-brand-dark);
+  transform: scale(0.96);
 }
 
 .item-actions {
@@ -278,16 +416,18 @@ button {
 .kiosk-footer-summary {
   flex: 1 1 100%;
   align-self: center;
-  color: #4b4541;
+  color: var(--c-text-2);
+  font-weight: 600;
 }
 
 .cart-body,
 .payment-summary,
 .confirmation-body {
-  background: #fff;
-  border-radius: 24px;
+  background: var(--c-surface);
+  border: 1px solid var(--c-border);
+  border-radius: var(--r);
   padding: 1.5rem;
-  box-shadow: 0 14px 34px rgba(33, 26, 19, 0.08);
+  box-shadow: var(--shadow);
   min-height: 40vh;
 }
 
@@ -299,7 +439,7 @@ button {
   align-items: center;
   gap: 1rem;
   padding: 1rem 0;
-  border-bottom: 1px solid rgba(0,0,0,0.05);
+  border-bottom: 1px solid var(--c-border);
 }
 
 .cart-line:last-child,
@@ -316,39 +456,63 @@ button {
 .cart-line-title,
 .ticket-type {
   font-weight: 700;
+  color: var(--c-text);
 }
 
 .cart-line-meta,
 .ticket-when,
 .ticket-seq,
-.kiosk-subtitle,
 .confirmation-ticket-header {
-  color: #5f5b57;
+  color: var(--c-text-muted);
 }
 
 .cart-line-controls {
-  display: grid;
+  display: flex;
+  flex-wrap: wrap;
   gap: 0.5rem;
-  justify-items: end;
+  justify-content: flex-end;
   align-items: center;
 }
 
 .qty-btn,
 .rm-btn {
-  background: #efe1d6;
-  color: #3f2f6c;
-  min-width: 2.5rem;
+  background: var(--c-surface-2);
+  color: var(--c-text);
+  border: 1.5px solid var(--c-border-strong);
+  min-width: var(--tap);
+  padding: 0.5rem 1.25rem;
 }
 
 .rm-btn {
-  background: transparent;
-  color: #7c3aed;
+  background: var(--c-out-bg);
+  color: var(--c-out);
+  border-color: var(--c-out-bg);
   font-weight: 700;
+}
+
+.rm-btn:hover {
+  background: var(--c-out-bg);
+  border-color: var(--c-out);
+}
+
+.rm-btn:active {
+  background: var(--c-out-bg);
+  border-color: var(--c-out);
+  color: var(--c-out);
+}
+
+.qty-value {
+  min-width: 2rem;
+  text-align: center;
+  font-weight: 800;
+  font-size: 1.1rem;
+  color: var(--c-text);
 }
 
 .cart-line-price,
 .payment-summary-total {
-  font-weight: 700;
+  font-weight: 800;
+  color: var(--c-text);
 }
 
 .payment-options {
@@ -357,11 +521,16 @@ button {
   margin-bottom: 1.5rem;
 }
 
+.payment-options .payment-option {
+  flex: 1;
+}
+
 .payment-panel {
-  background: #fff;
-  border-radius: 24px;
+  background: var(--c-surface);
+  border: 1px solid var(--c-border);
+  border-radius: var(--r);
   padding: 1.5rem;
-  box-shadow: inset 0 1px 0 rgba(0,0,0,0.04);
+  box-shadow: var(--shadow);
   margin-bottom: 1.5rem;
 }
 
@@ -371,17 +540,20 @@ button {
 
 .payment-hint {
   margin: 0 0 1rem;
-  color: #5f5b57;
+  color: var(--c-text-2);
 }
 
 .pin-display {
   text-align: center;
   font-size: 2rem;
+  font-weight: 700;
   letter-spacing: 0.35rem;
-  background: #f6f2ec;
-  border-radius: 1rem;
+  background: var(--c-surface-2);
+  border: 1px solid var(--c-border);
+  border-radius: var(--r);
   padding: 1rem;
   margin-bottom: 1rem;
+  color: var(--c-text);
 }
 
 .pin-pad {
@@ -392,10 +564,9 @@ button {
 }
 
 .pin-key {
-  min-height: 4rem;
-  font-size: 1.25rem;
-  background: #f2e8ff;
-  color: #3f2f6c;
+  min-height: var(--tap);
+  font-size: 1.35rem;
+  font-weight: 700;
 }
 
 .kiosk-toast {
@@ -405,11 +576,13 @@ button {
   transform: translateX(-50%);
   padding: 1rem 1.5rem;
   border-radius: 999px;
-  background: rgba(0, 0, 0, 0.8);
+  background: var(--c-text);
   color: #fff;
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.2s ease;
+  z-index: 300;
+  font-weight: 600;
 }
 
 .kiosk-toast.show {
@@ -419,21 +592,23 @@ button {
 .empty-state {
   padding: 3rem;
   text-align: center;
-  color: #645b55;
+  color: var(--c-text-muted);
 }
 
 .confirm-number {
   font-size: 1.4rem;
-  font-weight: 700;
+  font-weight: 800;
   margin-bottom: 1rem;
+  color: var(--c-text);
 }
 
 .confirm-note {
   margin-bottom: 1.5rem;
   padding: 1rem 1.25rem;
-  border-radius: 1rem;
-  background: #f7f0ff;
-  color: #5c3ba3;
+  border-radius: var(--r);
+  background: var(--c-info-bg);
+  color: var(--c-info);
+  font-weight: 600;
 }
 
 .confirm-note.hidden {
@@ -448,8 +623,9 @@ button {
 
 .confirmation-ticket-header {
   font-size: 1.15rem;
-  font-weight: 700;
+  font-weight: 800;
   margin-bottom: 1rem;
+  color: var(--c-text);
 }
 
 .ticket-card {
@@ -458,17 +634,18 @@ button {
   gap: 1rem;
   align-items: center;
   padding: 1rem;
-  background: #fff;
-  border-radius: 24px;
-  box-shadow: 0 12px 28px rgba(33, 26, 19, 0.08);
+  background: var(--c-surface);
+  border: 1px solid var(--c-border);
+  border-radius: var(--r);
+  box-shadow: var(--shadow);
   margin-bottom: 1rem;
 }
 
 .ticket-qr img {
   width: 100%;
   height: auto;
-  border-radius: 18px;
-  background: #f6f2ec;
+  border-radius: var(--r-sm);
+  background: var(--c-surface-2);
 }
 
 .ticket-meta {
@@ -478,6 +655,7 @@ button {
 
 .ticket-film {
   font-weight: 700;
+  color: var(--c-text);
 }
 
 @media (max-width: 900px) {
@@ -491,6 +669,10 @@ button {
   }
   .kiosk-footer {
     justify-content: center;
+  }
+  .cart-line-controls {
+    justify-content: flex-start;
+    width: 100%;
   }
   .ticket-card {
     grid-template-columns: 1fr;
