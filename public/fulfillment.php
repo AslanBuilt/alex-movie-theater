@@ -21,7 +21,10 @@ header('X-Robots-Tag: noindex, nofollow');
 <link rel="stylesheet" href="assets/css/fulfillment.css?v=<?= @filemtime(__DIR__ . '/assets/css/fulfillment.css') ?>">
 </head>
 <body>
-<div class="mode-banner" id="modeBanner">&#128203; Fulfillment Board — Staff View</div>
+<div class="identity-banner">
+  <span class="identity-icon">📋</span>
+  <div><strong>ORDER FULFILLMENT DISPLAY</strong><span>Mount this screen in the back of house. Orders appear here as customers pay.</span></div>
+</div>
 <div class="board">
   <div class="board-head">
     <h1>Open Orders</h1>
@@ -41,13 +44,6 @@ header('X-Robots-Tag: noindex, nofollow');
 (function () {
   'use strict';
 
-  (function () {
-    var banner = document.getElementById('modeBanner');
-    if (banner) {
-      setTimeout(function () { banner.classList.add('fade'); }, 3000);
-      setTimeout(function () { banner.remove(); }, 4000);
-    }
-  })();
   var grid = document.getElementById('orderGrid');
   var empty = document.getElementById('empty');
   var lastUpdated = document.getElementById('lastUpdated');
