@@ -20,8 +20,100 @@ $old = [
 ];
 $errors = [];
 
+// Raw showtime-block values from a failed submission, kept so the "quick-add
+// showtimes" section can redisplay exactly what the admin typed instead of
+// silently dropping it when an unrelated field (e.g. title) fails validation.
+$submittedBlocks = [];
+
 $allowedScreens  = ['large', 'small', 'either'];
 $allowedStatuses = ['now_showing', 'coming_soon', 'archived'];
+const MOVIE_EDIT_DOW = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+/**
+ * Renders one showtime-block <div>, matching the markup/classes JS's
+ * addBlock() produces client-side for a freshly-added block, but filled with
+ * already-submitted values — used to redisplay blocks after a validation
+ * error round-trip.
+ *
+ * @param array{days?:int[],start_time?:string,tickets?:int,date_from?:string,date_to?:string} $values
+ */
+function movie_edit_render_showtime_block(int $index, array $values): void
+{
+    $days      = array_map('intval', (array)($values['days'] ?? []));
+    $startTime = (string)($values['start_time'] ?? '');
+    $tickets   = (int)($values['tickets'] ?? 50);
+    $dateFrom  = (string)($values['date_from'] ?? '');
+    $dateTo    = (string)($values['date_to'] ?? '');
+    ?>
+    <div class="showtime-block" data-index="<?= $index ?>" style="border:1px solid var(--border); border-radius:6px; padding:1rem; margin-bottom:1rem;">
+        <div class="form-group">
+            <label>Days of the week</label>
+            <div style="display:flex; gap:1rem; flex-wrap:wrap;">
+                <?php foreach (MOVIE_EDIT_DOW as $i => $name) : ?>
+                    <label class="checkbox-label">
+                        <input type="checkbox" name="showtime_blocks[<?= $index ?>][days][]" value="<?= $i ?>" <?= in_array($i, $days, true) ? 'checked' : '' ?>>
+                        <?= e($name) ?>
+                    </label>
+                <?php endforeach; ?>
+            </div>
+        </div>
+        <div class="form-row">
+            <div class="form-group">
+                <label>Start time</label>
+                <input type="time" name="showtime_blocks[<?= $index ?>][start_time]" class="st-start-time" value="<?= e($startTime) ?>">
+            </div>
+            <div class="form-group">
+                <label>Available tickets</label>
+                <input type="number" name="showtime_blocks[<?= $index ?>][tickets]" min="0" value="<?= $tickets ?>" class="st-tickets">
+            </div>
+        </div>
+        <div class="form-row">
+            <div class="form-group">
+                <label>From date</label>
+                <input type="date" name="showtime_blocks[<?= $index ?>][date_from]" class="st-date-from" value="<?= e($dateFrom) ?>">
+            </div>
+            <div class="form-group">
+                <label>To date</label>
+                <input type="date" name="showtime_blocks[<?= $index ?>][date_to]" class="st-date-to" value="<?= e($dateTo) ?>">
+            </div>
+        </div>
+        <p class="st-preview" style="font-size:0.85rem; color:var(--text-secondary); margin:0.5rem 0 0;"></p>
+        <button type="button" class="btn btn-outline btn-sm st-remove-block" style="margin-top:0.6rem;">Remove this block</button>
+    </div>
+    <?php
+}
+
+/**
+ * Builds the YYYY-MM-DD list for every date in [start,end] (inclusive) whose
+ * weekday is in $days (0=Sun..6=Sat). Same algorithm as
+ * showtime-scheduler.php's sched_generate_dates() — duplicated locally
+ * because that file renders its own full admin page and isn't a reusable
+ * library, but the date-range/weekday-filter logic is deliberately kept in
+ * sync with it so both features generate identical dates for identical input.
+ *
+ * @param int[] $days
+ * @return string[]
+ */
+function movie_edit_generate_dates(string $start, string $end, array $days): array
+{
+    try {
+        $cur  = new DateTime($start);
+        $stop = new DateTime($end);
+    } catch (\Throwable $e) {
+        return [];
+    }
+    if ($cur > $stop || $cur->diff($stop)->days > 366) {
+        return [];
+    }
+    $out = [];
+    while ($cur <= $stop) {
+        if (in_array((int)$cur->format('w'), $days, true)) {
+            $out[] = $cur->format('Y-m-d');
+        }
+        $cur->modify('+1 day');
+    }
+    return $out;
+}
 
 if ($isEdit) {
     try {
@@ -56,130 +148,263 @@ if ($isEdit) {
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $token = (string)($_POST['csrf_token'] ?? '');
-    if (!$auth->validateCsrf($token)) {
-        $errors[] = 'Your session expired. Please try again.';
-    } else {
-        $old['title']       = trim((string)($_POST['title'] ?? ''));
-        $old['rating']      = trim((string)($_POST['rating'] ?? ''));
-        $old['screen']      = (string)($_POST['screen'] ?? 'either');
+    // Outer safety net: anything unexpected anywhere in this block (a bad
+    // regex, a DateTime exception while generating showtime dates, a file
+    // I/O surprise, etc.) is caught here, logged, and turned into a generic
+    // inline error instead of an uncaught exception hitting the browser.
+    try {
+        $token = (string)($_POST['csrf_token'] ?? '');
+        if (!$auth->validateCsrf($token)) {
+            $errors[] = 'Your session expired. Please try again.';
+        } else {
+            $old['title']       = trim((string)($_POST['title'] ?? ''));
+            $old['rating']      = trim((string)($_POST['rating'] ?? ''));
+            $old['screen']      = (string)($_POST['screen'] ?? 'either');
 
-        $durHours = max(0, (int)($_POST['duration_hours'] ?? 0));
-        $durMins  = max(0, min(59, (int)($_POST['duration_minutes_part'] ?? 0)));
-        $totalDur = $durHours * 60 + $durMins;
-        $old['duration_minutes'] = $totalDur > 0 ? $totalDur : '';
+            $durHours = max(0, (int)($_POST['duration_hours'] ?? 0));
+            $durMins  = max(0, min(59, (int)($_POST['duration_minutes_part'] ?? 0)));
+            $totalDur = $durHours * 60 + $durMins;
+            $old['duration_minutes'] = $totalDur > 0 ? $totalDur : '';
 
-        $old['poster_path'] = trim((string)($_POST['poster_path'] ?? ''));
-        $old['description'] = (string)($_POST['description'] ?? '');
-        $old['status']      = (string)($_POST['status'] ?? 'now_showing');
-        $old['online_only'] = isset($_POST['online_only']) ? 1 : 0;
-        $old['sort_order']  = (int)($_POST['sort_order'] ?? 0);
+            $old['poster_path'] = trim((string)($_POST['poster_path'] ?? ''));
+            $old['description'] = (string)($_POST['description'] ?? '');
+            $old['status']      = (string)($_POST['status'] ?? 'now_showing');
+            $old['online_only'] = isset($_POST['online_only']) ? 1 : 0;
+            // sort_order is no longer a form field — it's set automatically on
+            // create and otherwise left untouched by drag-to-reorder on
+            // movies.php (see api/movies-reorder.php). $old['sort_order']
+            // keeps whatever value was loaded from the DB (edit) or the 0
+            // default (create); neither is used in the SQL below directly.
 
-        // Handle poster image upload
-        if (!empty($_FILES['poster_file']['tmp_name'])) {
-            $file     = $_FILES['poster_file'];
-            $allowed  = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
-            $maxBytes = 8 * 1024 * 1024;
+            // Handle poster image upload
+            if (!empty($_FILES['poster_file']['tmp_name'])) {
+                $file     = $_FILES['poster_file'];
+                $allowed  = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+                $maxBytes = 8 * 1024 * 1024;
 
-            $finfo    = finfo_open(FILEINFO_MIME_TYPE);
-            $mime     = finfo_file($finfo, $file['tmp_name']);
-            finfo_close($finfo);
+                $finfo    = finfo_open(FILEINFO_MIME_TYPE);
+                $mime     = finfo_file($finfo, $file['tmp_name']);
+                finfo_close($finfo);
 
-            if (!in_array($mime, $allowed, true)) {
-                $errors[] = 'Poster must be a JPG, PNG, GIF, or WebP image.';
-            } elseif ($file['size'] > $maxBytes) {
-                $errors[] = 'Poster image must be under 8 MB.';
-            } else {
-                $ext      = pathinfo((string)$file['name'], PATHINFO_EXTENSION);
-                $safeName = preg_replace('/[^a-z0-9_-]/', '', strtolower(str_replace(' ', '-', $old['title'])));
-                $safeName = $safeName ?: 'poster';
-                $filename = $safeName . '-' . time() . '.' . strtolower($ext);
-                $destDir  = dirname(__DIR__) . '/assets/images/posters/';
-                if (!is_dir($destDir)) {
-                    mkdir($destDir, 0755, true);
-                }
-                $dest = $destDir . $filename;
-                if (move_uploaded_file($file['tmp_name'], $dest)) {
-                    $old['poster_path'] = 'images/posters/' . $filename;
+                if (!in_array($mime, $allowed, true)) {
+                    $errors[] = 'Poster must be a JPG, PNG, GIF, or WebP image.';
+                } elseif ($file['size'] > $maxBytes) {
+                    $errors[] = 'Poster image must be under 8 MB.';
                 } else {
-                    $errors[] = 'Could not save the uploaded image. Check server permissions.';
+                    $ext      = pathinfo((string)$file['name'], PATHINFO_EXTENSION);
+                    $safeName = preg_replace('/[^a-z0-9_-]/', '', strtolower(str_replace(' ', '-', $old['title'])));
+                    $safeName = $safeName ?: 'poster';
+                    $filename = $safeName . '-' . time() . '.' . strtolower($ext);
+                    $destDir  = dirname(__DIR__) . '/assets/images/posters/';
+                    if (!is_dir($destDir)) {
+                        mkdir($destDir, 0755, true);
+                    }
+                    $dest = $destDir . $filename;
+                    if (move_uploaded_file($file['tmp_name'], $dest)) {
+                        $old['poster_path'] = 'images/posters/' . $filename;
+                    } else {
+                        $errors[] = 'Could not save the uploaded image. Check server permissions.';
+                    }
+                }
+            }
+
+            if ($old['title'] === '') {
+                $errors[] = 'Title is required.';
+            } elseif (mb_strlen($old['title']) > 255) {
+                $errors[] = 'Title must be 255 characters or fewer.';
+            }
+            if (mb_strlen($old['rating']) > 10) {
+                // Matches the movies.rating column, which is VARCHAR(10) — a
+                // longer value would throw a PDOException on save under
+                // strict SQL mode instead of failing this friendlier check.
+                $errors[] = 'Rating must be 10 characters or fewer.';
+            }
+            if (!in_array($old['screen'], $allowedScreens, true)) {
+                $errors[] = 'Invalid screen value.';
+            }
+            if (mb_strlen($old['poster_path']) > 500) {
+                $errors[] = 'Poster path must be 500 characters or fewer.';
+            }
+            if (!in_array($old['status'], $allowedStatuses, true)) {
+                $errors[] = 'Invalid status value.';
+            }
+
+            // Optional "quick-add showtimes" blocks — only meaningful on the
+            // create path (the section isn't rendered at all when editing).
+            $showtimeRows = [];
+            if (!$isEdit && isset($_POST['showtime_blocks']) && is_array($_POST['showtime_blocks'])) {
+                foreach ($_POST['showtime_blocks'] as $block) {
+                    if (!is_array($block)) {
+                        continue;
+                    }
+                    $days = array_values(array_unique(array_intersect(
+                        array_map('intval', (array)($block['days'] ?? [])),
+                        range(0, 6)
+                    )));
+                    $startTime = trim((string)($block['start_time'] ?? ''));
+                    $dateFrom  = trim((string)($block['date_from'] ?? ''));
+                    $dateTo    = trim((string)($block['date_to'] ?? ''));
+                    $tickets   = max(0, (int)($block['tickets'] ?? 50));
+
+                    $blockIsEmpty = empty($days) && $startTime === '' && $dateFrom === '' && $dateTo === '';
+                    if ($blockIsEmpty) {
+                        continue; // an unused leftover block — nothing to generate
+                    }
+
+                    // Keep the raw values regardless of validation outcome so
+                    // the form can redisplay this block if saving fails for
+                    // any reason (e.g. an unrelated field like title).
+                    $submittedBlocks[] = [
+                        'days'       => $days,
+                        'start_time' => $startTime,
+                        'tickets'    => $tickets,
+                        'date_from'  => $dateFrom,
+                        'date_to'    => $dateTo,
+                    ];
+
+                    if (empty($days)) {
+                        $errors[] = 'Pick at least one day of the week for each showtime block.';
+                        continue;
+                    }
+                    if (!preg_match('/^\d{2}:\d{2}$/', $startTime)) {
+                        $errors[] = 'Each showtime block needs a start time.';
+                        continue;
+                    }
+                    if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $dateFrom) || !preg_match('/^\d{4}-\d{2}-\d{2}$/', $dateTo)) {
+                        $errors[] = 'Each showtime block needs a valid date range.';
+                        continue;
+                    }
+                    if ($dateFrom > $dateTo) {
+                        $errors[] = "A showtime block's end date must be on or after its start date.";
+                        continue;
+                    }
+
+                    $dates = movie_edit_generate_dates($dateFrom, $dateTo, $days);
+                    if (empty($dates)) {
+                        $errors[] = "One of the showtime blocks' date range and day selection produced no showtimes.";
+                        continue;
+                    }
+
+                    $timeDisplay = date('g:i A', strtotime($startTime));
+                    foreach ($dates as $d) {
+                        $showtimeRows[] = [
+                            'date'    => $d,
+                            'time'    => $startTime,
+                            'label'   => (new DateTime($d))->format('D, M j') . ' ' . $timeDisplay,
+                            'times'   => $timeDisplay,
+                            'tickets' => $tickets,
+                        ];
+                    }
+                }
+            }
+
+            if (count($errors) === 0) {
+                try {
+                    $db->beginTransaction();
+
+                    if ($isEdit) {
+                        // sort_order intentionally omitted — it's now only
+                        // ever changed via drag-to-reorder (api/movies-reorder.php).
+                        $sql = 'UPDATE movies SET
+                                    title = :title,
+                                    rating = :rating,
+                                    screen = :screen,
+                                    duration_minutes = :duration_minutes,
+                                    poster_path = :poster_path,
+                                    description = :description,
+                                    status = :status,
+                                    online_only = :online_only,
+                                    updated_at = NOW()
+                                WHERE id = :id';
+                        $stmt = $db->prepare($sql);
+                        $stmt->execute([
+                            ':title'            => $old['title'],
+                            // rating/poster_path are NOT NULL DEFAULT '' columns —
+                            // store '' (not NULL) when empty so this insert/update
+                            // can't throw under strict SQL modes.
+                            ':rating'           => $old['rating'],
+                            ':screen'           => $old['screen'],
+                            ':duration_minutes' => $old['duration_minutes'] !== '' ? $old['duration_minutes'] : null,
+                            ':poster_path'      => $old['poster_path'],
+                            ':description'      => $old['description'] !== '' ? $old['description'] : null,
+                            ':status'           => $old['status'],
+                            ':online_only'      => $old['online_only'],
+                            ':id'               => $id,
+                        ]);
+
+                        $db->commit();
+                        $_SESSION['flash'] = ['type' => 'success', 'message' => 'Movie updated.'];
+                    } else {
+                        // Computed as a separate SELECT (not a subquery inside the
+                        // INSERT's VALUES list) — some MySQL versions reject a
+                        // statement that reads from the same table it targets via
+                        // error 1093 ("can't specify target table for update in
+                        // FROM clause"), and this codebase has no way to test
+                        // against the real server before shipping. A plain SELECT
+                        // then a bound parameter has identical semantics (no
+                        // unique constraint on sort_order, so the tiny race with a
+                        // concurrent create is harmless) without that risk.
+                        $nextSortRow = $db->query('SELECT COALESCE(MAX(sort_order), 0) + 1 AS n FROM movies')->fetch(PDO::FETCH_ASSOC);
+                        $nextSort    = $nextSortRow ? (int)$nextSortRow['n'] : 1;
+
+                        $sql = 'INSERT INTO movies
+                                    (title, rating, screen, duration_minutes, poster_path, description, status, online_only, sort_order, created_at, updated_at)
+                                VALUES
+                                    (:title, :rating, :screen, :duration_minutes, :poster_path, :description, :status, :online_only, :sort_order, NOW(), NOW())';
+                        $stmt = $db->prepare($sql);
+                        $stmt->execute([
+                            ':title'            => $old['title'],
+                            ':rating'           => $old['rating'],
+                            ':screen'           => $old['screen'],
+                            ':duration_minutes' => $old['duration_minutes'] !== '' ? $old['duration_minutes'] : null,
+                            ':poster_path'      => $old['poster_path'],
+                            ':description'      => $old['description'] !== '' ? $old['description'] : null,
+                            ':status'           => $old['status'],
+                            ':online_only'      => $old['online_only'],
+                            ':sort_order'       => $nextSort,
+                        ]);
+                        $newMovieId = (int)$db->lastInsertId();
+
+                        if (!empty($showtimeRows)) {
+                            $insShow = $db->prepare(
+                                'INSERT INTO showtimes
+                                    (movie_id, label, times, showtime_date, showtime_time, available_tickets, tickets_sold, is_active, sort_order)
+                                 VALUES
+                                    (:movie_id, :label, :times, :date, :time, :avail, 0, 1, 0)'
+                            );
+                            foreach ($showtimeRows as $st) {
+                                $insShow->execute([
+                                    ':movie_id' => $newMovieId,
+                                    ':label'    => $st['label'],
+                                    ':times'    => $st['times'],
+                                    ':date'     => $st['date'],
+                                    ':time'     => $st['time'],
+                                    ':avail'    => $st['tickets'],
+                                ]);
+                            }
+                        }
+
+                        $db->commit();
+                        $count = count($showtimeRows);
+                        $_SESSION['flash'] = [
+                            'type'    => 'success',
+                            'message' => $count > 0 ? "Movie created with $count showtime(s)." : 'Movie created.',
+                        ];
+                    }
+                    header('Location: movies.php');
+                    exit;
+                } catch (\Throwable $e) {
+                    if ($db->inTransaction()) {
+                        $db->rollBack();
+                    }
+                    error_log('movie-edit save failed: ' . $e->getMessage());
+                    $errors[] = 'Could not save the movie. Please try again.';
                 }
             }
         }
-
-        if ($old['title'] === '') {
-            $errors[] = 'Title is required.';
-        } elseif (mb_strlen($old['title']) > 255) {
-            $errors[] = 'Title must be 255 characters or fewer.';
-        }
-        if (mb_strlen($old['rating']) > 50) {
-            $errors[] = 'Rating must be 50 characters or fewer.';
-        }
-        if (!in_array($old['screen'], $allowedScreens, true)) {
-            $errors[] = 'Invalid screen value.';
-        }
-        if (mb_strlen($old['poster_path']) > 500) {
-            $errors[] = 'Poster path must be 500 characters or fewer.';
-        }
-        if (!in_array($old['status'], $allowedStatuses, true)) {
-            $errors[] = 'Invalid status value.';
-        }
-
-        if (count($errors) === 0) {
-            try {
-                if ($isEdit) {
-                    $sql = 'UPDATE movies SET
-                                title = :title,
-                                rating = :rating,
-                                screen = :screen,
-                                duration_minutes = :duration_minutes,
-                                poster_path = :poster_path,
-                                description = :description,
-                                status = :status,
-                                online_only = :online_only,
-                                sort_order = :sort_order,
-                                updated_at = NOW()
-                            WHERE id = :id';
-                    $stmt = $db->prepare($sql);
-                    $stmt->execute([
-                        ':title'       => $old['title'],
-                        ':rating'      => $old['rating'] !== '' ? $old['rating'] : null,
-                        ':screen'      => $old['screen'],
-                        ':duration_minutes' => $old['duration_minutes'] !== '' ? $old['duration_minutes'] : null,
-                        ':poster_path' => $old['poster_path'] !== '' ? $old['poster_path'] : null,
-                        ':description' => $old['description'] !== '' ? $old['description'] : null,
-                        ':status'      => $old['status'],
-                        ':online_only' => $old['online_only'],
-                        ':sort_order'  => $old['sort_order'],
-                        ':id'          => $id,
-                    ]);
-                    $_SESSION['flash'] = ['type' => 'success', 'message' => 'Movie updated.'];
-                } else {
-                    $sql = 'INSERT INTO movies
-                                (title, rating, screen, duration_minutes, poster_path, description, status, online_only, sort_order, created_at, updated_at)
-                            VALUES
-                                (:title, :rating, :screen, :duration_minutes, :poster_path, :description, :status, :online_only, :sort_order, NOW(), NOW())';
-                    $stmt = $db->prepare($sql);
-                    $stmt->execute([
-                        ':title'       => $old['title'],
-                        ':rating'      => $old['rating'] !== '' ? $old['rating'] : null,
-                        ':screen'      => $old['screen'],
-                        ':duration_minutes' => $old['duration_minutes'] !== '' ? $old['duration_minutes'] : null,
-                        ':poster_path' => $old['poster_path'] !== '' ? $old['poster_path'] : null,
-                        ':description' => $old['description'] !== '' ? $old['description'] : null,
-                        ':status'      => $old['status'],
-                        ':online_only' => $old['online_only'],
-                        ':sort_order'  => $old['sort_order'],
-                    ]);
-                    $_SESSION['flash'] = ['type' => 'success', 'message' => 'Movie created.'];
-                }
-                header('Location: movies.php');
-                exit;
-            } catch (PDOException $e) {
-                error_log('movie-edit save failed: ' . $e->getMessage());
-                $errors[] = 'Could not save the movie. Please try again.';
-            }
-        }
+    } catch (\Throwable $e) {
+        error_log('movie-edit POST handling failed: ' . $e->getMessage());
+        $errors[] = 'An unexpected error occurred while processing your submission. Please try again.';
     }
 }
 
@@ -195,7 +420,7 @@ $csrf = $auth->generateCsrfToken();
 <?php if (count($errors) > 0) : ?>
     <div class="alert alert-error" role="alert">
         <ul style="margin:0;padding-left:1.25rem;">
-            <?php foreach ($errors as $err) : ?>
+            <?php foreach (array_unique($errors) as $err) : ?>
                 <li><?= e($err) ?></li>
             <?php endforeach; ?>
         </ul>
@@ -220,7 +445,7 @@ $csrf = $auth->generateCsrfToken();
     <div class="form-row">
         <div class="form-group">
             <label for="rating">Rating</label>
-            <input type="text" name="rating" id="rating" maxlength="50" value="<?= e($old['rating']) ?>">
+            <input type="text" name="rating" id="rating" maxlength="10" value="<?= e($old['rating']) ?>">
             <small class="form-help">e.g. PG-13, R</small>
         </div>
         <div class="form-group">
@@ -278,24 +503,71 @@ $csrf = $auth->generateCsrfToken();
         <textarea name="description" id="description"><?= e($old['description']) ?></textarea>
     </div>
 
-    <div class="form-row">
-        <div class="form-group">
-            <label for="sort_order">Sort order</label>
-            <input type="number" name="sort_order" id="sort_order" step="1" value="<?= (int)$old['sort_order'] ?>">
-        </div>
-        <div class="form-group">
-            <label class="form-label">Online only</label>
-            <div class="checkbox-row">
-                <input type="checkbox" name="online_only" id="online_only" value="1" <?= (int)$old['online_only'] === 1 ? 'checked' : '' ?>>
-                <label for="online_only" style="margin-bottom:0;">Show only in online listings</label>
-            </div>
+    <div class="form-group">
+        <label class="form-label">Online only</label>
+        <div class="checkbox-row">
+            <input type="checkbox" name="online_only" id="online_only" value="1" <?= (int)$old['online_only'] === 1 ? 'checked' : '' ?>>
+            <label for="online_only" style="margin-bottom:0;">Show only in online listings</label>
         </div>
     </div>
+
+    <?php if (!$isEdit) : ?>
+    <div class="form-group" style="border-top:1px solid var(--border); padding-top:1.25rem; margin-top:0.5rem;">
+        <label class="form-label" style="font-size:1.05rem;">Showtimes (optional)</label>
+        <p class="form-help" style="margin-top:0;">Add one or more repeating schedules and they'll be created together with this movie.</p>
+
+        <div id="showtime-blocks" data-initial-count="<?= count($submittedBlocks) ?>">
+            <?php foreach ($submittedBlocks as $idx => $vals) : movie_edit_render_showtime_block($idx, $vals); endforeach; ?>
+        </div>
+
+        <button type="button" class="btn btn-outline btn-sm" id="add-showtime-block">+ Add showtimes</button>
+
+        <template id="showtime-block-template">
+            <div class="showtime-block" data-index="__INDEX__" style="border:1px solid var(--border); border-radius:6px; padding:1rem; margin-bottom:1rem;">
+                <div class="form-group">
+                    <label>Days of the week</label>
+                    <div style="display:flex; gap:1rem; flex-wrap:wrap;">
+                        <?php foreach (MOVIE_EDIT_DOW as $i => $name) : ?>
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="showtime_blocks[__INDEX__][days][]" value="<?= $i ?>">
+                                <?= e($name) ?>
+                            </label>
+                        <?php endforeach; ?>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Start time</label>
+                        <input type="time" name="showtime_blocks[__INDEX__][start_time]" class="st-start-time">
+                    </div>
+                    <div class="form-group">
+                        <label>Available tickets</label>
+                        <input type="number" name="showtime_blocks[__INDEX__][tickets]" min="0" value="50" class="st-tickets">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>From date</label>
+                        <input type="date" name="showtime_blocks[__INDEX__][date_from]" class="st-date-from">
+                    </div>
+                    <div class="form-group">
+                        <label>To date</label>
+                        <input type="date" name="showtime_blocks[__INDEX__][date_to]" class="st-date-to">
+                    </div>
+                </div>
+                <p class="st-preview" style="font-size:0.85rem; color:var(--text-secondary); margin:0.5rem 0 0;"></p>
+                <button type="button" class="btn btn-outline btn-sm st-remove-block" style="margin-top:0.6rem;">Remove this block</button>
+            </div>
+        </template>
+    </div>
+    <?php endif; ?>
 
     <div class="form-actions">
         <button type="submit" class="btn btn-primary"><?= $isEdit ? 'Save changes' : 'Create movie' ?></button>
         <a class="btn btn-outline" href="movies.php">Cancel</a>
     </div>
 </form>
+
+<script src="../assets/js/admin-movies.js" defer></script>
 
 <?php require_once __DIR__ . '/includes/admin-footer.php'; ?>

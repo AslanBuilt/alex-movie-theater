@@ -165,7 +165,10 @@ $chartData = [
     <canvas id="moviesByStatus" height="120"></canvas>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js" defer></script>
+<!-- Pinned to the same Chart.js build + verified SRI hash as reports.php (was
+     previously an unpinned jsdelivr "latest" load with no integrity check —
+     see admin-charts.js commit for how the hash was verified). -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.5.0/chart.umd.min.js" integrity="sha512-Y51n9mtKTVBh3Jbx5pZSJNDDMyY+yGe77DGtBPzRlgsf/YLCh13kSZ3JmfHGzYFCmOndraf0sQgfM654b7dJ3w==" crossorigin="anonymous" referrerpolicy="no-referrer" defer></script>
 <script>
 window.addEventListener('load', function () {
     if (typeof Chart === 'undefined') return;

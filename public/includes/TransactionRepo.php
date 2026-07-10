@@ -34,6 +34,35 @@ final class TransactionRepo
     }
 
     /**
+     * Atomic per-calendar-day sequence, race-safe via MySQL upsert + LAST_INSERT_ID().
+     * Works inside an existing transaction so a rolled-back sale does not consume
+     * a daily order number.
+     */
+    public static function nextDailyOrderNumber(): int
+    {
+        $pdo  = Database::getInstance();
+        $stmt = $pdo->prepare(
+            "INSERT INTO daily_order_counters (order_date, next_number)
+             VALUES (CURDATE(), LAST_INSERT_ID(1))
+             ON DUPLICATE KEY UPDATE next_number = LAST_INSERT_ID(next_number + 1)"
+        );
+        $stmt->execute();
+        return (int)$pdo->lastInsertId();
+    }
+
+    /**
+     * Assign the next daily order number to an existing transaction record.
+     */
+    public static function assignDailyOrderNumber(int $id): int
+    {
+        $n    = self::nextDailyOrderNumber();
+        $pdo  = Database::getInstance();
+        $stmt = $pdo->prepare('UPDATE transactions SET daily_order_number = :n WHERE id = :id');
+        $stmt->execute([':n' => $n, ':id' => $id]);
+        return $n;
+    }
+
+    /**
      * Add a line item to an existing transaction.
      */
     public static function addItem(int $transactionId, array $item): bool
@@ -354,6 +383,245 @@ final class TransactionRepo
             return $stmt->fetchAll();
         } catch (\Throwable $e) {
             error_log('[TransactionRepo::getRevenueByDayThisMonth] ' . $e->getMessage());
+            return [];
+        }
+    }
+
+    /**
+     * Revenue + order count for today / this week / this month / all-time,
+     * in one query. Same CASE-WHEN-over-one-query style as getSalesReport().
+     */
+    public static function getSummaryStats(): array
+    {
+        $report = [
+            'today'   => ['total' => 0.0, 'count' => 0],
+            'week'    => ['total' => 0.0, 'count' => 0],
+            'month'   => ['total' => 0.0, 'count' => 0],
+            'allTime' => ['total' => 0.0, 'count' => 0],
+        ];
+        try {
+            $pdo  = Database::getInstance();
+            $stmt = $pdo->query(
+                "SELECT
+                    SUM(CASE WHEN DATE(created_at) = CURDATE() THEN total_amount ELSE 0 END) AS today_total,
+                    COUNT(CASE WHEN DATE(created_at) = CURDATE() THEN 1 END) AS today_count,
+                    SUM(CASE WHEN YEARWEEK(created_at,1) = YEARWEEK(CURDATE(),1) THEN total_amount ELSE 0 END) AS week_total,
+                    COUNT(CASE WHEN YEARWEEK(created_at,1) = YEARWEEK(CURDATE(),1) THEN 1 END) AS week_count,
+                    SUM(CASE WHEN YEAR(created_at) = YEAR(CURDATE()) AND MONTH(created_at) = MONTH(CURDATE()) THEN total_amount ELSE 0 END) AS month_total,
+                    COUNT(CASE WHEN YEAR(created_at) = YEAR(CURDATE()) AND MONTH(created_at) = MONTH(CURDATE()) THEN 1 END) AS month_count,
+                    SUM(total_amount) AS all_total,
+                    COUNT(*) AS all_count
+                 FROM transactions WHERE payment_status = 'paid'"
+            );
+            $row = $stmt->fetch();
+            if ($row) {
+                $report['today']   = ['total' => (float)($row['today_total'] ?? 0), 'count' => (int)($row['today_count'] ?? 0)];
+                $report['week']    = ['total' => (float)($row['week_total']  ?? 0), 'count' => (int)($row['week_count']  ?? 0)];
+                $report['month']   = ['total' => (float)($row['month_total'] ?? 0), 'count' => (int)($row['month_count'] ?? 0)];
+                $report['allTime'] = ['total' => (float)($row['all_total']   ?? 0), 'count' => (int)($row['all_count']   ?? 0)];
+            }
+        } catch (\Throwable $e) {
+            error_log('[TransactionRepo::getSummaryStats] ' . $e->getMessage());
+        }
+        return $report;
+    }
+
+    /**
+     * Revenue per day-of-week (Mon-Sun) for this week AND last week, zero-filled
+     * so every day is present even with no sales. Two bound-date-range queries
+     * (rather than YEARWEEK(...) - 1, which breaks across a year boundary —
+     * e.g. week 1 minus 1 does not equal the prior ISO week) computed from
+     * PHP DateTime, not user input, so no validation is needed on the bounds.
+     *
+     * @return array<int, array{day:string, this_week:float, last_week:float}>
+     */
+    public static function getRevenueByDayWithComparison(): array
+    {
+        $dayLabels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+        $out = [];
+        foreach ($dayLabels as $label) {
+            $out[] = ['day' => $label, 'this_week' => 0.0, 'last_week' => 0.0];
+        }
+        try {
+            $pdo = Database::getInstance();
+
+            $todayDow   = (int)date('N'); // 1=Mon..7=Sun
+            $thisMonday = (new DateTime('today'))->modify('-' . ($todayDow - 1) . ' days');
+            $thisSunday = (clone $thisMonday)->modify('+6 days');
+            $lastMonday = (clone $thisMonday)->modify('-7 days');
+            $lastSunday = (clone $thisMonday)->modify('-1 days');
+
+            $stmt = $pdo->prepare(
+                "SELECT DATE(created_at) AS day, SUM(total_amount) AS revenue
+                 FROM transactions
+                 WHERE payment_status = 'paid' AND DATE(created_at) BETWEEN :start AND :end
+                 GROUP BY DATE(created_at)"
+            );
+
+            $stmt->execute([':start' => $thisMonday->format('Y-m-d'), ':end' => $thisSunday->format('Y-m-d')]);
+            $thisWeekByDate = [];
+            foreach ($stmt->fetchAll() as $r) {
+                $thisWeekByDate[(string)$r['day']] = (float)$r['revenue'];
+            }
+
+            $stmt->execute([':start' => $lastMonday->format('Y-m-d'), ':end' => $lastSunday->format('Y-m-d')]);
+            $lastWeekByDate = [];
+            foreach ($stmt->fetchAll() as $r) {
+                $lastWeekByDate[(string)$r['day']] = (float)$r['revenue'];
+            }
+
+            for ($i = 0; $i < 7; $i++) {
+                $dThis = (clone $thisMonday)->modify("+$i days")->format('Y-m-d');
+                $dLast = (clone $lastMonday)->modify("+$i days")->format('Y-m-d');
+                $out[$i]['this_week'] = round($thisWeekByDate[$dThis] ?? 0, 2);
+                $out[$i]['last_week'] = round($lastWeekByDate[$dLast] ?? 0, 2);
+            }
+        } catch (\Throwable $e) {
+            error_log('[TransactionRepo::getRevenueByDayWithComparison] ' . $e->getMessage());
+        }
+        return $out;
+    }
+
+    /**
+     * Revenue by transaction type (ticket/concession/combo), optionally bound
+     * to a date range [$start, $end] (inclusive, 'Y-m-d'). Unlike
+     * getRevenueByType(), always returns all three keys — even at $0 — so a
+     * category with no sales in range can be shown greyed-out rather than
+     * silently omitted.
+     *
+     * @return array<string, array{revenue:float, cnt:int}>
+     */
+    public static function getRevenueByTypeInRange(?string $start = null, ?string $end = null): array
+    {
+        $out = [
+            'ticket'     => ['revenue' => 0.0, 'cnt' => 0],
+            'concession' => ['revenue' => 0.0, 'cnt' => 0],
+            'combo'      => ['revenue' => 0.0, 'cnt' => 0],
+        ];
+        try {
+            $pdo    = Database::getInstance();
+            $where  = "WHERE payment_status = 'paid'";
+            $params = [];
+            if ($start !== null && $end !== null) {
+                $where .= ' AND created_at BETWEEN :start AND :end';
+                $params[':start'] = $start . ' 00:00:00';
+                $params[':end']   = $end . ' 23:59:59';
+            }
+            $stmt = $pdo->prepare(
+                "SELECT
+                    SUM(CASE WHEN type = 'ticket' THEN total_amount ELSE 0 END) AS ticket_revenue,
+                    COUNT(CASE WHEN type = 'ticket' THEN 1 END) AS ticket_cnt,
+                    SUM(CASE WHEN type = 'concession' THEN total_amount ELSE 0 END) AS concession_revenue,
+                    COUNT(CASE WHEN type = 'concession' THEN 1 END) AS concession_cnt,
+                    SUM(CASE WHEN type = 'combo' THEN total_amount ELSE 0 END) AS combo_revenue,
+                    COUNT(CASE WHEN type = 'combo' THEN 1 END) AS combo_cnt
+                 FROM transactions $where"
+            );
+            $stmt->execute($params);
+            $row = $stmt->fetch();
+            if ($row) {
+                $out['ticket']     = ['revenue' => (float)($row['ticket_revenue']     ?? 0), 'cnt' => (int)($row['ticket_cnt']     ?? 0)];
+                $out['concession'] = ['revenue' => (float)($row['concession_revenue'] ?? 0), 'cnt' => (int)($row['concession_cnt'] ?? 0)];
+                $out['combo']      = ['revenue' => (float)($row['combo_revenue']      ?? 0), 'cnt' => (int)($row['combo_cnt']      ?? 0)];
+            }
+        } catch (\Throwable $e) {
+            error_log('[TransactionRepo::getRevenueByTypeInRange] ' . $e->getMessage());
+        }
+        return $out;
+    }
+
+    /**
+     * Top-selling movies by tickets sold, with an Adult/Child split and the
+     * movie's poster, optionally bound to a date range [$start, $end]
+     * ('Y-m-d', inclusive). Extends getTopItems('ticket', ...): that method
+     * groups by ti.item_name, which bakes in the showtime date/time, so the
+     * same movie fragments across every showtime it played. This joins
+     * ti.item_id (a showtime id for ticket rows — see checkout.php/
+     * pos-checkout.php) through showtimes to movies and groups by movie, so
+     * "top movies" really means top movies, not top showtimes.
+     *
+     * selected_option for ticket rows is 'Adult' or 'Child' (title case —
+     * see helpers.php normalizeTicketAge() / checkout.php), not lowercase.
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    public static function getTopMoviesWithAgeSplit(int $limit = 5, ?string $start = null, ?string $end = null): array
+    {
+        try {
+            $pdo        = Database::getInstance();
+            $dateFilter = '';
+            $params     = [];
+            if ($start !== null && $end !== null) {
+                $dateFilter        = ' AND t.created_at BETWEEN :start AND :end';
+                $params[':start']  = $start . ' 00:00:00';
+                $params[':end']    = $end . ' 23:59:59';
+            }
+            $sql = "SELECT m.id AS movie_id, m.title AS item_name, m.poster_path,
+                           SUM(ti.quantity) AS total_qty,
+                           SUM(ti.subtotal) AS total_revenue,
+                           SUM(CASE WHEN ti.selected_option = 'Adult' THEN ti.quantity ELSE 0 END) AS adult_count,
+                           SUM(CASE WHEN ti.selected_option = 'Child' THEN ti.quantity ELSE 0 END) AS child_count
+                    FROM transaction_items ti
+                    JOIN transactions t ON t.id = ti.transaction_id
+                    JOIN showtimes s ON s.id = ti.item_id
+                    JOIN movies m ON m.id = s.movie_id
+                    WHERE t.payment_status = 'paid' AND ti.item_type = 'ticket' $dateFilter
+                    GROUP BY m.id, m.title, m.poster_path
+                    ORDER BY total_qty DESC
+                    LIMIT :lim";
+            $stmt = $pdo->prepare($sql);
+            foreach ($params as $key => $value) {
+                $stmt->bindValue($key, $value);
+            }
+            $stmt->bindValue(':lim', $limit, \PDO::PARAM_INT);
+            $stmt->execute();
+            return $stmt->fetchAll();
+        } catch (\Throwable $e) {
+            error_log('[TransactionRepo::getTopMoviesWithAgeSplit] ' . $e->getMessage());
+            return [];
+        }
+    }
+
+    /**
+     * Top-selling concessions by units sold, with per-unit margin (price -
+     * cost, null when cost isn't set), optionally bound to a date range
+     * [$start, $end] ('Y-m-d', inclusive). Extends getTopItems('concession',
+     * ...) with a join to concessions — item_id on a concession transaction
+     * line is concessions.id (see checkout.php / pos-checkout.php), so the
+     * join is a direct id match, not a name match.
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    public static function getTopConcessionsWithMargin(int $limit = 5, ?string $start = null, ?string $end = null): array
+    {
+        try {
+            $pdo        = Database::getInstance();
+            $dateFilter = '';
+            $params     = [];
+            if ($start !== null && $end !== null) {
+                $dateFilter       = ' AND t.created_at BETWEEN :start AND :end';
+                $params[':start'] = $start . ' 00:00:00';
+                $params[':end']   = $end . ' 23:59:59';
+            }
+            $sql = "SELECT c.id AS concession_id, c.name AS item_name, c.cost, c.price,
+                           SUM(ti.quantity) AS total_qty,
+                           SUM(ti.subtotal) AS total_revenue
+                    FROM transaction_items ti
+                    JOIN transactions t ON t.id = ti.transaction_id
+                    JOIN concessions c ON c.id = ti.item_id
+                    WHERE t.payment_status = 'paid' AND ti.item_type = 'concession' $dateFilter
+                    GROUP BY c.id, c.name, c.cost, c.price
+                    ORDER BY total_qty DESC
+                    LIMIT :lim";
+            $stmt = $pdo->prepare($sql);
+            foreach ($params as $key => $value) {
+                $stmt->bindValue($key, $value);
+            }
+            $stmt->bindValue(':lim', $limit, \PDO::PARAM_INT);
+            $stmt->execute();
+            return $stmt->fetchAll();
+        } catch (\Throwable $e) {
+            error_log('[TransactionRepo::getTopConcessionsWithMargin] ' . $e->getMessage());
             return [];
         }
     }

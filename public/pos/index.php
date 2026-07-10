@@ -199,6 +199,15 @@ $bootData = [
     <link rel="stylesheet" href="../assets/css/pos.css?v=<?= @filemtime(__DIR__ . '/../assets/css/pos.css') ?>">
 </head>
 <body>
+<div class="identity-banner" id="pos-identity-banner">
+  <span class="identity-icon">🖥️</span>
+  <div><strong>EMPLOYEE REGISTER — Walk-up orders</strong><span>Ring up customers at the counter. Completed orders go to the fulfillment display.</span></div>
+  <button class="banner-dismiss" onclick="dismissPosBanner()">Got it ×</button>
+</div>
+<script>
+function dismissPosBanner(){document.getElementById('pos-identity-banner').style.display='none';localStorage.setItem('pos-banner-dismissed','1');}
+(function(){if(localStorage.getItem('pos-banner-dismissed')==='1'){var b=document.getElementById('pos-identity-banner');if(b)b.style.display='none';}})();
+</script>
 <div class="stage">
 
   <!-- ===================== ORDER ===================== -->

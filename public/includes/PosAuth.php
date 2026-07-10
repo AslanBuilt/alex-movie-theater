@@ -162,6 +162,51 @@ final class PosAuth
         return ['ok' => false, 'error' => 'Incorrect PIN.', 'locked' => false];
     }
 
+    /**
+     * Verify an employee PIN without creating a POS session. Used by kiosk cash
+     * checkout so the physical register remains protected while the kiosk stays
+     * unauthenticated.
+     */
+    public function verifyPinOnly(string $pin): array
+    {
+        $pin = trim($pin);
+        if ($pin === '' || !ctype_digit($pin)) {
+            return ['ok' => false, 'error' => 'Incorrect PIN.', 'locked' => false];
+        }
+
+        try {
+            $stmt = $this->db->query(
+                'SELECT id, pin_hash, failed_attempts, locked_until
+                 FROM employees WHERE is_active = 1'
+            );
+            $employees = $stmt->fetchAll();
+        } catch (\Throwable $e) {
+            error_log('[PosAuth::verifyPinOnly] lookup failed: ' . $e->getMessage());
+            return ['ok' => false, 'error' => 'Sign-in is temporarily unavailable.', 'locked' => false];
+        }
+
+        $now = new DateTimeImmutable('now');
+
+        foreach ($employees as $emp) {
+            if (!password_verify($pin, (string)$emp['pin_hash'])) {
+                continue;
+            }
+
+            $lockedUntil = $emp['locked_until'] !== null
+                ? new DateTimeImmutable((string)$emp['locked_until'])
+                : null;
+            if ($lockedUntil !== null && $lockedUntil > $now) {
+                return ['ok' => false, 'error' => 'Too many attempts. Try again in a few minutes.', 'locked' => true];
+            }
+
+            $this->resetAttempts((int)$emp['id']);
+            return ['ok' => true, 'error' => '', 'locked' => false];
+        }
+
+        $this->registerFailure();
+        return ['ok' => false, 'error' => 'Incorrect PIN.', 'locked' => false];
+    }
+
     private function resetAttempts(int $employeeId): void
     {
         try {

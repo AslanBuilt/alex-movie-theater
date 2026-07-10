@@ -68,6 +68,7 @@ CREATE TABLE `events` (
     `title` VARCHAR(255) NOT NULL,
     `description` TEXT NULL,
     `event_date` DATE NULL,
+    `event_time` TIME NULL,
     `badge` VARCHAR(50) NOT NULL DEFAULT 'Upcoming',
     `image_path` VARCHAR(500) NULL,
     `status` ENUM('upcoming', 'past', 'tba') NOT NULL DEFAULT 'upcoming',
@@ -210,6 +211,7 @@ DROP TABLE IF EXISTS `transactions`;
 CREATE TABLE `transactions` (
     `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
     `transaction_ref` VARCHAR(20) NOT NULL,
+    `daily_order_number` SMALLINT UNSIGNED NULL,
     `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     `type` ENUM('ticket','concession','combo') NOT NULL,
     `source_channel` ENUM('website','kiosk','staff','staff_register') NOT NULL DEFAULT 'website',
@@ -218,6 +220,7 @@ CREATE TABLE `transactions` (
     `fulfillment_status` ENUM('pending','fulfilled','voided') NOT NULL DEFAULT 'pending',
     `payment_method` VARCHAR(50) NOT NULL DEFAULT 'mock',
     `stripe_payment_intent_id` VARCHAR(255) NULL,
+    `gateway_ref` VARCHAR(255) NULL,
     `customer_name` VARCHAR(100) NULL,
     `customer_email` VARCHAR(150) NULL,
     PRIMARY KEY (`id`),
@@ -293,6 +296,16 @@ CREATE TABLE `webhook_events` (
     `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (`id`),
     UNIQUE KEY `uq_webhook_event_id` (`event_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ----------------------------------------------------------------------------
+-- daily_order_counters — atomic per-day sequence source for kiosk/POS/website
+-- ----------------------------------------------------------------------------
+DROP TABLE IF EXISTS `daily_order_counters`;
+CREATE TABLE `daily_order_counters` (
+    `order_date` DATE NOT NULL,
+    `next_number` SMALLINT UNSIGNED NOT NULL DEFAULT 0,
+    PRIMARY KEY (`order_date`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ----------------------------------------------------------------------------

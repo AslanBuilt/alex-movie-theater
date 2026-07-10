@@ -1,3 +1,10 @@
+.identity-banner{display:flex;align-items:center;gap:12px;padding:12px 20px;background:#1a1a2e;border-bottom:2px solid #8B1A2E;color:#fff;font-size:13px;position:relative;z-index:100;}
+.identity-banner strong{display:block;font-size:14px;letter-spacing:0.05em;}
+.identity-banner span{color:#aaa;font-size:12px;}
+.identity-icon{font-size:22px;flex-shrink:0;}
+.banner-dismiss{margin-left:auto;background:none;border:1px solid #444;color:#aaa;padding:4px 10px;border-radius:4px;cursor:pointer;font-size:12px;}
+.banner-dismiss:hover{border-color:#888;color:#fff;}
+
 /* ============================================================
    THE ALEX — ORDER FULFILLMENT BOARD
    Same light, high-contrast token family as pos.css — both are
@@ -55,11 +62,15 @@ body{
 @keyframes slideIn{ from{ opacity:0; transform:translateY(12px); } to{ opacity:1; transform:none; } }
 .order-card.leaving{ animation:slideOut .35s ease forwards; }
 @keyframes slideOut{ to{ transform:translateX(40px); opacity:0; } }
-@media (prefers-reduced-motion: reduce){ .order-card, .order-card.leaving{ animation:none; } }
+.order-card.just-arrived{ animation:slideIn .35s ease, flash .9s ease .35s; }
+@keyframes flash{ 0%,100%{ box-shadow:var(--shadow); } 40%{ box-shadow:0 0 0 4px var(--c-kiosk),var(--shadow); } }
+@media (prefers-reduced-motion: reduce){ .order-card, .order-card.leaving, .order-card.just-arrived{ animation:none; } }
 
 .order-card-top{ display:flex; justify-content:space-between; align-items:flex-start; gap:var(--s2); }
 .order-id{ font-size:2rem; font-weight:800; line-height:1; }
 .order-time{ color:var(--c-text-muted); font-size:1rem; white-space:nowrap; padding-top:0.3rem; }
+.order-time.warn{ color:#b45309; font-weight:700; }
+.order-time.late{ color:var(--c-brand-dark); font-weight:800; }
 
 .channel-badge{
   display:inline-block; padding:0.3rem 0.75rem; border-radius:999px;

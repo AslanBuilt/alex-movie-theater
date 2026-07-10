@@ -35,11 +35,17 @@ const FULFILL_CHANNEL_BADGES = [
 function fulfillment_pending_orders(PDO $db): array
 {
     $stmt = $db->query(
-        "SELECT t.id, t.transaction_ref, t.created_at, t.source_channel,
+        "SELECT t.id, t.transaction_ref, t.daily_order_number, t.created_at, t.source_channel,
                 ti.item_name, ti.quantity, ti.selected_option
          FROM transactions t
          JOIN transaction_items ti ON ti.transaction_id = t.id
-         WHERE t.payment_status = 'paid' AND t.fulfillment_status = 'pending'
+         WHERE t.payment_status = 'paid'
+           AND t.fulfillment_status = 'pending'
+           AND EXISTS (
+               SELECT 1 FROM transaction_items ti2
+               WHERE ti2.transaction_id = t.id
+                 AND ti2.item_type = 'concession'
+           )
          ORDER BY t.created_at ASC, ti.id ASC"
     );
     $orders = [];
@@ -50,10 +56,12 @@ function fulfillment_pending_orders(PDO $db): array
             $orders[$id] = [
                 'id'           => $id,
                 'ref'          => (string)$row['transaction_ref'],
-                'created_at'   => (string)$row['created_at'],
-                'channelLabel' => $badge['label'],
-                'channelClass' => $badge['class'],
-                'items'        => [],
+                'orderNumber'   => $row['daily_order_number'] !== null ? (string)(int)$row['daily_order_number'] : null,
+                'created_at'    => (string)$row['created_at'],
+                'channelLabel'  => $badge['label'],
+                'channelClass'  => $badge['class'],
+                'source_channel'=> (string)$row['source_channel'],
+                'items'         => [],
             ];
         }
         $orders[$id]['items'][] = [
