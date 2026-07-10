@@ -97,6 +97,12 @@ $lowStockIds = array_column($lowStock, 'id');
       <details class="report-data-table"><summary>View data table</summary><div id="chartMonthTable"></div></details>
     </section>
 
+    <section class="policy-box report-chart-section" id="chart-today-section" style="display:none;">
+      <h3 style="margin:0 0 0.75rem; font-size:0.95rem;">Revenue by Hour — Today</h3>
+      <canvas id="chartToday" height="320" role="img" aria-label="Bar chart of today's revenue by hour"></canvas>
+      <details class="report-data-table"><summary>View data table</summary><div id="chartTodayTable"></div></details>
+    </section>
+
     <section class="policy-box report-chart-section">
       <h3 style="margin:0 0 0.25rem; font-size:0.95rem;">Daily Transactions &amp; Revenue</h3>
       <p style="margin:0 0 0.75rem; font-size:0.85rem; color:var(--cream-dim);">Last 14 days, stacked by channel — line shows total revenue</p>

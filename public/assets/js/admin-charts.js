@@ -228,6 +228,41 @@
     });
   }
 
+  // ── Chart: revenue by hour, today only ─────────────────────────────────────
+  // Shown instead of the week/month chart when range === 'today' — a single
+  // day has no meaningful day-by-day breakdown of its own, but an hourly one
+  // does.
+  function renderChartToday(revenueToday) {
+    var canvas = document.getElementById('chartToday');
+    if (!revenueToday) return;
+    buildDataTable('chartTodayTable', ['Hour', 'Revenue'], revenueToday.labels.map(function (h, i) {
+      return [h, money(revenueToday.data[i])];
+    }));
+    if (!canvas || typeof Chart === 'undefined') return;
+    destroyChart('chartToday');
+    charts.chartToday = new Chart(canvas, {
+      type: 'bar',
+      data: {
+        labels: revenueToday.labels,
+        datasets: [{
+          label: 'Revenue', data: revenueToday.data,
+          backgroundColor: COLOR_THIS_WEEK, borderRadius: 4,
+          datalabels: { display: false }
+        }]
+      },
+      options: {
+        plugins: {
+          legend: { display: false },
+          tooltip: { callbacks: { label: function (c) { return money(c.parsed.y); } } }
+        },
+        scales: {
+          x: { ticks: { color: '#ffffff', font: { size: 11 }, maxRotation: 45 }, grid: { color: 'rgba(255,255,255,0.05)' } },
+          y: { beginAtZero: true, ticks: { color: '#ffffff', callback: money }, grid: { color: 'rgba(255,255,255,0.1)' } }
+        }
+      }
+    });
+  }
+
   // ── Chart: daily transaction count by channel (stacked bars) ──────────────
   function renderChartTransactions(d) {
     var canvas = document.getElementById('chartTransactions');
@@ -612,12 +647,15 @@
   function updateRangeVisibility(range) {
     var weekSection  = document.getElementById('chart-week-section');
     var monthSection = document.getElementById('chart-month-section');
-    // 'today' groups with 'week', not 'month' — a month-over-month trend
-    // line has nothing to do with a single day, whereas the week chart's
-    // most recent daily bar IS today, giving it visible context.
-    var showWeek = (range === 'week' || range === 'today');
-    if (weekSection)  weekSection.style.display  = showWeek ? '' : 'none';
-    if (monthSection) monthSection.style.display = showWeek ? 'none' : '';
+    var todaySection = document.getElementById('chart-today-section');
+    // Exactly one of the three shows at a time: 'today' gets its own hourly
+    // chart (a day has no meaningful day-by-day breakdown of itself), 'week'
+    // gets the week-vs-last-week comparison, everything else (month/custom)
+    // gets the month-vs-last-month trend.
+    var show = (range === 'today') ? 'today' : (range === 'week') ? 'week' : 'month';
+    if (weekSection)  weekSection.style.display  = show === 'week'  ? '' : 'none';
+    if (monthSection) monthSection.style.display = show === 'month' ? '' : 'none';
+    if (todaySection) todaySection.style.display = show === 'today' ? '' : 'none';
   }
 
   function rangeLabel(key) {
@@ -668,6 +706,7 @@
         renderKpiStrip(data.summary);
         renderChartWeek(data.revenueWeek);
         renderChartMonth(data.revenueMonth, data.revenueLastMonth, data.currentMonthLabel, data.lastMonthLabel);
+        renderChartToday(data.revenueToday);
         renderChartTransactions(data.transactionSummary);
         renderChartScanRate(data.ticketScanRate);
         renderChartCategory(data.byCategory);

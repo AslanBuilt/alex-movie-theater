@@ -367,6 +367,25 @@ final class TransactionRepo
         }
     }
 
+    /** Revenue per hour (0-23) for today. Sparse — only hours with sales. */
+    public static function getRevenueByHourToday(): array
+    {
+        try {
+            $pdo  = Database::getInstance();
+            $stmt = $pdo->query(
+                "SELECT HOUR(created_at) AS hr, SUM(total_amount) AS revenue, COUNT(*) AS txn_count
+                 FROM transactions
+                 WHERE payment_status = 'paid' AND DATE(created_at) = CURDATE()
+                 GROUP BY HOUR(created_at)
+                 ORDER BY hr ASC"
+            );
+            return $stmt->fetchAll();
+        } catch (\Throwable $e) {
+            error_log('[TransactionRepo::getRevenueByHourToday] ' . $e->getMessage());
+            return [];
+        }
+    }
+
     /** Revenue per day for the current calendar month. Sparse — only days with sales. */
     public static function getRevenueByDayThisMonth(): array
     {

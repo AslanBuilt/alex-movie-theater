@@ -124,6 +124,20 @@ for ($i = 0; $i < $daysSoFar; $i++) {
 }
 $monthAverage = count($monthData) > 0 ? round(array_sum($monthData) / count($monthData), 2) : 0.0;
 
+// Revenue by hour, today only — zero-filled 12 AM-11 PM. Shown instead of
+// the week/month chart when range === 'today', since a single day has no
+// meaningful "by day" breakdown of its own.
+$hourByHr = [];
+foreach (TransactionRepo::getRevenueByHourToday() as $r) {
+    $hourByHr[(int)$r['hr']] = ['revenue' => (float)$r['revenue'], 'txn_count' => (int)$r['txn_count']];
+}
+$todayLabels = [];
+$todayData   = [];
+for ($h = 0; $h < 24; $h++) {
+    $todayLabels[] = (new DateTime())->setTime($h, 0)->format('g A');
+    $todayData[]   = round(($hourByHr[$h]['revenue'] ?? 0), 2);
+}
+
 // Last month, day-of-month indexed (1..N) so it lines up against this
 // month's same-day labels when both are plotted on one chart for the
 // "This Month" range. Uses last month's FULL day count, not $daysSoFar —
@@ -243,6 +257,10 @@ echo json_encode([
         'labels'  => $monthLabels,
         'data'    => $monthData,
         'average' => $monthAverage,
+    ],
+    'revenueToday' => [
+        'labels' => $todayLabels,
+        'data'   => $todayData,
     ],
     'revenueLastMonth'  => $lastMonthData,
     'currentMonthLabel' => $currentMonthLabel,
