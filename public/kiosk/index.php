@@ -121,7 +121,6 @@ $pageDescription = 'Buy tickets and concessions at The Alex self-service kiosk.'
         <p>Order tickets and concessions at your own pace.</p>
       </div>
       <div class="welcome-cta">Tap anywhere to begin</div>
-      <div class="welcome-ticker" id="ticker"></div>
     </div>
 
     <div class="kiosk-screen" id="menu-screen">

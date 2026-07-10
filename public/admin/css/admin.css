@@ -504,6 +504,27 @@ h3 { font-size: 1.2rem; }
     box-shadow: 0 0 0 3px rgba(139, 29, 51, 0.25);
 }
 
+/* Standalone form control, for controls (e.g. admin/reports.php's date-range
+   select/inputs) that live outside an .admin-form wrapper. Same tokens as
+   the .admin-form input/select rule above, kept as its own rule since this
+   class isn't nested under .admin-form. */
+.form-input {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    color: var(--text-primary);
+    padding: 0.6rem 0.75rem;
+    border-radius: 4px;
+    font-family: var(--font-body);
+    font-size: 0.95rem;
+    transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.form-input:focus {
+    outline: none;
+    border-color: var(--crimson);
+    box-shadow: 0 0 0 3px rgba(139, 29, 51, 0.25);
+}
+
 .admin-form .checkbox-row {
     display: flex;
     align-items: center;
