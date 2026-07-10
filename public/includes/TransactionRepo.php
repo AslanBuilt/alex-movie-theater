@@ -770,6 +770,92 @@ final class TransactionRepo
     }
 
     /**
+     * Monthly revenue for the current year vs the prior year, zero-filled
+     * for all 12 months (Jan-Dec) even with no sales that month.
+     *
+     * @return array{labels:array<int,string>, currentYear:array<int,float>, priorYear:array<int,float>, currentYearLabel:string, priorYearLabel:string}
+     */
+    public static function getRevenueByMonthYearComparison(): array
+    {
+        $months          = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        $currentYear     = (int)date('Y');
+        $priorYear       = $currentYear - 1;
+        $currentYearData = array_fill(0, 12, 0.0);
+        $priorYearData   = array_fill(0, 12, 0.0);
+        try {
+            $pdo  = Database::getInstance();
+            $stmt = $pdo->prepare(
+                "SELECT YEAR(created_at) AS yr, MONTH(created_at) AS mo, SUM(total_amount) AS revenue
+                 FROM transactions
+                 WHERE payment_status = 'paid' AND YEAR(created_at) IN (:cy, :py)
+                 GROUP BY YEAR(created_at), MONTH(created_at)"
+            );
+            $stmt->execute([':cy' => $currentYear, ':py' => $priorYear]);
+            foreach ($stmt->fetchAll() as $row) {
+                $idx = (int)$row['mo'] - 1;
+                if ($idx < 0 || $idx > 11) {
+                    continue;
+                }
+                if ((int)$row['yr'] === $currentYear) {
+                    $currentYearData[$idx] = round((float)$row['revenue'], 2);
+                } else {
+                    $priorYearData[$idx] = round((float)$row['revenue'], 2);
+                }
+            }
+        } catch (\Throwable $e) {
+            error_log('[TransactionRepo::getRevenueByMonthYearComparison] ' . $e->getMessage());
+        }
+        return [
+            'labels'           => $months,
+            'currentYear'      => $currentYearData,
+            'priorYear'        => $priorYearData,
+            'currentYearLabel' => (string)$currentYear,
+            'priorYearLabel'   => (string)$priorYear,
+        ];
+    }
+
+    /**
+     * Daily transaction count, revenue, and per-channel counts since
+     * $fromDate (inclusive, 'Y-m-d'), paid transactions only. Sparse — only
+     * days with at least one paid transaction come back; the caller
+     * zero-fills the rest of the window.
+     *
+     * @return array<int, array{day:string, txn_count:int, revenue:float, online:int, walkin:int, kiosk:int}>
+     */
+    public static function getDailyTransactionSummary(string $fromDate): array
+    {
+        try {
+            $pdo  = Database::getInstance();
+            $stmt = $pdo->prepare(
+                "SELECT DATE(created_at) AS day,
+                        COUNT(*) AS txn_count,
+                        SUM(total_amount) AS revenue,
+                        SUM(CASE WHEN source_channel = 'website' THEN 1 ELSE 0 END) AS online_count,
+                        SUM(CASE WHEN source_channel = 'staff_register' THEN 1 ELSE 0 END) AS walkin_count,
+                        SUM(CASE WHEN source_channel = 'kiosk' THEN 1 ELSE 0 END) AS kiosk_count
+                 FROM transactions
+                 WHERE payment_status = 'paid' AND created_at >= :from
+                 GROUP BY DATE(created_at)
+                 ORDER BY day ASC"
+            );
+            $stmt->execute([':from' => $fromDate . ' 00:00:00']);
+            return array_map(static function (array $r): array {
+                return [
+                    'day'       => (string)$r['day'],
+                    'txn_count' => (int)$r['txn_count'],
+                    'revenue'   => round((float)$r['revenue'], 2),
+                    'online'    => (int)$r['online_count'],
+                    'walkin'    => (int)$r['walkin_count'],
+                    'kiosk'     => (int)$r['kiosk_count'],
+                ];
+            }, $stmt->fetchAll());
+        } catch (\Throwable $e) {
+            error_log('[TransactionRepo::getDailyTransactionSummary] ' . $e->getMessage());
+            return [];
+        }
+    }
+
+    /**
      * Line items for a batch of transactions, keyed by transaction_id. Batches
      * admin/transactions.php's list-page item summaries and expandable detail
      * panels into one query instead of one getItems() call per row — same

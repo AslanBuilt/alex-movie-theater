@@ -101,6 +101,20 @@ $lowStockIds = array_column($lowStock, 'id');
     </section>
 
     <section class="policy-box report-chart-section">
+      <h3 style="margin:0 0 0.25rem; font-size:0.95rem;">Revenue by Month — <?= date('Y') ?> vs <?= date('Y') - 1 ?></h3>
+      <p style="margin:0 0 0.75rem; font-size:0.85rem; color:var(--cream-dim);">Month-over-month comparison</p>
+      <canvas id="chartMonthly" height="280" role="img" aria-label="Bar chart comparing monthly revenue this year vs last year"></canvas>
+      <details class="report-data-table"><summary>View data table</summary><div id="chartMonthlyTable"></div></details>
+    </section>
+
+    <section class="policy-box report-chart-section" style="grid-column: 1 / -1;">
+      <h3 style="margin:0 0 0.25rem; font-size:0.95rem;">Daily Transactions &amp; Revenue</h3>
+      <p style="margin:0 0 0.75rem; font-size:0.85rem; color:var(--cream-dim);">Last 14 days, stacked by channel — line shows total revenue</p>
+      <canvas id="chartTransactions" height="260" role="img" aria-label="Stacked bar and line chart of daily transactions and revenue by channel"></canvas>
+      <details class="report-data-table"><summary>View data table</summary><div id="chartTransactionsTable"></div></details>
+    </section>
+
+    <section class="policy-box report-chart-section">
       <h3 style="margin:0 0 0.75rem; font-size:0.95rem;">Revenue by Category</h3>
       <canvas id="chartCategory" height="320" role="img" aria-label="Doughnut chart of revenue split between tickets, concessions, and combos"></canvas>
       <details class="report-data-table"><summary>View data table</summary><div id="chartCategoryTable"></div></details>
@@ -108,12 +122,7 @@ $lowStockIds = array_column($lowStock, 'id');
 
     <section class="policy-box report-chart-section">
       <h3 style="margin:0 0 0.75rem; font-size:0.95rem;">Top 5 Movies (Tickets Sold)</h3>
-      <div id="chartMoviesWrap" style="display:flex; gap:0.5rem; align-items:stretch;">
-        <div id="chartMoviesPosters" class="report-poster-col"></div>
-        <div style="flex:1; min-width:0;">
-          <canvas id="chartMovies" role="img" aria-label="Horizontal bar chart of top 5 movies by tickets sold, split by adult and child"></canvas>
-        </div>
-      </div>
+      <canvas id="chartMovies" role="img" aria-label="Horizontal bar chart of top 5 movies by tickets sold, split by adult and child"></canvas>
       <details class="report-data-table"><summary>View data table</summary><div id="chartMoviesTable"></div></details>
     </section>
 

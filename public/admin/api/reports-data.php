@@ -123,6 +123,33 @@ for ($i = 0; $i < $daysSoFar; $i++) {
 }
 $monthAverage = count($monthData) > 0 ? round(array_sum($monthData) / count($monthData), 2) : 0.0;
 
+$revenueMonthly = TransactionRepo::getRevenueByMonthYearComparison();
+
+// Daily transactions/revenue — fixed 14-day trailing window (not affected by
+// $rangeKey, same "intrinsically fixed-period" convention as the week/month/
+// inventory charts above), zero-filled so a day with no paid transactions
+// still shows as a zero bar rather than a gap.
+$txnWindowDays = 14;
+$txnFrom       = (clone $today)->modify('-' . ($txnWindowDays - 1) . ' days');
+$dailyTxnByDate = [];
+foreach (TransactionRepo::getDailyTransactionSummary($txnFrom->format('Y-m-d')) as $r) {
+    $dailyTxnByDate[$r['day']] = $r;
+}
+$transactionSummary = [];
+for ($i = 0; $i < $txnWindowDays; $i++) {
+    $d   = (clone $txnFrom)->modify("+$i days");
+    $key = $d->format('Y-m-d');
+    $row = $dailyTxnByDate[$key] ?? null;
+    $transactionSummary[] = [
+        'day'       => $d->format('M j'),
+        'txn_count' => $row['txn_count'] ?? 0,
+        'revenue'   => $row['revenue'] ?? 0.0,
+        'online'    => $row['online'] ?? 0,
+        'walkin'    => $row['walkin'] ?? 0,
+        'kiosk'     => $row['kiosk'] ?? 0,
+    ];
+}
+
 $inventoryRaw = InventoryRepo::getFullInventory();
 $lowStock     = InventoryRepo::getLowStock();
 $lowStockIds  = array_column($lowStock, 'id');
@@ -203,6 +230,8 @@ echo json_encode([
         'data'    => $catData,
         'noSales' => $catNoSales,
     ],
+    'revenueMonthly'      => $revenueMonthly,
+    'transactionSummary'  => $transactionSummary,
     'topMovies'      => $topMoviesOut,
     'topConcessions' => $topConcessionsOut,
     'inventory'      => $inventoryOut,

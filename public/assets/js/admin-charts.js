@@ -210,6 +210,100 @@
     });
   }
 
+  // ── Chart: revenue by month, this year vs prior year ───────────────────────
+  function renderChartMonthly(d) {
+    var canvas = document.getElementById('chartMonthly');
+    if (!d) return;
+    buildDataTable('chartMonthlyTable', ['Month', d.currentYearLabel, d.priorYearLabel], d.labels.map(function (m, i) {
+      return [m, money(d.currentYear[i]), money(d.priorYear[i])];
+    }));
+    if (!canvas || typeof Chart === 'undefined') return;
+    destroyChart('chartMonthly');
+    charts.chartMonthly = new Chart(canvas, {
+      type: 'bar',
+      data: {
+        labels: d.labels,
+        datasets: [
+          { label: d.currentYearLabel, data: d.currentYear, backgroundColor: COLOR_THIS_WEEK, borderRadius: 4, datalabels: { display: false } },
+          { label: d.priorYearLabel, data: d.priorYear, backgroundColor: COLOR_LAST_WEEK, borderRadius: 4, datalabels: { display: false } }
+        ]
+      },
+      options: {
+        plugins: {
+          legend: { position: 'bottom', labels: { color: '#ffffff' } },
+          datalabels: { display: false },
+          tooltip: { callbacks: { label: function (c) { return c.dataset.label + ': ' + money(c.parsed.y); } } }
+        },
+        scales: {
+          x: { ticks: { color: '#ffffff', font: { size: 12 } }, grid: { color: 'rgba(255,255,255,0.1)' } },
+          y: { beginAtZero: true, ticks: { color: '#ffffff', callback: money }, grid: { color: 'rgba(255,255,255,0.1)' } }
+        }
+      }
+    });
+  }
+
+  // ── Chart: daily transactions by channel (stacked) + revenue (line) ────────
+  function renderChartTransactions(d) {
+    var canvas = document.getElementById('chartTransactions');
+    if (!d || !d.length) return;
+    buildDataTable('chartTransactionsTable', ['Day', 'Online', 'Walk-Up', 'Kiosk', 'Total Orders', 'Revenue'], d.map(function (r) {
+      return [r.day, String(r.online), String(r.walkin), String(r.kiosk), String(r.txn_count), money(r.revenue)];
+    }));
+    if (!canvas || typeof Chart === 'undefined') return;
+    destroyChart('chartTransactions');
+    var labels  = d.map(function (r) { return r.day; });
+    var revenue = d.map(function (r) { return r.revenue; });
+    var online  = d.map(function (r) { return r.online; });
+    var walkin  = d.map(function (r) { return r.walkin; });
+    var kiosk   = d.map(function (r) { return r.kiosk; });
+
+    charts.chartTransactions = new Chart(canvas, {
+      data: {
+        labels: labels,
+        datasets: [
+          { type: 'bar', label: 'Online', data: online, backgroundColor: '#3a5a7a', stack: 'txn', datalabels: { display: false } },
+          { type: 'bar', label: 'Walk-Up', data: walkin, backgroundColor: '#4a7a5a', stack: 'txn', datalabels: { display: false } },
+          { type: 'bar', label: 'Kiosk', data: kiosk, backgroundColor: '#6a4a8a', stack: 'txn', datalabels: { display: false } },
+          {
+            type: 'line', label: 'Revenue', data: revenue, yAxisID: 'yRevenue',
+            borderColor: COLOR_THIS_WEEK, backgroundColor: 'rgba(139,26,46,0.1)', fill: true, tension: 0.3,
+            pointRadius: 3, pointBackgroundColor: COLOR_THIS_WEEK, datalabels: { display: false }
+          }
+        ]
+      },
+      options: {
+        interaction: { mode: 'index', intersect: false },
+        plugins: {
+          legend: { position: 'bottom', labels: { color: '#ffffff', font: { size: 12 } } },
+          datalabels: { display: false },
+          tooltip: {
+            callbacks: {
+              label: function (c) {
+                if (c.dataset.label === 'Revenue') return 'Revenue: ' + money(c.parsed.y);
+                return c.dataset.label + ': ' + c.parsed.y + ' order' + (c.parsed.y !== 1 ? 's' : '');
+              }
+            }
+          }
+        },
+        scales: {
+          x: { stacked: true, ticks: { color: '#ffffff', font: { size: 11 }, maxRotation: 45 }, grid: { color: 'rgba(255,255,255,0.05)' } },
+          y: {
+            stacked: true, position: 'left', beginAtZero: true,
+            title: { display: true, text: 'Transactions', color: '#ffffff', font: { size: 12 } },
+            ticks: { color: '#ffffff', stepSize: 1, precision: 0 },
+            grid: { color: 'rgba(255,255,255,0.1)' }
+          },
+          yRevenue: {
+            position: 'right', beginAtZero: true,
+            title: { display: true, text: 'Revenue', color: '#ffffff', font: { size: 12 } },
+            ticks: { color: '#ffffff', callback: money },
+            grid: { drawOnChartArea: false }
+          }
+        }
+      }
+    });
+  }
+
   // ── Chart 3: revenue by category, doughnut with center total ──────────────
   var centerTextPlugin = {
     id: 'centerText',
@@ -288,43 +382,12 @@
     charts.chartCategory._centerTotalText = money(total);
   }
 
-  // ── Chart 4 (movies): stacked adult/child bars + poster thumbnails ────────
-  // Poster rows live in a separate column (#chartMoviesPosters) beside the
-  // canvas rather than drawn on it, so they need to be sized/positioned to
-  // land exactly where Chart.js puts each category's bar. The canvas's
-  // *total* height isn't the same as the actual bar-plotting area — Chart.js
-  // reserves extra space below it for the x-axis ticks and the bottom
-  // legend — so computing row height from raw canvas height (the old
-  // approach) drifted out of alignment with the real bars, especially as
-  // the category count changed. Reading the chart's own chartArea (the
-  // rendered plot rectangle) after each layout — via the afterLayout plugin
-  // hook, which fires on the initial render *and* every later resize —
-  // keeps the poster rows pinned to the bars instead of a canvas-height
-  // guess.
-  function layoutMoviePosterRows(topMovies, rowHeights, topOffsetPx) {
-    var posterCol = document.getElementById('chartMoviesPosters');
-    if (!posterCol) return;
-    posterCol.innerHTML = '';
-    if (topOffsetPx > 0) {
-      posterCol.appendChild(el('div', { style: 'height:' + topOffsetPx + 'px; flex-shrink:0;' }));
-    }
-    topMovies.forEach(function (m, i) {
-      var wrap = el('div', { class: 'report-poster-row', style: 'height:' + rowHeights[i] + 'px;' });
-      if (m.poster_path) {
-        // poster_path arrives pre-resolved to an absolute URL by
-        // includes/helpers.php's posterUrl() (server-side), so it's used
-        // as-is here — no relative-path guessing on the client.
-        wrap.appendChild(el('img', {
-          src: m.poster_path,
-          alt: m.item_name + ' poster',
-          style: 'max-height:100%; max-width:100%; object-fit:cover; border-radius:3px;',
-          onerror: "this.style.display='none';"
-        }));
-      }
-      posterCol.appendChild(wrap);
-    });
-  }
-
+  // ── Chart 4 (movies): stacked adult/child bars ─────────────────────────────
+  // Poster thumbnails + the afterLayout alignment mechanism that pinned them
+  // to each bar were removed — they misaligned in print/PDF output (a
+  // separate DOM column can't be captured by the canvas-to-image print
+  // snapshot) and pushed movie titles out of legible space. Plain horizontal
+  // bar chart with the title as the y-axis label instead.
   function renderChartMovies(topMovies) {
     var canvas = document.getElementById('chartMovies');
     buildDataTable('chartMoviesTable', ['Movie', 'Adult', 'Child', 'Total Tickets', 'Revenue'], topMovies.map(function (m) {
@@ -333,20 +396,9 @@
 
     var n = topMovies.length;
     destroyChart('chartMovies');
+    if (!canvas || typeof Chart === 'undefined' || !n) return;
 
-    if (!canvas || typeof Chart === 'undefined' || !n) {
-      // No chart to align posters against (library missing, or nothing to
-      // plot this period) — fall back to even spacing so the column isn't
-      // left in a stale state from the previous render.
-      var fallbackRowH = n ? Math.max(44, Math.floor(320 / n)) : 44;
-      layoutMoviePosterRows(topMovies, topMovies.map(function () { return fallbackRowH; }), 0);
-      return;
-    }
-
-    // Seed height before layout runs; refined against the chart's real
-    // plot area (chartArea) in the afterLayout hook below.
-    var seedRowH = Math.max(44, Math.floor(320 / n));
-    canvas.height = Math.max(260, seedRowH * n);
+    canvas.height = Math.max(260, n * 50);
 
     charts.chartMovies = new Chart(canvas, {
       type: 'bar',
@@ -368,34 +420,29 @@
       options: {
         indexAxis: 'y',
         plugins: {
-          legend: { position: 'bottom' },
+          legend: { position: 'bottom', labels: { color: '#ffffff' } },
           datalabels: { display: true, formatter: function (v) { return v > 0 ? v : ''; } }
         },
         scales: {
-          x: { beginAtZero: true, stacked: true, ticks: { precision: 0 } },
+          x: { beginAtZero: true, stacked: true, ticks: { precision: 0, color: '#ffffff' }, grid: { color: 'rgba(255,255,255,0.1)' } },
           y: {
             stacked: true,
             ticks: {
+              color: '#ffffff',
+              autoSkip: false,
               // Chart.js doesn't truncate long category labels on its own —
               // a long movie title would otherwise just run past/under the
-              // axis with no visual indicator that it was cut off.
+              // axis with no visual indicator that it was cut off. Full
+              // title is still in the tooltip and the data table below.
               callback: function (value) {
                 var lbl = this.getLabelForValue(value);
                 return lbl.length > 24 ? lbl.slice(0, 23) + '…' : lbl;
               }
-            }
+            },
+            grid: { color: 'rgba(255,255,255,0.1)' }
           }
         }
-      },
-      plugins: [{
-        id: 'moviePosterAlign',
-        afterLayout: function (chart) {
-          var area = chart.chartArea;
-          if (!area || area.bottom <= area.top) return;
-          var rowH = (area.bottom - area.top) / n;
-          layoutMoviePosterRows(topMovies, topMovies.map(function () { return rowH; }), area.top);
-        }
-      }]
+      }
     });
   }
 
@@ -483,9 +530,22 @@
       },
       options: {
         plugins: { legend: { position: 'bottom' } },
-        scales: { y: { beginAtZero: true, ticks: { precision: 0 } } }
+        // Not beginAtZero here — every product currently sits in a tight
+        // 42-50 range with no reorder points set, so a 0-50 axis makes every
+        // bar look nearly identical and adds no information (unlike the
+        // week/month revenue charts, which stay zero-based because they
+        // legitimately span down toward zero). Min is computed below from
+        // the real data once it's known, not hardcoded.
+        scales: { y: { ticks: { precision: 0, stepSize: 2 } } }
       }
     });
+
+    var stockValues = active.map(function (i) { return i.stock_quantity; });
+    if (stockValues.length) {
+      var minStock = Math.min.apply(null, stockValues);
+      charts.chartInventory.options.scales.y.min = Math.max(0, Math.floor(minStock / 5) * 5 - 5);
+      charts.chartInventory.update('none');
+    }
   }
 
   // ── KPI strip ────────────────────────────────────────────────────────────
@@ -571,6 +631,8 @@
         renderKpiStrip(data.summary);
         renderChartWeek(data.revenueWeek);
         renderChartMonth(data.revenueMonth);
+        renderChartMonthly(data.revenueMonthly);
+        renderChartTransactions(data.transactionSummary);
         renderChartCategory(data.byCategory);
         renderChartMovies(data.topMovies);
         renderChartConcessions(data.topConcessions);
