@@ -243,9 +243,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $allowed  = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
                 $maxBytes = 8 * 1024 * 1024;
 
-                $finfo    = finfo_open(FILEINFO_MIME_TYPE);
-                $mime     = finfo_file($finfo, $file['tmp_name']);
-                finfo_close($finfo);
+                // getimagesize() is core PHP (no fileinfo/GD dependency) and reads
+                // the file's real header bytes, not client-supplied metadata — same
+                // security property as finfo, but works on hosts without the
+                // fileinfo extension enabled (confirmed missing on this server:
+                // finfo_open() throws "Call to undefined function" here).
+                $imageInfo = @getimagesize($file['tmp_name']);
+                $mime      = $imageInfo !== false ? (string)($imageInfo['mime'] ?? '') : '';
 
                 if (!in_array($mime, $allowed, true)) {
                     $errors[] = 'Poster must be a JPG, PNG, GIF, or WebP image.';
@@ -476,11 +480,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     } catch (\Throwable $e) {
         error_log('movie-edit POST handling failed: ' . $e->getMessage());
-        file_put_contents(
-            dirname(__DIR__) . '/upload-debug.txt',
-            date('Y-m-d H:i:s') . ' | ' . $e->getMessage() . ' | ' . $e->getFile() . ':' . $e->getLine() . "\n",
-            FILE_APPEND
-        );
         $errors[] = 'An unexpected error occurred while processing your submission. Please try again.';
     }
 }
