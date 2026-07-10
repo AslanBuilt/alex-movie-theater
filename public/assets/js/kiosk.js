@@ -18,7 +18,6 @@
   };
 
   var els = {
-    ticker: document.getElementById('ticker'),
     tabs: document.getElementById('category-tabs'),
     grid: document.getElementById('menu-grid'),
     summary: document.getElementById('menu-summary'),
@@ -94,19 +93,6 @@
       clearTimeout(confirmationTimer);
       confirmationTimer = null;
     }
-  }
-
-  function renderTicker() {
-    var parts = [];
-    BOOT.concessions.forEach(function (category) {
-      category.items.slice(0, 2).forEach(function (item) {
-        parts.push(item.name);
-      });
-    });
-    BOOT.showtimes.slice(0, 4).forEach(function (showtime) {
-      parts.push(showtime.title + (showtime.when ? ' — ' + showtime.when : ''));
-    });
-    els.ticker.textContent = parts.length ? parts.join(' • ') : 'Choose tickets or concessions to begin.';
   }
 
   function renderTabs() {
@@ -511,7 +497,6 @@
   document.addEventListener('click', resetIdleTimer);
   document.addEventListener('keydown', resetIdleTimer);
 
-  renderTicker();
   renderTabs();
   renderGrid();
   renderMenuSummary();
