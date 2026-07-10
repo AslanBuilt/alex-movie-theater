@@ -262,6 +262,13 @@ Never commit a diagnostic/inspector script to the repo — anything committed an
 - [x] Admin: IP-based login lockout + 8-hour session timeout
 - [x] Inventory management with reorder alerts
 - [x] Formspree contact + rental forms
+- [x] Kiosk concession-grid scroll fix — `body{overflow:hidden}` was blocking scroll on menu screens with many items; added `overflow-y:auto` to `.kiosk-screen.show`
+- [x] Movie poster upload — real root cause found and fixed: the `fileinfo` PHP extension is missing on this host, so `finfo_open()` threw a fatal error on every upload attempt regardless of file size/type. Replaced with `getimagesize()` (core PHP, no extension dependency, still reads real file bytes rather than trusting client-supplied MIME type)
+- [x] Admin reports — 8 charts total: revenue this-week-vs-last-week and this-month-vs-last-month (mutually exclusive, toggled by the range selector — 6 visible at once in Sales Report), revenue by category, top 5 movies, top 5 concessions, daily transactions by channel, tickets sold vs. scanned, plus inventory stock levels on its own tab. Category/movies/concessions are genuinely range-scoped (query bound to the selected date range); daily-transactions and tickets-scanned are deliberately fixed-period operational metrics, same convention as the inventory chart — see reports-data.php's top-of-file comment
+- [x] Reports chart titles reflect the selected range for the 3 range-scoped charts (e.g. "Top 5 Movies (Tickets Sold) — This Week")
+- [x] Revenue-by-category donut — no-sales categories no longer render overlapping labels (label suppressed for $0 slices; still shown in tooltip + data table)
+- [x] Print Report — canvas-to-image snapshot triggered from the button click (not the native `beforeprint` event, which raced against the browser's paint and produced blank charts). Charts print with their on-screen dark-background colors baked in rather than being recolored for print — recoloring live Chart.js instances via mutate-then-`update()` caused two confirmed crashes (a stack overflow in Chart.js internals, and a "cannot convert object to primitive" thrown from the `money()` formatter) — full black-on-white recolor deferred, see open items
+- [x] Deploy pipeline — `db-init.php` and `db-migrate.php` HTTP calls were both intermittently blocked with HTTP 415 by this host's WAF; added a browser User-Agent header to both, plus `continue-on-error` on the init health-check step so a blocked init check can never again silently skip the actual schema migration
 
 ---
 
@@ -278,6 +285,9 @@ Never commit a diagnostic/inspector script to the repo — anything committed an
 | schema.sql drift | Technical debt | May not perfectly match live DB — verify with `SHOW COLUMNS` before trusting |
 | Stale worktree/branch cleanup | Housekeeping | Multiple `fix/kiosk-agent-*` and `worktree-agent-*` branches from this session's parallel-agent work should be deleted once confirmed merged |
 | `fix/location-parking-layout` branch | Review needed | Unmerged — moves Parking Options into the right column on the location page. Not reviewed or deployed; needs a look before merging to master (kept separate from the kiosk/reports fixes shipped this session). |
+| Day-grid showtime scheduler | Next session | Owner needs multiple independent times per day, different per day, via a date-range grid with per-day "+ Add Time". Full brief (UI, JS, CSS, backend endpoint sketch) written up; not started. Real schema: `showtimes` has no `screen` column (screen lives on `movies`) — confirmed via schema.sql, do not add one to the INSERT. |
+| Print report — full black-on-white recolor | Deferred | Current version prints with the on-screen dark background preserved (legible, just not traditional monochrome). A true recolor requires rendering print-only chart instances on hidden canvases rather than mutating the live ones (which is what caused the two print crashes this session) — real rework, touches all chart render functions. |
+| `db-migrate.php` WAF 415 | Intermittent | User-Agent header fixed it once, then it recurred on a later deploy with the identical fast-fail signature — the WAF's blocking isn't fully deterministic. Doesn't currently block anything (no pending schema migrations), but deploys should be spot-checked for it. |
 
 ---
 
