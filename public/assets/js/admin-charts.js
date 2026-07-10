@@ -43,6 +43,12 @@
     Chart.defaults.plugins.datalabels = Object.assign({}, Chart.defaults.plugins.datalabels, { display: false }); // opt in per-chart below
   }
 
+  if (typeof Chart !== 'undefined') {
+    // Legend/tick label readability bump (applies in both print and screen
+    // palettes below — only the *color*, not the size, differs between them).
+    Chart.defaults.font.size = 14;
+  }
+
   function money(v) {
     var n = Number(v) || 0;
     var sign = n < 0 ? '-' : '';
@@ -138,12 +144,12 @@
           {
             label: 'This Week', data: revenueWeek.thisWeek,
             backgroundColor: COLOR_THIS_WEEK, borderRadius: 4,
-            datalabels: { display: true, anchor: 'end', align: 'top', formatter: money, font: { size: 10 } }
+            datalabels: { display: true, anchor: 'end', align: 'top', formatter: money, font: { size: 13 } }
           },
           {
             label: 'Last Week', data: revenueWeek.lastWeek,
             backgroundColor: COLOR_LAST_WEEK, borderColor: '#8B1A2E', borderWidth: 2, borderDash: [5, 3], borderRadius: 4,
-            datalabels: { display: true, anchor: 'end', align: 'top', formatter: money, font: { size: 10 }, color: '#3A2418' }
+            datalabels: { display: true, anchor: 'end', align: 'top', formatter: money, font: { size: 13 }, color: '#3A2418' }
           }
         ]
       },
@@ -183,7 +189,7 @@
             datalabels: {
               display: function (ctx) { return ctx.dataIndex === lastIdx; },
               align: 'top', formatter: function () { return 'Avg: ' + money(avg); },
-              color: '#C8B8A8', font: { size: 10, weight: 'bold' }
+              color: '#C8B8A8', font: { size: 13, weight: 'bold' }
             }
           }
         ]
@@ -256,7 +262,7 @@
           datalabels: {
             display: true,
             color: '#fff',
-            font: { size: 11, weight: 'bold' },
+            font: { size: 13, weight: 'bold' },
             formatter: function (value, ctx) {
               var i = ctx.dataIndex;
               if (byCategory.noSales[i]) return ctx.chart.data.labels[i] + '\nNo sales';
@@ -286,7 +292,7 @@
 
     if (posterCol) {
       posterCol.innerHTML = '';
-      var rowH = topMovies.length ? Math.max(36, Math.floor(220 / topMovies.length)) : 36;
+      var rowH = topMovies.length ? Math.max(44, Math.floor(320 / topMovies.length)) : 44;
       topMovies.forEach(function (m) {
         var wrap = el('div', { class: 'report-poster-row', style: 'height:' + rowH + 'px;' });
         if (m.poster_path) {
@@ -302,7 +308,7 @@
         }
         posterCol.appendChild(wrap);
       });
-      canvas && (canvas.height = Math.max(180, rowH * (topMovies.length || 1)));
+      canvas && (canvas.height = Math.max(260, rowH * (topMovies.length || 1)));
     }
 
     if (!canvas || typeof Chart === 'undefined') return;
@@ -319,12 +325,12 @@
           {
             label: 'Adult', data: topMovies.map(function (m) { return m.adult_count; }),
             backgroundColor: '#8B1D33', stack: 'tickets',
-            datalabels: { display: function (ctx) { return ctx.dataset.data[ctx.dataIndex] > 0; }, color: '#fff', font: { size: 10 } }
+            datalabels: { display: function (ctx) { return ctx.dataset.data[ctx.dataIndex] > 0; }, color: '#fff', font: { size: 13 } }
           },
           {
             label: 'Child', data: topMovies.map(function (m) { return m.child_count; }),
             backgroundColor: '#a8632a', stack: 'tickets',
-            datalabels: { display: function (ctx) { return ctx.dataset.data[ctx.dataIndex] > 0; }, color: '#fff', font: { size: 10 } }
+            datalabels: { display: function (ctx) { return ctx.dataset.data[ctx.dataIndex] > 0; }, color: '#fff', font: { size: 13 } }
           }
         ]
       },
@@ -360,7 +366,7 @@
           label: 'Units', data: topConcessions.map(function (c) { return c.total_qty; }),
           backgroundColor: PALETTE, borderRadius: 4,
           datalabels: {
-            display: true, anchor: 'end', align: 'end', font: { size: 10 },
+            display: true, anchor: 'end', align: 'end', font: { size: 13 },
             formatter: function (value, ctx) {
               var c = topConcessions[ctx.dataIndex];
               var margin = c.margin_per_unit !== null ? (' • +' + money(c.margin_per_unit) + '/ea') : '';
@@ -386,12 +392,13 @@
     }));
     if (!canvas || typeof Chart === 'undefined') return;
     destroyChart('chartInventory');
-    // Horizontal layout (indexAxis: 'y') per spec — needs height scaled to
-    // item count rather than the old vertical chart's width-per-item.
+    // Vertical layout — height is fixed (matching the other, taller chart
+    // sections) and width instead scales with item count so category labels
+    // on the x-axis don't get crushed; chartInventoryWrap's parent has
+    // overflow-x:auto in reports.php so it scrolls horizontally past that.
     var wrap = document.getElementById('chartInventoryWrap');
-    var rowH = active.length ? Math.max(28, Math.min(48, 480 / active.length)) : 28;
-    canvas.height = Math.max(180, Math.round(rowH * (active.length || 1)));
-    if (wrap) wrap.style.minWidth = '480px';
+    canvas.height = 400;
+    if (wrap) wrap.style.minWidth = Math.max(480, active.length * 70) + 'px';
 
     var barColors = active.map(function (i) {
       if (i.stock_quantity <= 0) return '#E07A8A';
@@ -407,7 +414,7 @@
           {
             type: 'bar', label: 'Stock', data: active.map(function (i) { return i.stock_quantity; }),
             backgroundColor: barColors, borderRadius: 4, order: 2,
-            datalabels: { display: true, anchor: 'end', align: 'end', font: { size: 10 }, formatter: function (v) { return v; } }
+            datalabels: { display: true, anchor: 'end', align: 'end', font: { size: 13 }, formatter: function (v) { return v; } }
           },
           {
             // Same technique the pre-existing chartInventory used to draw the
@@ -421,9 +428,8 @@
         ]
       },
       options: {
-        indexAxis: 'y',
         plugins: { legend: { position: 'bottom' } },
-        scales: { x: { beginAtZero: true, ticks: { precision: 0 } } }
+        scales: { y: { beginAtZero: true, ticks: { precision: 0 } } }
       }
     });
   }
@@ -535,12 +541,16 @@
   function setPrintPalette(isPrint) {
     if (typeof Chart === 'undefined') return;
     printMode = isPrint;
-    Chart.defaults.color = isPrint ? '#111111' : '#9A8070';
-    Chart.defaults.borderColor = isPrint ? '#CCCCCC' : '#2A1A12';
+    // On-screen: pure white text/grid for readability against this theme's
+    // dark card background (.policy-box / .report-chart-section render on
+    // --bg-card: #1C1410 — white is the highest-contrast choice there).
+    // Print: unchanged, still light-on-white per admin-print.css.
+    Chart.defaults.color = isPrint ? '#111111' : '#ffffff';
+    Chart.defaults.borderColor = isPrint ? '#CCCCCC' : 'rgba(255,255,255,0.1)';
     Object.keys(charts).forEach(function (id) {
       var chart = charts[id];
       if (id === 'chartCategory') {
-        chart._centerTotalColor = isPrint ? '#111111' : '#F2E8DC';
+        chart._centerTotalColor = isPrint ? '#111111' : '#ffffff';
       }
       chart.update();
     });
@@ -549,6 +559,11 @@
   window.addEventListener('afterprint', function () { setPrintPalette(false); });
 
   // ── Init ────────────────────────────────────────────────────────────────
+  // Apply the on-screen palette up front — without this, Chart.defaults.color
+  // stays at Chart.js's own built-in default until the first print cycle
+  // fires afterprint, so newly-created charts on a fresh page load would
+  // render in the library default instead of this theme's screen palette.
+  setPrintPalette(false);
   wireRangeSelector();
   loadAndRender();
 })();
