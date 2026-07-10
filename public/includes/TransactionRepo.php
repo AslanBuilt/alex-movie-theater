@@ -896,6 +896,45 @@ final class TransactionRepo
     }
 
     /**
+     * Same per-channel breakdown as getDailyTransactionSummary(), grouped by
+     * hour (0-23) for today only — used when the range selector is on
+     * 'today', where a 14-day-by-day view has nothing to do with today.
+     *
+     * @return array<int, array{hr:int, txn_count:int, online:int, walkin:int, kiosk:int}>
+     */
+    public static function getHourlyTransactionSummaryToday(): array
+    {
+        try {
+            $pdo  = Database::getInstance();
+            $stmt = $pdo->query(
+                "SELECT HOUR(created_at) AS hr,
+                        COUNT(*) AS txn_count,
+                        SUM(total_amount) AS revenue,
+                        SUM(CASE WHEN source_channel = 'website' THEN 1 ELSE 0 END) AS online_count,
+                        SUM(CASE WHEN source_channel = 'staff_register' THEN 1 ELSE 0 END) AS walkin_count,
+                        SUM(CASE WHEN source_channel = 'kiosk' THEN 1 ELSE 0 END) AS kiosk_count
+                 FROM transactions
+                 WHERE payment_status = 'paid' AND DATE(created_at) = CURDATE()
+                 GROUP BY HOUR(created_at)
+                 ORDER BY hr ASC"
+            );
+            return array_map(static function (array $r): array {
+                return [
+                    'hr'        => (int)$r['hr'],
+                    'txn_count' => (int)$r['txn_count'],
+                    'revenue'   => round((float)$r['revenue'], 2),
+                    'online'    => (int)$r['online_count'],
+                    'walkin'    => (int)$r['walkin_count'],
+                    'kiosk'     => (int)$r['kiosk_count'],
+                ];
+            }, $stmt->fetchAll());
+        } catch (\Throwable $e) {
+            error_log('[TransactionRepo::getHourlyTransactionSummaryToday] ' . $e->getMessage());
+            return [];
+        }
+    }
+
+    /**
      * Line items for a batch of transactions, keyed by transaction_id. Batches
      * admin/transactions.php's list-page item summaries and expandable detail
      * panels into one query instead of one getItems() call per row — same

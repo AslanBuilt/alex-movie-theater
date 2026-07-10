@@ -263,19 +263,29 @@
     });
   }
 
-  // ── Chart: daily transaction count by channel (stacked bars) ──────────────
-  function renderChartTransactions(d) {
+  // ── Chart: transaction count by channel — 14-day view, or hourly for Today ─
+  // Same shape either way (txn_count/revenue/online/walkin/kiosk per row) —
+  // only the row's time label ('day' vs 'hour') and the surrounding
+  // title/subtitle differ, so one render function covers both.
+  function renderChartTransactions(rangeKey, dailyData, todayData) {
+    var isToday = rangeKey === 'today';
+    var d = isToday ? todayData : dailyData;
     var canvas = document.getElementById('chartTransactions');
+    var titleEl = document.getElementById('chartTransactionsTitle');
+    var subtitleEl = document.getElementById('chartTransactionsSubtitle');
+    if (titleEl) titleEl.textContent = isToday ? 'Transactions by Channel — Today' : 'Transactions by Channel — Last 14 Days';
+    if (subtitleEl) subtitleEl.textContent = isToday ? 'Stacked by channel — orders per hour' : 'Stacked by channel — orders per day';
     if (!d || !d.length) return;
-    buildDataTable('chartTransactionsTable', ['Day', 'Online', 'Walk-Up', 'Kiosk', 'Total Orders', 'Revenue'], d.map(function (r) {
-      return [r.day, String(r.online), String(r.walkin), String(r.kiosk), String(r.txn_count), money(r.revenue)];
+    var timeLabel = isToday ? 'Hour' : 'Day';
+    buildDataTable('chartTransactionsTable', [timeLabel, 'Online', 'Walk-Up', 'Kiosk', 'Total Orders', 'Revenue'], d.map(function (r) {
+      return [isToday ? r.hour : r.day, String(r.online), String(r.walkin), String(r.kiosk), String(r.txn_count), money(r.revenue)];
     }));
     if (!canvas || typeof Chart === 'undefined') return;
     destroyChart('chartTransactions');
 
     charts.chartTransactions = new Chart(canvas, {
       data: {
-        labels: d.map(function (r) { return r.day; }),
+        labels: d.map(function (r) { return isToday ? r.hour : r.day; }),
         datasets: [
           { type: 'bar', label: 'Online', data: d.map(function (r) { return r.online; }), backgroundColor: '#3a5a7a', stack: 'txn', datalabels: { display: false } },
           { type: 'bar', label: 'Walk-Up', data: d.map(function (r) { return r.walkin; }), backgroundColor: '#4a7a5a', stack: 'txn', datalabels: { display: false } },
@@ -707,7 +717,7 @@
         renderChartWeek(data.revenueWeek);
         renderChartMonth(data.revenueMonth, data.revenueLastMonth, data.currentMonthLabel, data.lastMonthLabel);
         renderChartToday(data.revenueToday);
-        renderChartTransactions(data.transactionSummary);
+        renderChartTransactions(data.range && data.range.key, data.transactionSummary, data.transactionSummaryToday);
         renderChartScanRate(data.ticketScanRate);
         renderChartCategory(data.byCategory);
         renderChartMovies(data.topMovies);

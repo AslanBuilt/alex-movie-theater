@@ -181,6 +181,25 @@ for ($i = 0; $i < $txnWindowDays; $i++) {
     ];
 }
 
+// Hourly version of the same per-channel breakdown, today only — used
+// instead of the 14-day view when range === 'today'.
+$hourlyTxnByHr = [];
+foreach (TransactionRepo::getHourlyTransactionSummaryToday() as $r) {
+    $hourlyTxnByHr[$r['hr']] = $r;
+}
+$transactionSummaryToday = [];
+for ($h = 0; $h < 24; $h++) {
+    $row = $hourlyTxnByHr[$h] ?? null;
+    $transactionSummaryToday[] = [
+        'hour'      => (new DateTime())->setTime($h, 0)->format('g A'),
+        'txn_count' => $row['txn_count'] ?? 0,
+        'revenue'   => $row['revenue'] ?? 0.0,
+        'online'    => $row['online'] ?? 0,
+        'walkin'    => $row['walkin'] ?? 0,
+        'kiosk'     => $row['kiosk'] ?? 0,
+    ];
+}
+
 $ticketScanRate = TicketTokenRepo::getScanRateByMovie(5);
 
 $inventoryRaw = InventoryRepo::getFullInventory();
@@ -270,7 +289,8 @@ echo json_encode([
         'data'    => $catData,
         'noSales' => $catNoSales,
     ],
-    'transactionSummary'  => $transactionSummary,
+    'transactionSummary'      => $transactionSummary,
+    'transactionSummaryToday' => $transactionSummaryToday,
     'ticketScanRate'      => $ticketScanRate,
     'topMovies'      => $topMoviesOut,
     'topConcessions' => $topConcessionsOut,

@@ -104,9 +104,9 @@ $lowStockIds = array_column($lowStock, 'id');
     </section>
 
     <section class="policy-box report-chart-section">
-      <h3 style="margin:0 0 0.25rem; font-size:0.95rem;">Daily Transactions &amp; Revenue</h3>
-      <p style="margin:0 0 0.75rem; font-size:0.85rem; color:var(--cream-dim);">Last 14 days, stacked by channel — line shows total revenue</p>
-      <canvas id="chartTransactions" height="260" role="img" aria-label="Stacked bar and line chart of daily transactions and revenue by channel"></canvas>
+      <h3 id="chartTransactionsTitle" style="margin:0 0 0.25rem; font-size:0.95rem;">Transactions by Channel — Last 14 Days</h3>
+      <p id="chartTransactionsSubtitle" style="margin:0 0 0.75rem; font-size:0.85rem; color:var(--cream-dim);">Stacked by channel — orders per day</p>
+      <canvas id="chartTransactions" height="260" role="img" aria-label="Stacked bar chart of transactions by channel"></canvas>
       <details class="report-data-table"><summary>View data table</summary><div id="chartTransactionsTable"></div></details>
     </section>
 
