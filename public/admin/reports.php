@@ -112,19 +112,19 @@ $lowStockIds = array_column($lowStock, 'id');
     </section>
 
     <section class="policy-box report-chart-section">
-      <h3 style="margin:0 0 0.75rem; font-size:0.95rem;">Revenue by Category</h3>
+      <h3 id="chartCategoryTitle" style="margin:0 0 0.75rem; font-size:0.95rem;">Revenue by Category</h3>
       <canvas id="chartCategory" height="320" role="img" aria-label="Doughnut chart of revenue split between tickets, concessions, and combos"></canvas>
       <details class="report-data-table"><summary>View data table</summary><div id="chartCategoryTable"></div></details>
     </section>
 
     <section class="policy-box report-chart-section">
-      <h3 style="margin:0 0 0.75rem; font-size:0.95rem;">Top 5 Movies (Tickets Sold)</h3>
+      <h3 id="chartMoviesTitle" style="margin:0 0 0.75rem; font-size:0.95rem;">Top 5 Movies (Tickets Sold)</h3>
       <canvas id="chartMovies" role="img" aria-label="Horizontal bar chart of top 5 movies by tickets sold, split by adult and child"></canvas>
       <details class="report-data-table"><summary>View data table</summary><div id="chartMoviesTable"></div></details>
     </section>
 
     <section class="policy-box report-chart-section">
-      <h3 style="margin:0 0 0.75rem; font-size:0.95rem;">Top 5 Concessions (Units Sold)</h3>
+      <h3 id="chartConcessionsTitle" style="margin:0 0 0.75rem; font-size:0.95rem;">Top 5 Concessions (Units Sold)</h3>
       <canvas id="chartConcessions" height="320" role="img" aria-label="Horizontal bar chart of top 5 concessions by units sold, with per-unit margin"></canvas>
       <details class="report-data-table"><summary>View data table</summary><div id="chartConcessionsTable"></div></details>
     </section>

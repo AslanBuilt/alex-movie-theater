@@ -366,7 +366,12 @@
             font: { size: 13, weight: 'bold' },
             formatter: function (value, ctx) {
               var i = ctx.dataIndex;
-              if (byCategory.noSales[i]) return ctx.chart.data.labels[i] + '\nNo sales';
+              // No-sales categories render as tiny adjacent epsilon slivers
+              // (see renderData above) — their labels have no room to avoid
+              // colliding with each other when 2+ categories are empty.
+              // That info is already in the tooltip and data table, so the
+              // on-chart label is suppressed here rather than overlapping.
+              if (byCategory.noSales[i]) return '';
               var pct = total > 0 ? (byCategory.data[i] / total * 100).toFixed(0) : '0';
               return ctx.chart.data.labels[i] + '\n' + money(byCategory.data[i]) + ' (' + pct + '%)';
             }
@@ -611,6 +616,29 @@
     if (monthSection) monthSection.style.display = range === 'week' ? 'none' : '';
   }
 
+  function rangeLabel(key) {
+    switch (key) {
+      case 'today':  return 'Today';
+      case 'week':   return 'This Week';
+      case 'month':  return 'This Month';
+      case 'custom': return 'Custom Range';
+      default:       return 'This Week';
+    }
+  }
+
+  // Reflects the selected range in the titles of the three charts whose data
+  // actually changes with it (category/movies/concessions — see
+  // reports-data.php's top-of-file note on which charts are range-scoped).
+  function updateRangeScopedTitles(rangeKey) {
+    var label = rangeLabel(rangeKey);
+    var categoryTitle    = document.getElementById('chartCategoryTitle');
+    var moviesTitle       = document.getElementById('chartMoviesTitle');
+    var concessionsTitle = document.getElementById('chartConcessionsTitle');
+    if (categoryTitle)    categoryTitle.textContent    = 'Revenue by Category — ' + label;
+    if (moviesTitle)       moviesTitle.textContent       = 'Top 5 Movies (Tickets Sold) — ' + label;
+    if (concessionsTitle) concessionsTitle.textContent = 'Top 5 Concessions (Units Sold) — ' + label;
+  }
+
   function loadAndRender() {
     var loading = document.getElementById('rangeLoading');
     if (loading) loading.style.display = 'inline';
@@ -642,6 +670,7 @@
         renderChartMovies(data.topMovies);
         renderChartConcessions(data.topConcessions);
         renderChartInventory(data.inventory);
+        updateRangeScopedTitles(data.range && data.range.key);
       })
       .catch(function (err) {
         if (err && err.message === 'SESSION_EXPIRED') {
