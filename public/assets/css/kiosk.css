@@ -72,6 +72,8 @@ button {
 
 .kiosk-screen.show {
   display: block;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .kiosk-screen-welcome {

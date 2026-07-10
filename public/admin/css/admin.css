@@ -267,6 +267,17 @@ h3 { font-size: 1.2rem; }
     color: var(--cream-dim);
 }
 
+/* Reports page KPI strip only (#kpiStrip, reports.php) — the shared
+   .stat-number crimson-on-dark pairing (#A8253F on #1C1410, ~2.8:1
+   contrast) fails WCAG AA. Scoped here rather than changing .stat-number
+   globally, which is also reused by transactions.php's summary bar and
+   the dashboard — those keep the brand crimson as-is. */
+#kpiStrip .stat-number {
+    color: var(--cream);
+    font-size: 2.75rem;
+    font-weight: 800;
+}
+
 .dashboard-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
