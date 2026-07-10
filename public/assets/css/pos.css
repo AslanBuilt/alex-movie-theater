@@ -1,3 +1,10 @@
+.identity-banner{display:flex;align-items:center;gap:12px;padding:12px 20px;background:#1a1a2e;border-bottom:2px solid #8B1A2E;color:#fff;font-size:13px;position:relative;z-index:100;}
+.identity-banner strong{display:block;font-size:14px;letter-spacing:0.05em;}
+.identity-banner span{color:#aaa;font-size:12px;}
+.identity-icon{font-size:22px;flex-shrink:0;}
+.banner-dismiss{margin-left:auto;background:none;border:1px solid #444;color:#aaa;padding:4px 10px;border-radius:4px;cursor:pointer;font-size:12px;}
+.banner-dismiss:hover{border-color:#888;color:#fff;}
+
 /* ============================================================
    THE ALEX — EMPLOYEE POS
    Production styles. Derived from the approved mockup

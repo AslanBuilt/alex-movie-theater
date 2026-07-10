@@ -109,6 +109,10 @@ $pageDescription = 'Buy tickets and concessions at The Alex self-service kiosk.'
   </script>
 </head>
 <body>
+  <div class="identity-banner">
+    <span class="identity-icon">🎬</span>
+    <div><strong>CONCESSION &amp; TICKET ORDERING KIOSK</strong><span>Mount this tablet at the concession stand. Customers tap here to order.</span></div>
+  </div>
   <div class="kiosk-shell">
     <div class="kiosk-screen kiosk-screen-welcome show" id="welcome-screen">
       <div class="welcome-copy">

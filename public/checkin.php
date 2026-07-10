@@ -26,6 +26,10 @@ $gaId = defined('GA_MEASUREMENT_ID') ? GA_MEASUREMENT_ID : '';
 <?php endif; ?>
 </head>
 <body>
+<div class="identity-banner">
+  <span class="identity-icon">🎟️</span>
+  <div><strong>TICKET CHECK-IN KIOSK</strong><span>Point this screen toward the entrance. Customers scan their QR codes here.</span></div>
+</div>
 <div class="kiosk">
 
   <div class="state show" id="stateReady">
