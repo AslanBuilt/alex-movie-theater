@@ -217,38 +217,6 @@
     });
   }
 
-  // ── Chart: revenue by month, this year vs prior year ───────────────────────
-  function renderChartMonthly(d) {
-    var canvas = document.getElementById('chartMonthly');
-    if (!d) return;
-    buildDataTable('chartMonthlyTable', ['Month', d.currentYearLabel, d.priorYearLabel], d.labels.map(function (m, i) {
-      return [m, money(d.currentYear[i]), money(d.priorYear[i])];
-    }));
-    if (!canvas || typeof Chart === 'undefined') return;
-    destroyChart('chartMonthly');
-    charts.chartMonthly = new Chart(canvas, {
-      type: 'bar',
-      data: {
-        labels: d.labels,
-        datasets: [
-          { label: d.currentYearLabel, data: d.currentYear, backgroundColor: COLOR_THIS_WEEK, borderRadius: 4, datalabels: { display: false } },
-          { label: d.priorYearLabel, data: d.priorYear, backgroundColor: COLOR_LAST_WEEK, borderRadius: 4, datalabels: { display: false } }
-        ]
-      },
-      options: {
-        plugins: {
-          legend: { position: 'bottom', labels: { color: '#ffffff' } },
-          datalabels: { display: false },
-          tooltip: { callbacks: { label: function (c) { return c.dataset.label + ': ' + money(c.parsed.y); } } }
-        },
-        scales: {
-          x: { ticks: { color: '#ffffff', font: { size: 12 } }, grid: { color: 'rgba(255,255,255,0.1)' } },
-          y: { beginAtZero: true, ticks: { color: '#ffffff', callback: money }, grid: { color: 'rgba(255,255,255,0.1)' } }
-        }
-      }
-    });
-  }
-
   // ── Chart: daily transaction count by channel (stacked bars) ──────────────
   function renderChartTransactions(d) {
     var canvas = document.getElementById('chartTransactions');
@@ -475,12 +443,12 @@
     }));
     if (!canvas || typeof Chart === 'undefined') return;
     destroyChart('chartInventory');
-    // Vertical layout — height is fixed (matching the other, taller chart
-    // sections) and width instead scales with item count so category labels
-    // on the x-axis don't get crushed; chartInventoryWrap's parent has
-    // overflow-x:auto in reports.php so it scrolls horizontally past that.
+    // Vertical layout — height matches the other chart sections (280) and
+    // width instead scales with item count so category labels on the x-axis
+    // don't get crushed; chartInventoryWrap's parent has overflow-x:auto in
+    // reports.php so it scrolls horizontally past that.
     var wrap = document.getElementById('chartInventoryWrap');
-    canvas.height = 400;
+    canvas.height = 280;
     if (wrap) wrap.style.minWidth = Math.max(480, active.length * 70) + 'px';
 
     var barColors = active.map(function (i) {
@@ -582,10 +550,10 @@
   // owner who just changed the range and still sees a week chart. Hide it
   // outside 'week' range and explain why via a note in its place.
   function updateRangeVisibility(range) {
-    var weekSection = document.getElementById('chart-week-section');
-    var weekNote = document.getElementById('chart-week-note');
-    if (weekSection) weekSection.style.display = range === 'week' ? '' : 'none';
-    if (weekNote) weekNote.style.display = range === 'week' ? 'none' : '';
+    var weekSection  = document.getElementById('chart-week-section');
+    var monthSection = document.getElementById('chart-month-section');
+    if (weekSection)  weekSection.style.display  = range === 'week' ? '' : 'none';
+    if (monthSection) monthSection.style.display = range === 'week' ? 'none' : '';
   }
 
   function loadAndRender() {
@@ -613,7 +581,6 @@
         renderKpiStrip(data.summary);
         renderChartWeek(data.revenueWeek);
         renderChartMonth(data.revenueMonth, data.revenueLastMonth, data.currentMonthLabel, data.lastMonthLabel);
-        renderChartMonthly(data.revenueMonthly);
         renderChartTransactions(data.transactionSummary);
         renderChartCategory(data.byCategory);
         renderChartMovies(data.topMovies);

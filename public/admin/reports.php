@@ -75,7 +75,7 @@ $lowStockIds = array_column($lowStock, 'id');
       <button type="submit" class="btn btn-secondary btn-sm" style="min-height:44px;">Apply</button>
     </div>
     <span id="rangeLoading" style="display:none; color:var(--text-muted); font-size:0.85rem;" role="status" aria-live="polite">Loading…</span>
-    <button type="button" id="btn-print-report" class="btn btn-secondary" style="min-height:44px; margin-left:auto;">Print Report</button>
+    <button type="button" id="btn-print-report" class="btn btn-secondary" style="min-height:44px; margin-left:auto;" onclick="(window.printAdminReport || window.print)()">Print Report</button>
   </form>
 
   <!-- KPI strip -->
@@ -90,21 +90,11 @@ $lowStockIds = array_column($lowStock, 'id');
       <canvas id="chartWeek" height="320" role="img" aria-label="Bar chart comparing daily revenue this week to last week"></canvas>
       <details class="report-data-table"><summary>View data table</summary><div id="chartWeekTable"></div></details>
     </section>
-    <p id="chart-week-note" class="policy-box report-chart-section" style="display:none; color:var(--cream-dim); font-size:0.85rem; align-self:start;">
-      Switch the range above to "This Week" to see the week-over-week comparison chart.
-    </p>
 
-    <section class="policy-box report-chart-section">
+    <section class="policy-box report-chart-section" id="chart-month-section">
       <h3 id="chartMonthTitle" style="margin:0 0 0.75rem; font-size:0.95rem;">Revenue by Day — This Month vs. Last Month</h3>
       <canvas id="chartMonth" height="320" role="img" aria-label="Line chart of daily revenue this month, with an average reference line"></canvas>
       <details class="report-data-table"><summary>View data table</summary><div id="chartMonthTable"></div></details>
-    </section>
-
-    <section class="policy-box report-chart-section">
-      <h3 style="margin:0 0 0.25rem; font-size:0.95rem;">Revenue by Month — <?= date('Y') ?> vs <?= date('Y') - 1 ?></h3>
-      <p style="margin:0 0 0.75rem; font-size:0.85rem; color:var(--cream-dim);">Month-over-month comparison</p>
-      <canvas id="chartMonthly" height="280" role="img" aria-label="Bar chart comparing monthly revenue this year vs last year"></canvas>
-      <details class="report-data-table"><summary>View data table</summary><div id="chartMonthlyTable"></div></details>
     </section>
 
     <section class="policy-box report-chart-section">
@@ -164,7 +154,7 @@ $lowStockIds = array_column($lowStock, 'id');
     <h3 style="margin:0 0 0.75rem; font-size:0.95rem;">Stock Level vs. Reorder Point — Active Products</h3>
     <div style="overflow-x:auto;">
       <div id="chartInventoryWrap" style="min-width:480px;">
-        <canvas id="chartInventory" height="400" role="img" aria-label="Bar chart of current stock per product, color-coded by reorder threshold, with a reorder-point reference line"></canvas>
+        <canvas id="chartInventory" height="280" role="img" aria-label="Bar chart of current stock per product, color-coded by reorder threshold, with a reorder-point reference line"></canvas>
       </div>
     </div>
     <details class="report-data-table"><summary>View data table</summary><div id="chartInventoryTable"></div></details>

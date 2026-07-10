@@ -141,8 +141,6 @@ for ($i = 0; $i < $lastMonthDayCount; $i++) {
 $lastMonthLabel    = $lastMonthAnchor->format('F Y');
 $currentMonthLabel = $today->format('F Y');
 
-$revenueMonthly = TransactionRepo::getRevenueByMonthYearComparison();
-
 // Daily transactions/revenue — fixed 14-day trailing window (not affected by
 // $rangeKey, same "intrinsically fixed-period" convention as the week/month/
 // inventory charts above), zero-filled so a day with no paid transactions
@@ -251,7 +249,6 @@ echo json_encode([
         'data'    => $catData,
         'noSales' => $catNoSales,
     ],
-    'revenueMonthly'      => $revenueMonthly,
     'transactionSummary'  => $transactionSummary,
     'topMovies'      => $topMoviesOut,
     'topConcessions' => $topConcessionsOut,

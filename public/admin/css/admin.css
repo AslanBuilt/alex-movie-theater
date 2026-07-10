@@ -326,6 +326,18 @@ h3 { font-size: 1.2rem; }
     max-width: 100%;
 }
 
+/* Consistent chart canvas height across the reports page — chartInventory
+   used to run taller (400 vs 260-320 elsewhere) than every other chart. */
+#chartInventory,
+#chartWeek,
+#chartMonth,
+#chartCategory,
+#chartMovies,
+#chartConcessions,
+#chartTransactions {
+    max-height: 280px !important;
+}
+
 /* ---------- Tables ---------- */
 
 .admin-table-wrap {
