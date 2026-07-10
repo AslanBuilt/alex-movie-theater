@@ -277,6 +277,7 @@ Never commit a diagnostic/inspector script to the repo — anything committed an
 | AdminAuth relative redirect for `admin/api/*.php` | Open | Workaround in JS, root cause not fixed |
 | schema.sql drift | Technical debt | May not perfectly match live DB — verify with `SHOW COLUMNS` before trusting |
 | Stale worktree/branch cleanup | Housekeeping | Multiple `fix/kiosk-agent-*` and `worktree-agent-*` branches from this session's parallel-agent work should be deleted once confirmed merged |
+| `fix/location-parking-layout` branch | Review needed | Unmerged — moves Parking Options into the right column on the location page. Not reviewed or deployed; needs a look before merging to master (kept separate from the kiosk/reports fixes shipped this session). |
 
 ---
 
