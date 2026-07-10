@@ -612,8 +612,12 @@
   function updateRangeVisibility(range) {
     var weekSection  = document.getElementById('chart-week-section');
     var monthSection = document.getElementById('chart-month-section');
-    if (weekSection)  weekSection.style.display  = range === 'week' ? '' : 'none';
-    if (monthSection) monthSection.style.display = range === 'week' ? 'none' : '';
+    // 'today' groups with 'week', not 'month' — a month-over-month trend
+    // line has nothing to do with a single day, whereas the week chart's
+    // most recent daily bar IS today, giving it visible context.
+    var showWeek = (range === 'week' || range === 'today');
+    if (weekSection)  weekSection.style.display  = showWeek ? '' : 'none';
+    if (monthSection) monthSection.style.display = showWeek ? 'none' : '';
   }
 
   function rangeLabel(key) {
