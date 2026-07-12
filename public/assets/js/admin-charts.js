@@ -211,7 +211,8 @@
     if (lastMonthData && lastMonthData.some(function (v) { return v > 0; })) {
       datasets.push({
         type: 'line', label: lastLabel || 'Last Month', data: lastMonthData,
-        borderColor: '#C8B8A8', backgroundColor: 'transparent', borderDash: [5, 3], borderWidth: 2, pointRadius: 2, fill: false,
+        borderColor: '#3a7abd', backgroundColor: 'rgba(58,122,189,0.08)', borderWidth: 2, pointRadius: 2,
+        pointBackgroundColor: '#3a7abd', fill: false,
         order: 1, datalabels: { display: false }
       });
     }
@@ -263,7 +264,7 @@
     });
   }
 
-  // ── Chart: transaction count by channel — 14-day view, or hourly for Today ─
+  // ── Chart: transaction count by channel — range-scoped, or hourly for Today ─
   // Same shape either way (txn_count/revenue/online/walkin/kiosk per row) —
   // only the row's time label ('day' vs 'hour') and the surrounding
   // title/subtitle differ, so one render function covers both.
@@ -273,7 +274,7 @@
     var canvas = document.getElementById('chartTransactions');
     var titleEl = document.getElementById('chartTransactionsTitle');
     var subtitleEl = document.getElementById('chartTransactionsSubtitle');
-    if (titleEl) titleEl.textContent = isToday ? 'Transactions by Channel — Today' : 'Transactions by Channel — Last 14 Days';
+    if (titleEl) titleEl.textContent = 'Transactions by Channel — ' + rangeLabel(rangeKey);
     if (subtitleEl) subtitleEl.textContent = isToday ? 'Stacked by channel — orders per hour' : 'Stacked by channel — orders per day';
     if (!d || !d.length) return;
     var timeLabel = isToday ? 'Hour' : 'Day';
@@ -311,13 +312,19 @@
   }
 
   // ── Chart 6: tickets sold vs. scanned (attended) per now-showing movie ────
-  function renderChartScanRate(d) {
+  function renderChartScanRate(d, rangeKey) {
     var canvas = document.getElementById('chartScanRate');
+    var subtitleEl = document.getElementById('chartScanRateSubtitle');
+    if (subtitleEl) subtitleEl.textContent = 'Now showing movies — sold vs scanned — ' + rangeLabel(rangeKey);
     buildDataTable('chartScanRateTable', ['Movie', 'Tickets Sold', 'Tickets Scanned'], (d || []).map(function (r) {
       return [r.title, String(r.tickets_sold), String(r.tickets_scanned)];
     }));
-    if (!d || !d.length || !canvas || typeof Chart === 'undefined') return;
+    if (!canvas || typeof Chart === 'undefined') return;
     destroyChart('chartScanRate');
+    if (!d || !d.length) {
+      drawEmptyState(canvas, 'No now-showing ticket sales in this period');
+      return;
+    }
 
     charts.chartScanRate = new Chart(canvas, {
       type: 'bar',
@@ -439,15 +446,31 @@
   // separate DOM column can't be captured by the canvas-to-image print
   // snapshot) and pushed movie titles out of legible space. Plain horizontal
   // bar chart with the title as the y-axis label instead.
+  function drawEmptyState(canvas, message) {
+    if (!canvas) return;
+    var ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = 'rgba(255,255,255,0.4)';
+    ctx.font = '14px Lato, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(message, canvas.width / 2, canvas.height / 2);
+  }
+
   function renderChartMovies(topMovies) {
     var canvas = document.getElementById('chartMovies');
-    buildDataTable('chartMoviesTable', ['Movie', 'Adult', 'Child', 'Total Tickets', 'Revenue'], topMovies.map(function (m) {
+    buildDataTable('chartMoviesTable', ['Movie', 'Adult', 'Child', 'Total Tickets', 'Revenue'], (topMovies || []).map(function (m) {
       return [m.item_name, String(m.adult_count), String(m.child_count), String(m.total_qty), money(m.total_revenue)];
     }));
 
-    var n = topMovies.length;
+    var n = topMovies ? topMovies.length : 0;
     destroyChart('chartMovies');
-    if (!canvas || typeof Chart === 'undefined' || !n) return;
+    if (!canvas || typeof Chart === 'undefined') return;
+    if (!n) {
+      canvas.height = 150;
+      drawEmptyState(canvas, 'No ticket sales in this period');
+      return;
+    }
 
     canvas.height = Math.max(260, n * 50);
 
@@ -500,7 +523,7 @@
   // ── Chart 5 (concessions): units sold + per-unit margin labels ────────────
   function renderChartConcessions(topConcessions) {
     var canvas = document.getElementById('chartConcessions');
-    buildDataTable('chartConcessionsTable', ['Item', 'Qty Sold', 'Revenue', 'Margin / Unit', 'Total Margin'], topConcessions.map(function (c) {
+    buildDataTable('chartConcessionsTable', ['Item', 'Qty Sold', 'Revenue', 'Margin / Unit', 'Total Margin'], (topConcessions || []).map(function (c) {
       return [
         c.item_name, String(c.total_qty), money(c.total_revenue),
         c.margin_per_unit !== null ? money(c.margin_per_unit) : '—',
@@ -509,7 +532,10 @@
     }));
     if (!canvas || typeof Chart === 'undefined') return;
     destroyChart('chartConcessions');
-    if (!topConcessions.length) return;
+    if (!topConcessions || !topConcessions.length) {
+      drawEmptyState(canvas, 'No concession sales in this period');
+      return;
+    }
     charts.chartConcessions = new Chart(canvas, {
       type: 'bar',
       data: {
@@ -718,7 +744,7 @@
         renderChartMonth(data.revenueMonth, data.revenueLastMonth, data.currentMonthLabel, data.lastMonthLabel);
         renderChartToday(data.revenueToday);
         renderChartTransactions(data.range && data.range.key, data.transactionSummary, data.transactionSummaryToday);
-        renderChartScanRate(data.ticketScanRate);
+        renderChartScanRate(data.ticketScanRate, data.range && data.range.key);
         renderChartCategory(data.byCategory);
         renderChartMovies(data.topMovies);
         renderChartConcessions(data.topConcessions);
@@ -807,7 +833,24 @@
     canvasPrintSwaps = [];
   }
 
+  // Print-only title block — hidden on screen (inline display:none),
+  // revealed by admin-print.css's @media print rule. Built fresh on every
+  // print so it always reflects whichever range is currently selected.
+  function updatePrintTitle() {
+    var rangeSelect = document.getElementById('rangeSelect');
+    var rangeText = rangeSelect ? rangeSelect.options[rangeSelect.selectedIndex].text : 'Report';
+    var printTitle = document.getElementById('print-report-title');
+    if (!printTitle) {
+      printTitle = el('div', { id: 'print-report-title', style: 'display:none;' });
+      document.body.insertBefore(printTitle, document.body.firstChild);
+    }
+    printTitle.innerHTML =
+      '<h1 style="font-size:20px;margin:0 0 4px;">The Alex Theater — Sales Report</h1>' +
+      '<p style="font-size:13px;margin:0;">Range: ' + rangeText + ' &nbsp;|&nbsp; Printed: ' + new Date().toLocaleDateString() + '</p>';
+  }
+
   window.printAdminReport = function () {
+    updatePrintTitle();
     swapCanvasesForPrint();
     // One tick so the browser has actually painted the newly-inserted <img>
     // elements before the print snapshot is taken.

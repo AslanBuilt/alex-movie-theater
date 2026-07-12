@@ -29,6 +29,21 @@
     color: #111111 !important;
   }
 
+  /* Range/date header injected by admin-charts.js's printAdminReport() —
+     hidden on screen (inline display:none), shown only for print. */
+  #print-report-title {
+    display: block !important;
+    color: #111111 !important;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 2px solid #000000;
+  }
+
+  #print-report-title h1,
+  #print-report-title p {
+    color: #111111 !important;
+  }
+
   /* ── Hide anything that isn't part of the report itself ── */
   .admin-sidebar,
   .sidebar-toggle,

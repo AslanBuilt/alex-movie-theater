@@ -104,7 +104,7 @@ $lowStockIds = array_column($lowStock, 'id');
     </section>
 
     <section class="policy-box report-chart-section">
-      <h3 id="chartTransactionsTitle" style="margin:0 0 0.25rem; font-size:0.95rem;">Transactions by Channel — Last 14 Days</h3>
+      <h3 id="chartTransactionsTitle" style="margin:0 0 0.25rem; font-size:0.95rem;">Transactions by Channel — This Week</h3>
       <p id="chartTransactionsSubtitle" style="margin:0 0 0.75rem; font-size:0.85rem; color:var(--cream-dim);">Stacked by channel — orders per day</p>
       <canvas id="chartTransactions" height="260" role="img" aria-label="Stacked bar chart of transactions by channel"></canvas>
       <details class="report-data-table"><summary>View data table</summary><div id="chartTransactionsTable"></div></details>
@@ -112,7 +112,7 @@ $lowStockIds = array_column($lowStock, 'id');
 
     <section class="policy-box report-chart-section">
       <h3 style="margin:0 0 0.25rem; font-size:0.95rem;">Tickets Sold vs. Attended</h3>
-      <p style="margin:0 0 0.75rem; font-size:0.85rem; color:var(--cream-dim);">Now showing movies — sold vs scanned at door</p>
+      <p id="chartScanRateSubtitle" style="margin:0 0 0.75rem; font-size:0.85rem; color:var(--cream-dim);">Now showing movies — sold vs scanned at door</p>
       <canvas id="chartScanRate" height="280" role="img" aria-label="Horizontal bar chart of tickets sold vs attended per movie"></canvas>
       <details class="report-data-table"><summary>View data table</summary><div id="chartScanRateTable"></div></details>
     </section>
