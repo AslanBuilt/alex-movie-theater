@@ -16,8 +16,9 @@ declare(strict_types=1);
  * detects that by checking the response Content-Type rather than the
  * status code, since a redirect-followed-to-login-HTML is still a 200.
  *
- * Only three of the six charts are date-range-scoped: category revenue,
- * top movies, and top concessions. The KPI strip (getSummaryStats), the
+ * Five of the six charts are date-range-scoped: category revenue, top
+ * movies, top concessions, the transactions-by-channel breakdown, and the
+ * tickets-sold-vs-scanned chart. The KPI strip (getSummaryStats), the
  * week-vs-last-week comparison, the this-month trend, and the inventory
  * chart are intrinsically fixed-period/always-current — retrofitting a
  * generic date engine onto them would mean threading a $pdo/date param
@@ -25,7 +26,7 @@ declare(strict_types=1);
  * (getSalesReport, getRevenueByDayThisWeek, etc.), which the brief
  * explicitly prohibits changing. All six chart payloads are still
  * included in every response, so the front end re-renders all six on
- * every range change even though three of them show identical data.
+ * every range change even though some of them show identical data.
  */
 
 require_once __DIR__ . '/../../config/config.php';
@@ -156,29 +157,28 @@ for ($i = 0; $i < $lastMonthDayCount; $i++) {
 $lastMonthLabel    = $lastMonthAnchor->format('F Y');
 $currentMonthLabel = $today->format('F Y');
 
-// Daily transactions/revenue — fixed 14-day trailing window (not affected by
-// $rangeKey, same "intrinsically fixed-period" convention as the week/month/
-// inventory charts above), zero-filled so a day with no paid transactions
-// still shows as a zero bar rather than a gap.
-$txnWindowDays = 14;
-$txnFrom       = (clone $today)->modify('-' . ($txnWindowDays - 1) . ' days');
+// Daily transactions/revenue — zero-filled across the selected $startStr..
+// $endStr range (today/week/month/custom), same bounds as the category/
+// movies/concessions payloads below, so "Transactions by Channel" actually
+// reflects the selected range instead of a fixed trailing window.
 $dailyTxnByDate = [];
-foreach (TransactionRepo::getDailyTransactionSummary($txnFrom->format('Y-m-d')) as $r) {
+foreach (TransactionRepo::getDailyTransactionSummary($startStr, $endStr) as $r) {
     $dailyTxnByDate[$r['day']] = $r;
 }
 $transactionSummary = [];
-for ($i = 0; $i < $txnWindowDays; $i++) {
-    $d   = (clone $txnFrom)->modify("+$i days");
-    $key = $d->format('Y-m-d');
+$txnCursor = clone $start;
+while ($txnCursor <= $end) {
+    $key = $txnCursor->format('Y-m-d');
     $row = $dailyTxnByDate[$key] ?? null;
     $transactionSummary[] = [
-        'day'       => $d->format('M j'),
+        'day'       => $txnCursor->format('M j'),
         'txn_count' => $row['txn_count'] ?? 0,
         'revenue'   => $row['revenue'] ?? 0.0,
         'online'    => $row['online'] ?? 0,
         'walkin'    => $row['walkin'] ?? 0,
         'kiosk'     => $row['kiosk'] ?? 0,
     ];
+    $txnCursor->modify('+1 day');
 }
 
 // Hourly version of the same per-channel breakdown, today only — used
@@ -200,7 +200,7 @@ for ($h = 0; $h < 24; $h++) {
     ];
 }
 
-$ticketScanRate = TicketTokenRepo::getScanRateByMovie(5);
+$ticketScanRate = TicketTokenRepo::getScanRateByMovie(5, $startStr, $endStr);
 
 $inventoryRaw = InventoryRepo::getFullInventory();
 $lowStock     = InventoryRepo::getLowStock();

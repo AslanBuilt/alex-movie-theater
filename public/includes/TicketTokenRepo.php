@@ -156,28 +156,47 @@ final class TicketTokenRepo
     /**
      * Tickets sold vs. scanned (checked in) per now-showing movie, top N by
      * sold count. "Sold" excludes voided tokens (refunded/cancelled — never
-     * actually admitted); "scanned" is token_status = 'used'. Joins directly
-     * through ticket_tokens.showtime_id (denormalized onto the token at
-     * mint time — see generateForTransaction()), not via transaction_items,
-     * since ticket_tokens already carries movie_id/showtime_id directly.
+     * actually admitted) and, when $fromDate/$toDate are given, is bound to
+     * tokens minted in that range (tt.created_at, set at purchase time — see
+     * generateForTransaction()). "Scanned" is always counted as a SUBSET of
+     * that same sold-in-range row set (token_status = 'used' AND
+     * checked_in_at also in range) — never an independent count — so
+     * tickets_scanned can never exceed tickets_sold; a ticket bought last
+     * week and scanned today would otherwise show up as "attended" with
+     * zero recorded "sold" for today's range, which reads as a bug. Joins
+     * directly through ticket_tokens.movie_id (denormalized onto the token
+     * at mint time), not via transaction_items, since ticket_tokens already
+     * carries movie_id directly.
      *
      * @return array<int, array{title:string, tickets_sold:int, tickets_scanned:int}>
      */
-    public static function getScanRateByMovie(int $limit = 5): array
+    public static function getScanRateByMovie(int $limit = 5, ?string $fromDate = null, ?string $toDate = null): array
     {
         try {
-            $pdo  = Database::getInstance();
+            $pdo = Database::getInstance();
+
+            $dateJoin = '';
+            $params   = [];
+            if ($fromDate !== null && $toDate !== null) {
+                $dateJoin = ' AND tt.created_at BETWEEN :from AND :to';
+                $params[':from'] = $fromDate . ' 00:00:00';
+                $params[':to']   = $toDate . ' 23:59:59';
+            }
+
             $stmt = $pdo->prepare(
                 "SELECT m.title,
                         COUNT(tt.token_id) AS tickets_sold,
                         SUM(CASE WHEN tt.token_status = 'used' THEN 1 ELSE 0 END) AS tickets_scanned
                  FROM movies m
-                 JOIN ticket_tokens tt ON tt.movie_id = m.id AND tt.token_status != 'voided'
+                 JOIN ticket_tokens tt ON tt.movie_id = m.id AND tt.token_status != 'voided' $dateJoin
                  WHERE m.status = 'now_showing'
                  GROUP BY m.id, m.title
                  ORDER BY tickets_sold DESC
                  LIMIT :lim"
             );
+            foreach ($params as $key => $value) {
+                $stmt->bindValue($key, $value);
+            }
             $stmt->bindValue(':lim', $limit, PDO::PARAM_INT);
             $stmt->execute();
             return array_map(static function (array $r): array {

@@ -855,17 +855,24 @@ final class TransactionRepo
     }
 
     /**
-     * Daily transaction count, revenue, and per-channel counts since
-     * $fromDate (inclusive, 'Y-m-d'), paid transactions only. Sparse — only
-     * days with at least one paid transaction come back; the caller
-     * zero-fills the rest of the window.
+     * Daily transaction count, revenue, and per-channel counts between
+     * $fromDate and $toDate (inclusive, 'Y-m-d'), paid transactions only.
+     * $toDate defaults to no upper bound (back-compat with the original
+     * trailing-window caller). Sparse — only days with at least one paid
+     * transaction come back; the caller zero-fills the rest of the window.
      *
      * @return array<int, array{day:string, txn_count:int, revenue:float, online:int, walkin:int, kiosk:int}>
      */
-    public static function getDailyTransactionSummary(string $fromDate): array
+    public static function getDailyTransactionSummary(string $fromDate, ?string $toDate = null): array
     {
         try {
-            $pdo  = Database::getInstance();
+            $pdo   = Database::getInstance();
+            $where = "payment_status = 'paid' AND created_at >= :from";
+            $params = [':from' => $fromDate . ' 00:00:00'];
+            if ($toDate !== null) {
+                $where .= ' AND created_at <= :to';
+                $params[':to'] = $toDate . ' 23:59:59';
+            }
             $stmt = $pdo->prepare(
                 "SELECT DATE(created_at) AS day,
                         COUNT(*) AS txn_count,
@@ -874,11 +881,11 @@ final class TransactionRepo
                         SUM(CASE WHEN source_channel = 'staff_register' THEN 1 ELSE 0 END) AS walkin_count,
                         SUM(CASE WHEN source_channel = 'kiosk' THEN 1 ELSE 0 END) AS kiosk_count
                  FROM transactions
-                 WHERE payment_status = 'paid' AND created_at >= :from
+                 WHERE $where
                  GROUP BY DATE(created_at)
                  ORDER BY day ASC"
             );
-            $stmt->execute([':from' => $fromDate . ' 00:00:00']);
+            $stmt->execute($params);
             return array_map(static function (array $r): array {
                 return [
                     'day'       => (string)$r['day'],
