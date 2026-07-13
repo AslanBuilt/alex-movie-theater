@@ -124,12 +124,21 @@ button {
   box-shadow: var(--shadow);
 }
 
+/* Sticky white app bar, matching POS's .appbar — POS's header is an
+   elevated surface with a border, sitting above the page background, not
+   blended into it. */
 .kiosk-header {
   display: flex;
   justify-content: space-between;
-  align-items: flex-end;
+  align-items: center;
   gap: 1rem;
-  margin-bottom: 1.5rem;
+  margin: -2rem -2rem 1.5rem;
+  padding: 1rem 2rem;
+  background: var(--c-surface);
+  border-bottom: 1px solid var(--c-border);
+  position: sticky;
+  top: 0;
+  z-index: 10;
 }
 
 .kiosk-brand {
@@ -176,16 +185,21 @@ button {
   margin-bottom: 1rem;
 }
 
+/* POS's category rail (.cat) uses a tint background for the active state,
+   not a solid fill — matched here (shape stays a horizontal chip row,
+   since the kiosk's tab strip sits above the grid rather than in a
+   sidebar, but the color language is POS's). */
 .tab {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border: 1.5px solid var(--c-border-strong);
+  border: none;
   background: var(--c-surface);
   color: var(--c-text-2);
-  border-radius: 999px;
+  border-radius: var(--r);
   padding: 0 1.5rem;
   font-size: 1.05rem;
+  box-shadow: var(--shadow);
 }
 
 .tab:hover {
@@ -196,16 +210,16 @@ button {
 .tab:active {
   transform: scale(0.97);
   background: var(--c-brand-tint);
+  color: var(--c-brand-dark);
 }
 
 .tab.active {
-  background: var(--c-brand);
-  color: #fff;
-  border-color: var(--c-brand);
+  background: var(--c-brand-tint);
+  color: var(--c-brand-dark);
 }
 
 .tab.active:active {
-  background: var(--c-brand-dark);
+  filter: brightness(0.95);
 }
 
 .kiosk-grid {
@@ -224,8 +238,9 @@ button {
   overflow: hidden;
 }
 
+/* Square thumbnail, matching POS's .thumb aspect-ratio treatment. */
 .item-art {
-  min-height: 180px;
+  aspect-ratio: 1 / 1;
   background-color: var(--c-surface-2);
   background-size: cover;
   background-position: center;
@@ -379,6 +394,21 @@ button {
   color: #fff;
 }
 
+/* POS color-codes its cash/card payment buttons (.paybtn.cash / .paybtn.card)
+   rather than using one brand color for both — matched here for the
+   kiosk's equivalent toggle. */
+.payment-option[data-method="cash"].active {
+  background: var(--c-ok);
+  border-color: var(--c-ok);
+  color: #fff;
+}
+
+.payment-option[data-method="card"].active {
+  background: var(--c-info);
+  border-color: var(--c-info);
+  color: #fff;
+}
+
 .btn-add {
   background: var(--c-brand);
   color: #fff;
@@ -425,7 +455,6 @@ button {
   min-height: 40vh;
 }
 
-.cart-line,
 .confirmation-line,
 .payment-summary-line {
   display: grid;
@@ -436,10 +465,27 @@ button {
   border-bottom: 1px solid var(--c-border);
 }
 
-.cart-line:last-child,
 .payment-summary-line:last-child,
 .confirmation-line:last-child {
   border-bottom: none;
+}
+
+/* Individually-boxed rows, matching POS's .cline card treatment, rather
+   than plain divider rows. */
+.cart-line {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  border: 1px solid var(--c-border);
+  border-radius: var(--r);
+  background: var(--c-surface);
+  margin-bottom: 0.75rem;
+}
+
+.cart-line:last-child {
+  margin-bottom: 0;
 }
 
 .cart-line-main {
@@ -473,6 +519,7 @@ button {
   background: var(--c-surface-2);
   color: var(--c-text);
   border: 1.5px solid var(--c-border-strong);
+  border-radius: var(--r-sm);
   min-width: var(--tap);
   padding: 0.5rem 1.25rem;
 }
@@ -654,6 +701,10 @@ button {
 
 @media (max-width: 900px) {
   .kiosk-screen {
+    padding: 1rem;
+  }
+  .kiosk-header {
+    margin: -1rem -1rem 1.5rem;
     padding: 1rem;
   }
   .kiosk-grid,
