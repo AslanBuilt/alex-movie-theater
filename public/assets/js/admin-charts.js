@@ -937,14 +937,26 @@
       '<p style="font-size:13px;margin:0;">Range: ' + rangeText + ' &nbsp;|&nbsp; Printed: ' + new Date().toLocaleDateString() + '</p>';
   }
 
+  // Guard against a double-trigger (e.g. a stray second binding, or a fast
+  // double-click on the print button) re-entering mid-flight — without this,
+  // a second call re-clears/rebuilds canvasPrintSwaps while the first call's
+  // <img>s are still on the page, orphaning them (never restored) and
+  // opening a second print dialog.
+  var _printInProgress = false;
+
   window.printAdminReport = function () {
+    if (_printInProgress) return;
+    _printInProgress = true;
     updatePrintTitle();
     swapCanvasesForPrint();
     // One tick so the browser has actually painted the newly-inserted <img>
     // elements before the print snapshot is taken.
     setTimeout(function () {
       window.print();
-      setTimeout(restoreCanvasesAfterPrint, 1000);
+      setTimeout(function () {
+        restoreCanvasesAfterPrint();
+        _printInProgress = false;
+      }, 1000);
     }, 150);
   };
 

@@ -75,7 +75,7 @@ $lowStockIds = array_column($lowStock, 'id');
       <button type="submit" class="btn btn-secondary btn-sm" style="min-height:44px;">Apply</button>
     </div>
     <span id="rangeLoading" style="display:none; color:var(--text-muted); font-size:0.85rem;" role="status" aria-live="polite">Loading…</span>
-    <button type="button" id="btn-print-report" class="btn btn-secondary" style="min-height:44px; margin-left:auto;" onclick="(window.printAdminReport || window.print)()">Print Report</button>
+    <button type="button" id="btn-print-report" class="btn btn-secondary" style="min-height:44px; margin-left:auto;">Print Report</button>
   </form>
 
   <!-- KPI strip -->
