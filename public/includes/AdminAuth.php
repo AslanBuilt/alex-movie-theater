@@ -64,6 +64,13 @@ class AdminAuth
         // Regenerate session ID to prevent fixation.
         session_regenerate_id(true);
 
+        // session_regenerate_id(true) preserves session data, so any flash
+        // set before this login (e.g. requireAuth()'s "Please sign in..." on
+        // the redirect that brought the user here, or logout.php's message)
+        // would otherwise ride through and render on the first post-login
+        // page — login.php itself never reads/clears session flash.
+        unset($_SESSION['flash']);
+
         $_SESSION['admin_user_id']    = (int)$user['id'];
         $_SESSION['admin_username']   = (string)$user['username'];
         $_SESSION['admin_role']       = (string)$user['role'];
