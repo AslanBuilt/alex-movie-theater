@@ -786,7 +786,7 @@
     });
   }
 
-  // ── Print: canvas → static <img> snapshot, no chart recoloring ─────────────
+  // ── Print: offscreen black-on-white chart clone, live chart never touched ──
   // Earlier builds recolored each live chart for print by mutating
   // chart.options.scales in place and calling chart.update('none') — that
   // was the actual cause of two separate confirmed crashes (a stack overflow
@@ -794,12 +794,95 @@
   // object to primitive" thrown from a tick callback mid-resolution), not a
   // simple re-entrancy bug — a recursion guard around setPrintPalette did not
   // fix it because the second call itself was corrupting state, not calling
-  // itself. Snapshotting each canvas exactly as currently rendered (no
-  // mutation, no update()) sidesteps the whole class of problem. Legibility
-  // of the white-on-dark on-screen palette is handled in admin-print.css by
-  // keeping a dark backdrop behind the snapshot image instead of forcing a
-  // light background the source pixels were never drawn for.
+  // itself. This version never mutates a live chart at all: for each visible
+  // chart it builds a *second*, fully independent Chart.js instance on a
+  // detached canvas — same type/data/options as the live one, but with axis
+  // ticks/gridlines/legend text forced to black for legibility on white
+  // paper — draws it once (animation disabled so the first frame is already
+  // final), snapshots that offscreen canvas, then destroys it immediately.
+  // The on-screen chart's own instance/options object is never read for
+  // mutation, only cloned, so the prior crash's root cause (reactive
+  // option-resolution state getting corrected while other code still held
+  // stale references to it) cannot recur — there's nothing shared to corrupt.
   var canvasPrintSwaps = [];
+  var PRINT_TEXT_COLOR = '#000000';
+  var PRINT_GRID_COLOR = 'rgba(0,0,0,0.15)';
+
+  /** Deep-clone plain objects/arrays; functions and other non-plain values are kept by reference (safe — they're pure formatters, not per-instance state). */
+  function clonePreservingFunctions(value) {
+    if (Array.isArray(value)) {
+      return value.map(clonePreservingFunctions);
+    }
+    if (value && typeof value === 'object' && value.constructor === Object) {
+      var out = {};
+      Object.keys(value).forEach(function (k) { out[k] = clonePreservingFunctions(value[k]); });
+      return out;
+    }
+    return value;
+  }
+
+  function blackenScale(scale) {
+    if (!scale) return;
+    scale.ticks = scale.ticks || {};
+    scale.ticks.color = PRINT_TEXT_COLOR;
+    if (scale.grid) scale.grid.color = PRINT_GRID_COLOR;
+    if (scale.title) scale.title.color = PRINT_TEXT_COLOR;
+  }
+
+  /** Build a standalone {type, data, options} config for a print-only clone of `chart` — never mutates `chart` itself. */
+  function buildPrintCloneConfig(chart) {
+    var data = clonePreservingFunctions(chart.data);
+    var options = clonePreservingFunctions(chart.options || {});
+
+    Object.keys(options.scales || {}).forEach(function (key) { blackenScale(options.scales[key]); });
+
+    options.plugins = options.plugins || {};
+    if (options.plugins.legend) {
+      options.plugins.legend.labels = options.plugins.legend.labels || {};
+      options.plugins.legend.labels.color = PRINT_TEXT_COLOR;
+    }
+
+    options.responsive = false;
+    options.maintainAspectRatio = false;
+    options.animation = false;
+    options.devicePixelRatio = 1;
+
+    return { type: chart.config.type, data: data, options: options };
+  }
+
+  /** Render `chart` a second time on a detached canvas with print colors and return a PNG data URL, or null on any failure. */
+  function snapshotChartForPrint(chart) {
+    var printChart;
+    try {
+      var offCanvas = document.createElement('canvas');
+      offCanvas.width = chart.width;
+      offCanvas.height = chart.height;
+      var config = buildPrintCloneConfig(chart);
+      printChart = new Chart(offCanvas, config);
+      // chartCategory's center-total text is set on the live instance after
+      // construction (see renderChartCategory), not as part of its cloned
+      // options/data — carry it over the same way, then force one more
+      // synchronous draw() (repaint only, no option re-resolution — the
+      // step that was actually unsafe on a *live* chart above) so the
+      // centerText plugin's beforeDraw picks up the values before the
+      // snapshot is taken. printChart is a throwaway instance nothing else
+      // references, so this draw() cannot collide with anything.
+      if (chart._centerTotalText) {
+        printChart._centerTotalText = chart._centerTotalText;
+        printChart._centerTotalColor = PRINT_TEXT_COLOR;
+        printChart.draw();
+      }
+      var dataUrl = offCanvas.toDataURL('image/png', 1.0);
+      printChart.destroy();
+      return dataUrl;
+    } catch (e) {
+      console.warn('print clone failed, falling back to on-screen snapshot:', e);
+      if (printChart) {
+        try { printChart.destroy(); } catch (e2) { /* best-effort cleanup */ }
+      }
+      return null;
+    }
+  }
 
   function swapCanvasesForPrint() {
     canvasPrintSwaps = [];
@@ -807,11 +890,16 @@
       var chart = charts[id];
       var canvas = chart && chart.canvas;
       if (!canvas || !canvas.parentNode) return;
-      var dataUrl;
-      try {
-        dataUrl = canvas.toDataURL('image/png', 1.0);
-      } catch (e) {
-        return; // e.g. a tainted canvas — leave the live canvas in place for print
+      // Prefer a black-on-white print clone; fall back to the exact
+      // on-screen (white-on-dark) pixels if cloning fails for any reason,
+      // so a single chart's print styling can't blank the whole report.
+      var dataUrl = snapshotChartForPrint(chart);
+      if (!dataUrl) {
+        try {
+          dataUrl = canvas.toDataURL('image/png', 1.0);
+        } catch (e) {
+          return; // e.g. a tainted canvas — leave the live canvas in place for print
+        }
       }
       var img = el('img', {
         src: dataUrl,
