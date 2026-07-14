@@ -859,13 +859,25 @@
     return { type: chart.config.type, data: data, options: options };
   }
 
-  /** Render `chart` a second time on a detached canvas with print colors and return a PNG data URL, or null on any failure. */
+  /** Render `chart` a second time on an off-screen canvas with print colors and return a PNG data URL, or null on any failure. */
   function snapshotChartForPrint(chart) {
     var printChart;
+    var offCanvas = document.createElement('canvas');
+    offCanvas.width = chart.width;
+    offCanvas.height = chart.height;
+    // Some Chart.js builds fail to lay out scale ticks and legend text
+    // (which require measurement/layout) on a canvas that was never
+    // attached to the document — bars still paint fine (drawn straight
+    // from data coordinates) but axis/legend text silently doesn't, which
+    // is indistinguishable on-screen from "not blackened." Attach
+    // off-screen (not display:none, which some layout code treats as
+    // zero-size) instead of leaving it fully detached, then always remove
+    // it once the snapshot is taken.
+    offCanvas.style.position = 'absolute';
+    offCanvas.style.left = '-99999px';
+    offCanvas.style.top = '0';
+    document.body.appendChild(offCanvas);
     try {
-      var offCanvas = document.createElement('canvas');
-      offCanvas.width = chart.width;
-      offCanvas.height = chart.height;
       var config = buildPrintCloneConfig(chart);
       printChart = new Chart(offCanvas, config);
       // chartCategory's center-total text is set on the live instance after
@@ -890,6 +902,8 @@
         try { printChart.destroy(); } catch (e2) { /* best-effort cleanup */ }
       }
       return null;
+    } finally {
+      if (offCanvas.parentNode) offCanvas.parentNode.removeChild(offCanvas);
     }
   }
 
