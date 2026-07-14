@@ -302,6 +302,9 @@ cat "C:\Users\Aslan\Desktop\aslan-skills-master\aslan-skills-master\skills\<skil
 
 Key skills for this project: `aslan`, `backend-php-standards`, `backend-php-security`, `backend-commerce-concurrency`, `backend-stripe`, `backend-notifications`, `client-transactional-email`, `frontend-form-patterns`, `frontend-feedback-system`, `frontend-file-upload`, `infra-deploy-manual`, `security-hardening`, `quality-production-readiness`, `quality-testing-validation`.
 
+- `agentic-qa-loop` — QA loop, engineer/reviewer pattern,
+  danger checks, repeat offender rule. Load at start of every session.
+
 ---
 
 ## 12. Known Gotchas (things that burned us this session)
