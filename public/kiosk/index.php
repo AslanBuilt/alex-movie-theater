@@ -9,6 +9,9 @@ require_once INCLUDES_PATH . '/MovieRepo.php';
 require_once INCLUDES_PATH . '/helpers.php';
 
 header('X-Robots-Tag: noindex, nofollow');
+header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
+header('Pragma: no-cache');
+header('Expires: Thu, 19 Nov 1981 08:52:00 GMT');
 
 $boot = [
     'concessions' => [],
