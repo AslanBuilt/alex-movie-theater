@@ -425,7 +425,13 @@
               // on-chart label is suppressed here rather than overlapping.
               if (byCategory.noSales[i]) return '';
               var pct = total > 0 ? (byCategory.data[i] / total * 100).toFixed(0) : '0';
-              return ctx.chart.data.labels[i] + '\n' + money(byCategory.data[i]) + ' (' + pct + '%)';
+              // Read the label from the closure-captured byCategory array,
+              // not ctx.chart.data.labels[i] — in the print-clone chart
+              // (see snapshotChartForPrint) ctx.chart wasn't reliably
+              // populated at first-draw time, which threw inside this
+              // formatter and aborted the whole clone, silently falling
+              // back to the unblackened live snapshot for the entire chart.
+              return byCategory.labels[i] + '\n' + money(byCategory.data[i]) + ' (' + pct + '%)';
             }
           }
         }
@@ -495,7 +501,13 @@
         indexAxis: 'y',
         plugins: {
           legend: { position: 'bottom', labels: { color: '#ffffff' } },
-          datalabels: { display: true, formatter: function (v) { return v > 0 ? v : ''; } }
+          // Guard against a non-primitive v — in the print-clone chart
+          // (see snapshotChartForPrint) this formatter received something
+          // that wasn't a plain number at least once, and `v > 0` on a
+          // non-primitive throws "Cannot convert object to primitive
+          // value", aborting the whole clone the same way as chartCategory's
+          // formatter above.
+          datalabels: { display: true, formatter: function (v) { if (v === null || v === undefined || typeof v === 'object') return ''; return v > 0 ? v : ''; } }
         },
         scales: {
           x: { beginAtZero: true, stacked: true, ticks: { precision: 0, color: '#ffffff' }, grid: { color: 'rgba(255,255,255,0.1)' } },
@@ -978,29 +990,6 @@
   window.printAdminReport = function () {
     if (_printInProgress) return;
     _printInProgress = true;
-
-    // DIAGNOSTIC — temporary, remove once console output is captured.
-    console.log('=== PRINT DIAGNOSTIC ===');
-    console.log('Charts registered:', Object.keys(charts));
-    Object.keys(charts).forEach(function (id) {
-      var chart = charts[id];
-      if (!chart) { console.log(id + ': NULL'); return; }
-      console.log(id + ':', {
-        width: chart.width,
-        height: chart.height,
-        type: chart.config && chart.config.type,
-        datasetCount: chart.data && chart.data.datasets && chart.data.datasets.length,
-        scaleKeys: chart.options && chart.options.scales && Object.keys(chart.options.scales)
-      });
-      try {
-        var url = snapshotChartForPrint(chart);
-        console.log(id + ' snapshot:', url ? 'SUCCESS (' + url.length + ' chars)' : 'NULL (fell back)');
-      } catch (e) {
-        console.log(id + ' snapshot ERROR:', e.message);
-      }
-    });
-    console.log('=== END DIAGNOSTIC ===');
-
     updatePrintTitle();
     swapCanvasesForPrint();
     // One tick so the browser has actually painted the newly-inserted <img>
