@@ -841,6 +841,15 @@
       options.plugins.legend.labels = options.plugins.legend.labels || {};
       options.plugins.legend.labels.color = PRINT_TEXT_COLOR;
     }
+    if (options.plugins.datalabels) {
+      options.plugins.datalabels.color = PRINT_TEXT_COLOR;
+    }
+
+    // Per-dataset datalabels (e.g. chartMovies's on-bar ticket-count numbers)
+    // aren't covered by options.plugins.datalabels above — blacken those too.
+    (data.datasets || []).forEach(function (ds) {
+      if (ds.datalabels) ds.datalabels.color = PRINT_TEXT_COLOR;
+    });
 
     options.responsive = false;
     options.maintainAspectRatio = false;
