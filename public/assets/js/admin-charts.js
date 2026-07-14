@@ -913,6 +913,14 @@
       var chart = charts[id];
       var canvas = chart && chart.canvas;
       if (!canvas || !canvas.parentNode) return;
+      // Range-toggled charts (chartWeek/chartMonth/chartToday) are still
+      // rendered every load regardless of which one is currently shown —
+      // see updateRangeVisibility — so the two hidden ones sit inside a
+      // display:none section and report 0 width/height. Attempting either
+      // the print clone or the live-canvas fallback on a zero-dimension
+      // chart only ever produces a blank image; skip it so the printed
+      // report doesn't show an empty box for a chart nobody asked to see.
+      if (!chart.width || !chart.height) return;
       // Prefer a black-on-white print clone; fall back to the exact
       // on-screen (white-on-dark) pixels if cloning fails for any reason,
       // so a single chart's print styling can't blank the whole report.
