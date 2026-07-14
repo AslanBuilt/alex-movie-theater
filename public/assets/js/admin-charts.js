@@ -970,6 +970,29 @@
   window.printAdminReport = function () {
     if (_printInProgress) return;
     _printInProgress = true;
+
+    // DIAGNOSTIC — temporary, remove once console output is captured.
+    console.log('=== PRINT DIAGNOSTIC ===');
+    console.log('Charts registered:', Object.keys(charts));
+    Object.keys(charts).forEach(function (id) {
+      var chart = charts[id];
+      if (!chart) { console.log(id + ': NULL'); return; }
+      console.log(id + ':', {
+        width: chart.width,
+        height: chart.height,
+        type: chart.config && chart.config.type,
+        datasetCount: chart.data && chart.data.datasets && chart.data.datasets.length,
+        scaleKeys: chart.options && chart.options.scales && Object.keys(chart.options.scales)
+      });
+      try {
+        var url = snapshotChartForPrint(chart);
+        console.log(id + ' snapshot:', url ? 'SUCCESS (' + url.length + ' chars)' : 'NULL (fell back)');
+      } catch (e) {
+        console.log(id + ' snapshot ERROR:', e.message);
+      }
+    });
+    console.log('=== END DIAGNOSTIC ===');
+
     updatePrintTitle();
     swapCanvasesForPrint();
     // One tick so the browser has actually painted the newly-inserted <img>
