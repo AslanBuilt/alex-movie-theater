@@ -46,6 +46,10 @@
     // Legend/tick label readability bump (applies in both print and screen
     // palettes below — only the *color*, not the size, differs between them).
     Chart.defaults.font.size = 14;
+    // Global fallback so any scale that doesn't set its own ticks.color
+    // (see renderChartConcessions) doesn't fall through to Chart.js's
+    // built-in grey instead of matching the dark theme.
+    Chart.defaults.color = '#ffffff';
   }
 
   function money(v) {
@@ -568,7 +572,10 @@
       options: {
         indexAxis: 'y',
         plugins: { legend: { display: false } },
-        scales: { x: { beginAtZero: true, ticks: { precision: 0 } } }
+        scales: {
+          x: { beginAtZero: true, ticks: { color: '#ffffff', precision: 0 }, grid: { color: 'rgba(255,255,255,0.1)' } },
+          y: { ticks: { color: '#ffffff' }, grid: { color: 'rgba(255,255,255,0.05)' } }
+        }
       }
     });
   }
