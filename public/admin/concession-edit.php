@@ -162,7 +162,7 @@ function resolveConcessionImageUrl(string $path): string
   </div>
 <?php endif; ?>
 
-<form method="POST" action="concession-edit.php<?= $isNew ? '' : '?id=' . $id ?>" enctype="multipart/form-data">
+<form method="POST" class="admin-form" action="concession-edit.php<?= $isNew ? '' : '?id=' . $id ?>" enctype="multipart/form-data">
   <input type="hidden" name="_csrf" value="<?= e($csrf) ?>">
 
   <div class="form-group">
