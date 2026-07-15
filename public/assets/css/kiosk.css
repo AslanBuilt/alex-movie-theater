@@ -2,18 +2,22 @@
 .identity-banner strong{display:block;font-size:14px;letter-spacing:0.05em;}
 .identity-banner span{color:#aaa;font-size:12px;}
 .identity-icon{font-size:22px;flex-shrink:0;}
-.banner-dismiss{margin-left:auto;background:none;border:1px solid #444;color:#aaa;padding:4px 10px;border-radius:4px;cursor:pointer;font-size:12px;}
-.banner-dismiss:hover{border-color:#888;color:#fff;}
 
 /* ============================================================
    THE ALEX — SELF-SERVICE KIOSK
-   Shares the POS design tokens (public/assets/css/pos.css) so both
-   staff and customer-facing screens read as one system. Kiosk-only
-   difference: every tap target here is sized for an unassisted public
-   touchscreen, so the minimum hit area is larger than POS's (--tap
-   is 80px here vs POS's 64px).
+   Everything below (except the welcome screen and the kiosk-only
+   "done" screen additions near the bottom) is ported directly from
+   public/assets/css/pos.css so the kiosk and the employee POS read as
+   one visual system. Two intentional kiosk-only deviations from POS's
+   tokens, kept from the previous kiosk.css:
+     - --tap is 80px here vs POS's 64px: this is an unassisted public
+       touchscreen, so every hit target is sized larger than POS's
+       staff-operated minimum, never smaller.
+     - color-scheme is forced to light and 'Lato' is added as a font
+       fallback — a public kiosk terminal shouldn't flip to the OS's
+       dark theme.
    ============================================================ */
-:root {
+:root{
   color-scheme: light;
   --c-bg:#eef1f5; --c-surface:#ffffff; --c-surface-2:#f8fafc;
   --c-border:#dbe1ea; --c-border-strong:#c4ccd8;
@@ -28,73 +32,262 @@
   --shadow:0 1px 2px rgba(15,23,42,.06),0 4px 12px rgba(15,23,42,.06);
   --tap:80px;
   --font:'Inter','Lato',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
-  font-family: var(--font);
-  background: var(--c-bg);
-  color: var(--c-text);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  font-family:var(--font);background:var(--c-bg);color:var(--c-text);
+  font-variant-numeric:tabular-nums lining-nums;
+  -webkit-font-smoothing:antialiased;overflow:hidden;
+}
+.tnum{font-variant-numeric:tabular-nums lining-nums}
+svg.ico{width:24px;height:24px;stroke:currentColor;stroke-width:2;fill:none;
+  stroke-linecap:round;stroke-linejoin:round;flex:none}
+svg.ico-lg{width:32px;height:32px}
+svg.ico-sm{width:20px;height:20px}
+button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit;touch-action:manipulation}
+
+.stage{position:fixed;inset:0;overflow:hidden}
+.screen{position:absolute;inset:0;display:none;overflow:auto}
+.screen.show{display:block}
+
+/* ---------- shared shell ---------- */
+.appbar{height:64px;background:var(--c-surface);border-bottom:1px solid var(--c-border);
+  display:flex;align-items:center;gap:var(--s3);padding:0 var(--s4);position:sticky;top:0;z-index:50}
+.appbar .brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:18px;letter-spacing:-.01em}
+.appbar .brand .dot{width:30px;height:30px;border-radius:8px;background:var(--c-brand);
+  color:#fff;display:grid;place-items:center;font-weight:800;font-size:15px}
+.appbar .spacer{flex:1}
+
+/* ---------- MAIN ORDER SCREEN ---------- */
+#order .layout{display:grid;grid-template-columns:212px 1fr 360px;height:100%}
+
+/* left rail: categories */
+.railcats{background:var(--c-surface);border-right:1px solid var(--c-border);display:flex;
+  flex-direction:column;height:100vh;padding:var(--s3) 14px;overflow-y:auto}
+.railbrand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:17px;
+  letter-spacing:-.01em;padding:6px 8px 16px}
+.railbrand .dot{width:34px;height:34px;border-radius:9px;background:var(--c-brand);color:#fff;
+  display:grid;place-items:center;font-weight:800;font-size:16px}
+.cats{display:flex;flex-direction:column;gap:4px}
+.cat{display:flex;align-items:center;gap:12px;min-height:48px;padding:10px 12px;border-radius:11px;
+  background:none;color:var(--c-text-2);font-weight:700;font-size:15px;text-align:left;width:100%}
+.cat:hover{background:var(--c-surface-2);color:var(--c-text)}
+.cat.on{background:var(--c-brand-tint);color:var(--c-brand-dark)}
+.cat .ci{width:24px;height:24px;display:grid;place-items:center;flex:none}
+.cat .ci svg{width:22px;height:22px;stroke:currentColor;stroke-width:2;fill:none;stroke-linecap:round;stroke-linejoin:round}
+.cat .cl{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cat .cb{font-size:12px;font-weight:800;background:var(--c-surface-2);color:var(--c-text-muted);
+  min-width:24px;text-align:center;padding:3px 8px;border-radius:999px}
+.cat.on .cb{background:var(--c-brand);color:#fff}
+
+/* main column */
+#order .left{display:flex;flex-direction:column;min-width:0;height:100vh}
+.appbar .cattitle{display:flex;flex-direction:column;line-height:1.15}
+.appbar .cattitle h1{font-size:18px;font-weight:800;letter-spacing:-.01em}
+.appbar .cattitle .catsub{font-size:12px;color:var(--c-text-muted);font-weight:600;margin-top:2px}
+.grid-wrap{flex:1;overflow:auto;padding:var(--s4)}
+.pgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:var(--s3)}
+/* photo-forward card */
+.card{position:relative;background:var(--c-surface);border:1px solid var(--c-border);border-radius:var(--r);
+  overflow:hidden;text-align:left;display:flex;flex-direction:column;
+  box-shadow:var(--shadow);transition:border-color .12s ease,box-shadow .12s ease}
+.card.inCart{border-color:var(--c-brand);box-shadow:0 0 0 1px var(--c-brand),var(--shadow)}
+.card-tap{display:flex;flex-direction:column;flex:1;width:100%;text-align:left;
+  background:none;border:none;color:inherit;padding:0}
+.card:not(.out) .card-tap:active{transform:scale(.98)}
+.card.out{opacity:.6;filter:grayscale(.45)}
+.card.out .card-tap{cursor:not-allowed}
+.card .thumb{position:relative;aspect-ratio:1/1;width:100%;background:var(--c-surface-2);
+  display:grid;place-items:center;color:var(--c-border-strong);overflow:hidden}
+.card .thumb svg{width:46px;height:46px;stroke-width:1.5}
+.card .thumb img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.qchip{position:absolute;top:8px;right:8px;min-width:28px;height:28px;padding:0 8px;border-radius:14px;
+  background:var(--c-brand);color:#fff;font-weight:800;font-size:14px;display:grid;place-items:center;
+  box-shadow:0 1px 4px rgba(0,0,0,.3);z-index:3}
+.badge{position:absolute;left:8px;top:8px;z-index:3;font-size:11px;font-weight:800;letter-spacing:.02em;
+  padding:4px 9px;border-radius:999px;text-transform:uppercase;box-shadow:0 1px 3px rgba(0,0,0,.12)}
+.badge.ok{display:none}
+.badge.low{background:var(--c-low-bg);color:var(--c-low)}
+.badge.out{background:var(--c-out-bg);color:var(--c-out)}
+.badge.ticket{background:#fff;color:var(--c-info)}
+.card .body{padding:12px 13px 13px;display:flex;flex-direction:column;gap:4px}
+.card .nm{font-weight:700;font-size:15px;line-height:1.25}
+.card .row2{display:flex;align-items:baseline;justify-content:space-between;gap:8px;margin-top:2px}
+.card .pr{font-weight:800;font-size:17px}
+.card .stock{font-size:12px;font-weight:700;color:var(--c-text-muted);white-space:nowrap}
+.card .stock.low{color:var(--c-low)}
+.card .stock.out{color:var(--c-out)}
+.card .opt-flag{font-size:11px;color:var(--c-info);font-weight:700;display:flex;align-items:center;gap:4px}
+
+/* control overlay on the thumb's bottom-right */
+.cardctl{position:absolute;right:10px;bottom:10px;z-index:4}
+.stepper{display:flex;align-items:center;background:var(--c-brand);border:3px solid #fff;
+  border-radius:999px;box-shadow:0 4px 10px rgba(179,18,43,.35)}
+.step{width:40px;height:40px;border-radius:999px;display:grid;place-items:center;color:#fff;background:none}
+.step svg{width:20px;height:20px}
+.step:disabled{opacity:.45;cursor:not-allowed}
+.stepn{min-width:26px;text-align:center;font-weight:800;font-size:16px;color:#fff}
+.step-add{min-height:46px;padding:0 16px;border-radius:999px;background:var(--c-brand);color:#fff;
+  font-weight:800;font-size:14px;display:flex;align-items:center;justify-content:center;gap:6px;
+  border:3px solid #fff;box-shadow:0 4px 10px rgba(179,18,43,.35)}
+.step-add:active{background:var(--c-brand-dark)}
+.step-add:disabled{opacity:.5;cursor:not-allowed}
+
+/* ---------- CART ---------- */
+.cart{background:var(--c-surface);border-left:1px solid var(--c-border);display:flex;flex-direction:column;height:100vh}
+.cart h2{font-size:16px;font-weight:800;display:flex;align-items:center;gap:8px}
+.cart .chead{padding:var(--s3) var(--s4);border-bottom:1px solid var(--c-border);
+  display:flex;align-items:center;justify-content:space-between}
+.cart .ccount{color:var(--c-text-muted);font-size:13px;font-weight:700}
+.clines{flex:1;overflow:auto;padding:var(--s2) var(--s3)}
+.cempty{height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:10px;color:var(--c-text-muted);text-align:center;padding:24px}
+.cempty svg{width:46px;height:46px;stroke-width:1.4;color:var(--c-border-strong)}
+.cline{display:grid;grid-template-columns:46px 1fr auto;gap:10px;padding:12px;border-radius:10px;
+  border:1px solid var(--c-border);margin-bottom:8px;background:var(--c-surface);align-items:start}
+.cline .cth{width:46px;height:46px;border-radius:8px;background:var(--c-surface-2) center/cover no-repeat;flex:none}
+.cline .nm{font-weight:700;font-size:14px}
+.cline .op{font-size:12px;color:var(--c-text-muted);font-weight:600}
+.cline .lp{font-weight:800;font-size:15px;white-space:nowrap}
+.qty{display:flex;align-items:center;gap:2px;margin-top:8px}
+.qbtn{width:40px;height:40px;border-radius:9px;background:var(--c-surface-2);
+  border:1px solid var(--c-border-strong);display:grid;place-items:center;color:var(--c-text)}
+.qbtn:active{background:var(--c-border)}
+.qn{min-width:34px;text-align:center;font-weight:800;font-size:16px}
+.rm{width:40px;height:40px;border-radius:9px;display:grid;place-items:center;color:var(--c-out);
+  background:var(--c-out-bg)}
+.cfoot{border-top:1px solid var(--c-border);padding:var(--s3) var(--s4);display:flex;flex-direction:column;gap:10px}
+.subrow{display:flex;justify-content:space-between;align-items:baseline;font-weight:800}
+.subrow .big{font-size:24px}
+.btn-checkout{min-height:var(--tap);border-radius:12px;background:var(--c-brand);color:#fff;
+  font-size:19px;font-weight:800;display:flex;align-items:center;justify-content:center;gap:10px}
+.btn-checkout:active{background:var(--c-brand-dark)}
+.btn-checkout:disabled{opacity:.4;cursor:not-allowed}
+.btn-clear{min-height:48px;border-radius:10px;background:var(--c-surface);color:var(--c-text-2);
+  border:1px solid var(--c-border-strong);font-weight:700;display:flex;align-items:center;justify-content:center;gap:8px}
+
+/* ---------- options overlay ---------- */
+.overlay{position:fixed;inset:0;background:rgba(15,23,42,.5);display:none;
+  align-items:flex-end;justify-content:center;z-index:200}
+.overlay.show{display:flex}
+@media(min-width:768px){.overlay{align-items:center}}
+.sheet{background:var(--c-surface);width:100%;max-width:520px;border-radius:18px 18px 0 0;
+  padding:var(--s4);box-shadow:0 -8px 40px rgba(0,0,0,.2)}
+@media(min-width:768px){.sheet{border-radius:18px}}
+.opt-poster{width:100%;height:150px;border-radius:12px;background:var(--c-surface-2) center/cover no-repeat;margin-bottom:16px;display:none}
+.opt-poster.show{display:block}
+.sheet h3{font-size:18px;font-weight:800;margin-bottom:4px}
+.sheet p{color:var(--c-text-muted);font-size:14px;margin-bottom:18px}
+.optgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.optbtn{min-height:var(--tap);border-radius:12px;background:var(--c-surface-2);
+  border:1.5px solid var(--c-border-strong);font-weight:700;font-size:16px;display:flex;
+  flex-direction:column;align-items:center;justify-content:center;gap:2px}
+.optbtn .op-pr{font-size:13px;color:var(--c-text-muted);font-weight:700}
+.optbtn:active{background:var(--c-brand-tint);border-color:var(--c-brand)}
+.sheet .cancel{margin-top:16px;width:100%;min-height:52px;border-radius:10px;background:none;
+  color:var(--c-text-2);font-weight:700;border:1px solid var(--c-border)}
+
+/* ---------- CHECKOUT screens ---------- */
+.pay-wrap{max-width:920px;margin:0 auto;padding:var(--s4)}
+.pay-grid{display:grid;grid-template-columns:1fr 380px;gap:var(--s4)}
+@media(max-width:860px){.pay-grid{grid-template-columns:1fr}}
+.panel{background:var(--c-surface);border:1px solid var(--c-border);border-radius:var(--r);box-shadow:var(--shadow)}
+.panel .ph{padding:var(--s3) var(--s4);border-bottom:1px solid var(--c-border);font-weight:800;font-size:15px}
+.osum{padding:var(--s2) var(--s4)}
+.osum .row{display:flex;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--c-border)}
+.osum .row:last-child{border:none}
+.osum .nm{font-weight:700}.osum .op{font-size:12px;color:var(--c-text-muted)}
+.totbox{padding:var(--s4);text-align:center}
+.totbox .lbl{color:var(--c-text-muted);font-weight:700;font-size:13px;text-transform:uppercase;letter-spacing:.04em}
+.totbox .amt{font-size:48px;font-weight:800;letter-spacing:-.02em;margin-top:4px}
+.paybtns{display:flex;flex-direction:column;gap:14px;padding:0 var(--s4) var(--s4)}
+.paybtn{min-height:84px;border-radius:14px;font-size:20px;font-weight:800;display:flex;
+  align-items:center;justify-content:center;gap:12px}
+.paybtn.cash{background:var(--c-ok);color:#fff}
+.paybtn.card{background:var(--c-info);color:#fff}
+.paybtn:active{filter:brightness(.93)}
+.paybtn:disabled{opacity:.5;cursor:not-allowed}
+.backbar{padding:var(--s3) var(--s4)}
+.back{display:inline-flex;align-items:center;gap:6px;color:var(--c-text-2);font-weight:700;font-size:15px}
+
+/* cash keypad */
+.cash-wrap{max-width:560px;margin:0 auto;padding:var(--s4)}
+.tender{background:var(--c-surface);border:1px solid var(--c-border);border-radius:var(--r);
+  padding:var(--s4);text-align:center;margin-bottom:var(--s3);box-shadow:var(--shadow)}
+.tender .due{color:var(--c-text-muted);font-weight:700;font-size:14px}
+.tender .entry{font-size:44px;font-weight:800;margin:8px 0}
+.tender .change{font-size:16px;font-weight:800;color:var(--c-ok);background:var(--c-ok-bg);
+  display:inline-block;padding:8px 16px;border-radius:10px}
+.quickcash{display:flex;gap:10px;margin-bottom:var(--s3);flex-wrap:wrap;justify-content:center}
+.quickcash button{min-height:52px;flex:1;min-width:90px;border-radius:10px;background:var(--c-surface);
+  border:1.5px solid var(--c-border-strong);font-weight:800;font-size:16px}
+.keypad{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.key{min-height:72px;border-radius:12px;background:var(--c-surface);border:1px solid var(--c-border-strong);
+  font-size:26px;font-weight:800}
+.key:active{background:var(--c-border)}
+
+/* card waiting */
+.wait-wrap{max-width:560px;margin:0 auto;padding:var(--s5) var(--s4);text-align:center}
+.reader{width:140px;height:140px;border-radius:50%;background:var(--c-info-bg);color:var(--c-info);
+  display:grid;place-items:center;margin:0 auto var(--s4)}
+.reader svg{width:64px;height:64px;stroke-width:1.5}
+.pulse{animation:pulse 1.6s ease-in-out infinite}
+@keyframes pulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.06);opacity:.7}}
+
+/* complete */
+.done-wrap{height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  text-align:center;padding:var(--s4);gap:var(--s3)}
+.done-check{width:120px;height:120px;border-radius:50%;background:var(--c-ok-bg);color:var(--c-ok);display:grid;place-items:center}
+.done-check svg{width:64px;height:64px;stroke-width:2.5}
+
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(120%);
+  background:#0f172a;color:#fff;padding:14px 20px;border-radius:12px;font-weight:700;font-size:15px;
+  display:flex;align-items:center;gap:10px;z-index:500;transition:transform .25s ease;box-shadow:0 8px 30px rgba(0,0,0,.3)}
+.toast.show{transform:translateX(-50%) translateY(0)}
+.toast svg{color:#4ade80}
+.toast.err svg{color:#f87171}
+
+/* iPad portrait: icon-only category rail + cart as a sticky bottom panel */
+@media(max-width:900px){
+  #order .layout{grid-template-columns:68px 1fr}
+  .railcats{padding:var(--s3) 8px}
+  .railbrand{justify-content:center;padding:6px 0 16px}
+  .railbrand span:last-child{display:none}
+  .cat{justify-content:center;padding:10px 6px}
+  .cat .cl{display:none}
+  .cat .cb{position:absolute;margin-top:-26px;margin-left:22px;min-width:18px;padding:1px 5px;font-size:10px}
+  .cat{position:relative}
+  .cart{position:fixed;right:0;bottom:0;left:0;height:auto;max-height:62vh;border-left:none;
+    border-top:1px solid var(--c-border);box-shadow:0 -6px 24px rgba(0,0,0,.12);z-index:60}
+  #order .left{height:100vh}
+  .grid-wrap{padding-bottom:140px}
+  .clines{max-height:24vh}
 }
 
-* {
-  box-sizing: border-box;
-}
-
-html, body {
-  margin: 0;
-  min-height: 100%;
-}
-
-body {
-  background: var(--c-bg);
-  overflow: hidden;
-  font-family: var(--font);
-  color: var(--c-text);
-  -webkit-font-smoothing: antialiased;
-}
-
-button {
-  font: inherit;
-  font-family: inherit;
-  cursor: pointer;
-  touch-action: manipulation;
-}
-
-.kiosk-shell {
-  position: relative;
-  min-height: 100vh;
-  padding: 0;
-}
-
-.kiosk-screen {
-  display: none;
-  min-height: 100vh;
-  width: 100%;
-  padding: 2rem;
-}
-
-.kiosk-screen.show {
-  display: block;
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
-}
-
-.kiosk-screen-welcome {
+/* ============================================================
+   WELCOME SCREEN (kiosk-only — preserved as-is, not part of POS)
+   ============================================================ */
+.kiosk-screen-welcome{
   flex-direction: column;
   justify-content: center;
   align-items: center;
   text-align: center;
   touch-action: manipulation;
+  padding: 2rem;
 }
 
-.kiosk-screen-welcome.show {
+.kiosk-screen-welcome.show{
   display: flex;
 }
 
-.welcome-logo {
+.welcome-logo{
   max-width: 180px;
   border-radius: var(--r);
   box-shadow: var(--shadow);
 }
 
-.welcome-copy h1 {
+.welcome-copy h1{
   font-size: clamp(3rem, 4vw, 5rem);
   font-weight: 800;
   letter-spacing: -0.01em;
@@ -102,14 +295,14 @@ button {
   color: var(--c-text);
 }
 
-.welcome-copy p {
+.welcome-copy p{
   font-size: 1.2rem;
   margin: 0;
   max-width: 36rem;
   color: var(--c-text-2);
 }
 
-.welcome-cta {
+.welcome-cta{
   margin-top: 3rem;
   min-height: var(--tap);
   display: inline-flex;
@@ -124,552 +317,41 @@ button {
   box-shadow: var(--shadow);
 }
 
-/* Sticky white app bar, matching POS's .appbar — POS's header is an
-   elevated surface with a border, sitting above the page background, not
-   blended into it. */
-.kiosk-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 1rem;
-  margin: -2rem -2rem 1.5rem;
-  padding: 1rem 2rem;
-  background: var(--c-surface);
-  border-bottom: 1px solid var(--c-border);
-  position: sticky;
-  top: 0;
-  z-index: 10;
-}
-
-.kiosk-brand {
-  font-size: 2rem;
-  font-weight: 800;
-  letter-spacing: -0.01em;
-  color: var(--c-text);
-}
-
-.kiosk-subtitle {
-  margin-top: 0.35rem;
-  color: var(--c-text-muted);
-}
-
-/* ---------- shared interactive base ----------
-   Every tap target on this page routes through this base rule so
-   sizing, feedback, and touch behavior stay consistent. Minimum
-   80px tall hit area on every one (public unassisted touchscreen —
-   larger than POS's staff-operated 64px minimum, never smaller). */
-.kiosk-action,
-.btn,
-.payment-option,
-.option-btn,
-.btn-add,
-.qty-btn,
-.rm-btn,
-.pin-key,
-.tab,
-.ticket-action {
-  cursor: pointer;
-  touch-action: manipulation;
-  border: none;
-  border-radius: var(--r);
-  font-weight: 700;
-  min-height: var(--tap);
-  transition: transform 0.08s ease, background-color 0.12s ease, box-shadow 0.12s ease, filter 0.12s ease;
-  -webkit-tap-highlight-color: transparent;
-}
-
-.kiosk-tabs {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.75rem;
-  margin-bottom: 1rem;
-}
-
-/* POS's category rail (.cat) uses a tint background for the active state,
-   not a solid fill — matched here (shape stays a horizontal chip row,
-   since the kiosk's tab strip sits above the grid rather than in a
-   sidebar, but the color language is POS's). */
-.tab {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border: none;
-  background: var(--c-surface);
-  color: var(--c-text-2);
-  border-radius: var(--r);
-  padding: 0 1.5rem;
-  font-size: 1.05rem;
-  box-shadow: var(--shadow);
-}
-
-.tab:hover {
-  background: var(--c-surface-2);
-  color: var(--c-text);
-}
-
-.tab:active {
-  transform: scale(0.97);
-  background: var(--c-brand-tint);
-  color: var(--c-brand-dark);
-}
-
-.tab.active {
-  background: var(--c-brand-tint);
-  color: var(--c-brand-dark);
-}
-
-.tab.active:active {
-  filter: brightness(0.95);
-}
-
-.kiosk-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  gap: 1rem;
-}
-
-.item-card {
-  display: flex;
-  flex-direction: column;
-  background: var(--c-surface);
-  border: 1px solid var(--c-border);
-  border-radius: var(--r);
-  box-shadow: var(--shadow);
-  overflow: hidden;
-}
-
-/* Square thumbnail, matching POS's .thumb aspect-ratio treatment. */
-.item-art {
-  aspect-ratio: 1 / 1;
-  background-color: var(--c-surface-2);
-  background-size: cover;
-  background-position: center;
-}
-
-.item-body {
-  padding: 1.25rem;
-  display: grid;
-  gap: 0.85rem;
-}
-
-.item-title {
-  font-size: 1.15rem;
-  font-weight: 700;
-  color: var(--c-text);
-}
-
-.item-meta {
-  color: var(--c-text-muted);
-  min-height: 2rem;
-}
-
-.item-qty {
-  color: var(--c-text-muted);
-  font-size: 0.9rem;
-  font-weight: 600;
-}
-
-.item-bottom {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  color: var(--c-text);
-  font-weight: 700;
-}
-
-.ticket-prices,
-.item-actions {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 0.75rem;
-}
-
-.ticket-action,
-.btn-add,
-.option-btn,
-.payment-option,
-.kiosk-action,
-.btn,
-.rm-btn,
-.qty-btn,
-.pin-key {
-  padding: 0.5rem 1rem;
-  font-size: 1.05rem;
-}
-
-.ticket-action,
-.btn-add,
-.option-btn,
-.payment-option,
-.kiosk-action,
-.pin-key {
-  background: var(--c-surface-2);
-  color: var(--c-text);
-  border: 1.5px solid var(--c-border-strong);
-}
-
-.ticket-action:hover,
-.btn-add:hover,
-.option-btn:hover,
-.payment-option:hover,
-.kiosk-action:hover,
-.pin-key:hover {
-  background: var(--c-brand-tint);
-  border-color: var(--c-brand);
-  color: var(--c-brand-dark);
-}
-
-.ticket-action:active,
-.btn-add:active,
-.option-btn:active,
-.payment-option:active,
-.kiosk-action:active,
-.pin-key:active,
-.rm-btn:active,
-.qty-btn:active {
-  transform: scale(0.96);
-  background: var(--c-brand-tint);
-  border-color: var(--c-brand);
-  color: var(--c-brand-dark);
-}
-
-.btn {
-  background: var(--c-brand);
-  color: #fff;
-  min-width: 160px;
-  border: none;
-}
-
-.btn:hover {
-  background: var(--c-brand-dark);
-}
-
-.btn:active {
-  background: var(--c-brand-dark);
-  transform: scale(0.97);
-}
-
-.btn-secondary {
-  background: var(--c-surface);
-  color: var(--c-text-2);
-  border: 1.5px solid var(--c-border-strong);
-}
-
-.btn-secondary:hover {
-  background: var(--c-surface-2);
-  color: var(--c-text);
-}
-
-.btn-secondary:active {
-  background: var(--c-border);
-  color: var(--c-text);
-  transform: scale(0.97);
-}
-
-.btn-primary {
-  background: var(--c-brand);
-  color: #fff;
-}
-
-.btn-primary:active {
-  background: var(--c-brand-dark);
-}
-
-.btn.disabled,
-.payment-option.active {
-  opacity: 0.6;
-}
-
-.btn.disabled {
-  cursor: not-allowed;
-}
-
-.btn.disabled:active {
-  transform: none;
-}
-
-.payment-option.active {
-  background: var(--c-brand);
-  border-color: var(--c-brand);
-  color: #fff;
-}
-
-/* POS color-codes its cash/card payment buttons (.paybtn.cash / .paybtn.card)
-   rather than using one brand color for both — matched here for the
-   kiosk's equivalent toggle. */
-.payment-option[data-method="cash"].active {
-  background: var(--c-ok);
-  border-color: var(--c-ok);
-  color: #fff;
-}
-
-.payment-option[data-method="card"].active {
-  background: var(--c-info);
-  border-color: var(--c-info);
-  color: #fff;
-}
-
-.btn-add {
-  background: var(--c-brand);
-  color: #fff;
-  border: none;
-  grid-column: span 2;
-}
-
-.btn-add:hover {
-  background: var(--c-brand-dark);
-}
-
-.btn-add:active {
-  background: var(--c-brand-dark);
-  transform: scale(0.96);
-}
-
-.item-actions {
-  gap: 0.5rem;
-}
-
-.kiosk-footer {
-  margin-top: 1.75rem;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.75rem;
-  justify-content: flex-end;
-}
-
-.kiosk-footer-summary {
-  flex: 1 1 100%;
-  align-self: center;
-  color: var(--c-text-2);
-  font-weight: 600;
-}
-
-.cart-body,
-.payment-summary,
-.confirmation-body {
-  background: var(--c-surface);
-  border: 1px solid var(--c-border);
-  border-radius: var(--r);
-  padding: 1.5rem;
-  box-shadow: var(--shadow);
-  min-height: 40vh;
-}
-
-.confirmation-line,
-.payment-summary-line {
-  display: grid;
-  grid-template-columns: 1fr auto;
-  align-items: center;
-  gap: 1rem;
-  padding: 1rem 0;
-  border-bottom: 1px solid var(--c-border);
-}
-
-.payment-summary-line:last-child,
-.confirmation-line:last-child {
-  border-bottom: none;
-}
-
-/* Individually-boxed rows, matching POS's .cline card treatment, rather
-   than plain divider rows. */
-.cart-line {
-  display: grid;
-  grid-template-columns: 1fr auto;
-  align-items: center;
-  gap: 1rem;
-  padding: 1rem;
-  border: 1px solid var(--c-border);
-  border-radius: var(--r);
-  background: var(--c-surface);
-  margin-bottom: 0.75rem;
-}
-
-.cart-line:last-child {
-  margin-bottom: 0;
-}
-
-.cart-line-main {
-  display: grid;
-  gap: 0.35rem;
-}
-
-.cart-line-title,
-.ticket-type {
-  font-weight: 700;
-  color: var(--c-text);
-}
-
-.cart-line-meta,
-.ticket-when,
-.ticket-seq,
-.confirmation-ticket-header {
-  color: var(--c-text-muted);
-}
-
-.cart-line-controls {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  justify-content: flex-end;
-  align-items: center;
-}
-
-.qty-btn,
-.rm-btn {
-  background: var(--c-surface-2);
-  color: var(--c-text);
-  border: 1.5px solid var(--c-border-strong);
-  border-radius: var(--r-sm);
-  min-width: var(--tap);
-  padding: 0.5rem 1.25rem;
-}
-
-.rm-btn {
-  background: var(--c-out-bg);
-  color: var(--c-out);
-  border-color: var(--c-out-bg);
-  font-weight: 700;
-}
-
-.rm-btn:hover {
-  background: var(--c-out-bg);
-  border-color: var(--c-out);
-}
-
-.rm-btn:active {
-  background: var(--c-out-bg);
-  border-color: var(--c-out);
-  color: var(--c-out);
-}
-
-.qty-value {
-  min-width: 2rem;
-  text-align: center;
-  font-weight: 800;
-  font-size: 1.1rem;
-  color: var(--c-text);
-}
-
-.cart-line-price,
-.payment-summary-total {
-  font-weight: 800;
-  color: var(--c-text);
-}
-
-.payment-options {
-  display: flex;
-  gap: 1rem;
-  margin-bottom: 1.5rem;
-}
-
-.payment-options .payment-option {
-  flex: 1;
-}
-
-.payment-panel {
-  background: var(--c-surface);
-  border: 1px solid var(--c-border);
-  border-radius: var(--r);
-  padding: 1.5rem;
-  box-shadow: var(--shadow);
-  margin-bottom: 1.5rem;
-}
-
-.payment-panel.hidden {
-  display: none;
-}
-
-.payment-hint {
-  margin: 0 0 1rem;
-  color: var(--c-text-2);
-}
-
-.pin-display {
-  text-align: center;
-  font-size: 2rem;
-  font-weight: 700;
-  letter-spacing: 0.35rem;
-  background: var(--c-surface-2);
-  border: 1px solid var(--c-border);
-  border-radius: var(--r);
-  padding: 1rem;
-  margin-bottom: 1rem;
-  color: var(--c-text);
-}
-
-.pin-pad {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 0.75rem;
-  margin-bottom: 1rem;
-}
-
-.pin-key {
-  min-height: var(--tap);
-  font-size: 1.35rem;
-  font-weight: 700;
-}
-
-.kiosk-toast {
-  position: fixed;
-  left: 50%;
-  bottom: 2rem;
-  transform: translateX(-50%);
-  padding: 1rem 1.5rem;
-  border-radius: 999px;
-  background: var(--c-text);
-  color: #fff;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.2s ease;
-  z-index: 300;
-  font-weight: 600;
-}
-
-.kiosk-toast.show {
-  opacity: 1;
-}
-
-.empty-state {
-  padding: 3rem;
-  text-align: center;
-  color: var(--c-text-muted);
-}
-
-.confirm-number {
-  font-size: 1.4rem;
-  font-weight: 800;
-  margin-bottom: 1rem;
-  color: var(--c-text);
-}
-
-.confirm-note {
-  margin-bottom: 1.5rem;
+/* ============================================================
+   KIOSK-ONLY "DONE" SCREEN ADDITIONS
+   POS's #done screen only shows a reference + total (staff hand the
+   receipt over in person). The unattended kiosk also has to show the
+   customer's ticket QR codes (scanned at the door) and, for orders
+   with concessions, a pickup reminder. Reused from the previous
+   kiosk.css so these aren't rebuilt from scratch.
+   ============================================================ */
+.confirm-note{
   padding: 1rem 1.25rem;
   border-radius: var(--r);
   background: var(--c-info-bg);
   color: var(--c-info);
   font-weight: 600;
+  max-width: 480px;
 }
 
-.confirm-note.hidden {
+.confirm-note.hidden{
   display: none;
 }
 
-.confirmation-list {
-  display: grid;
-  gap: 0.75rem;
-  margin-bottom: 1.5rem;
-}
-
-.confirmation-ticket-header {
+.confirmation-ticket-header{
   font-size: 1.15rem;
   font-weight: 800;
-  margin-bottom: 1rem;
   color: var(--c-text);
 }
 
-.ticket-card {
+.confirm-tickets{
+  display: grid;
+  gap: 1rem;
+  width: 100%;
+  max-width: 560px;
+}
+
+.ticket-card{
   display: grid;
   grid-template-columns: 140px 1fr;
   gap: 1rem;
@@ -679,47 +361,34 @@ button {
   border: 1px solid var(--c-border);
   border-radius: var(--r);
   box-shadow: var(--shadow);
-  margin-bottom: 1rem;
+  text-align: left;
 }
 
-.ticket-qr img {
+.ticket-qr img{
   width: 100%;
   height: auto;
   border-radius: var(--r-sm);
   background: var(--c-surface-2);
 }
 
-.ticket-meta {
+.ticket-meta{
   display: grid;
   gap: 0.45rem;
 }
 
-.ticket-film {
+.ticket-type,
+.ticket-film{
   font-weight: 700;
   color: var(--c-text);
 }
 
-@media (max-width: 900px) {
-  .kiosk-screen {
-    padding: 1rem;
-  }
-  .kiosk-header {
-    margin: -1rem -1rem 1.5rem;
-    padding: 1rem;
-  }
-  .kiosk-grid,
-  .payment-options,
-  .ticket-prices {
-    grid-template-columns: 1fr;
-  }
-  .kiosk-footer {
-    justify-content: center;
-  }
-  .cart-line-controls {
-    justify-content: flex-start;
-    width: 100%;
-  }
-  .ticket-card {
+.ticket-when,
+.ticket-seq{
+  color: var(--c-text-muted);
+}
+
+@media (max-width: 480px){
+  .ticket-card{
     grid-template-columns: 1fr;
   }
 }

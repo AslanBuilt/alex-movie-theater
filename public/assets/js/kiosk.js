@@ -1,79 +1,623 @@
+/* ============================================================
+   THE ALEX — SELF-SERVICE KIOSK (client)
+   Ported from public/assets/js/pos.js: same catalog render, cart,
+   overlays, cash keypad, and checkout logic, driving the same screen
+   markup POS uses (railcats/pgrid/cart/pay/cash/card/done). Kiosk-only
+   differences:
+     - starts on a welcome/"tap to start" screen (POS has none)
+     - a 60s idle timer and a 15s post-order timer return to that
+       welcome screen and clear the cart (POS has no idle reset —
+       staff are always signed in and manning the register)
+     - cash checkout has no PIN step (POS requires a signed-in
+       operator already; the kiosk has no staff to sign off on cash)
+     - the "done" screen shows the customer's ticket QR codes to keep
+       instead of POS's staff-only "Check In Now?" button
+   Cart is held client-side; the server re-prices and re-verifies stock
+   atomically at checkout (api/kiosk-checkout.php).
+   ============================================================ */
 (function () {
   'use strict';
 
-  var BOOT = window.KIOSK_BOOT || { concessions: [], showtimes: [] };
+  var BOOT = window.KIOSK_BOOT || { csrf: '', products: [], tickets: [], hasTickets: false };
+
+  var WELCOME_ID = 'welcome-screen';
+
+  var ICON_BOX  = '<svg class="ico" viewBox="0 0 24 24"><path d="M3 7l9-4 9 4-9 4-9-4z"/><path d="M3 7v10l9 4 9-4V7"/><path d="M12 11v10"/></svg>';
+  var ICON_TICK = '<svg class="ico" viewBox="0 0 24 24"><path d="M3 9a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2 2 2 0 0 0 0 4 2 2 0 0 1-2 2H5a2 2 0 0 1-2-2 2 2 0 0 0 0-4z"/><path d="M13 7v10"/></svg>';
+
+  var BADGE = { ok: 'In Stock', low: 'Low Stock', out: 'Sold Out' };
+
+  /* Left-rail category icons (Tabler-style). Unknown categories fall back to a
+     generic tag glyph so a new concession category never renders icon-less. */
+  var CAT_ICONS = {
+    Tickets: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2 2 2 0 0 0 0 4 2 2 0 0 1-2 2H5a2 2 0 0 1-2-2 2 2 0 0 0 0-4z"/><path d="M13 6v12"/></svg>',
+    Combos:  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-4 9 4-9 4-9-4z"/><path d="M3 9v6l9 4 9-4V9"/></svg>',
+    Popcorn: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l1.5 12h9L18 9"/><path d="M5 9a2.5 2.5 0 1 1 1-4.8A2.5 2.5 0 0 1 11 4a2.5 2.5 0 0 1 4 .7A2.5 2.5 0 1 1 19 9"/></svg>',
+    Drinks:  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4h12l-1.5 16h-9L6 4z"/><path d="M6.5 9h11"/></svg>',
+    Candy:   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4.5"/><path d="M16 9l4-3v12l-4-3M8 15l-4 3V6l4 3"/></svg>'
+  };
+  var CAT_FALLBACK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4h7l6 6-7 7-6-6V4z"/><circle cx="10.5" cy="7.5" r="1"/></svg>';
+  function catIcon(name) { return CAT_ICONS[name] || CAT_FALLBACK; }
+
+  /* Count of buyable items in a category — drives the rail badge. */
+  function availCount(cat) {
+    if (cat === 'Tickets') return BOOT.tickets.length;
+    var n = 0;
+    BOOT.products.forEach(function (p) { if (p.cat === cat && p.stock > 0) n++; });
+    return n;
+  }
+  function setCatHeader() {
+    var title = document.getElementById('catTitle');
+    var sub = document.getElementById('catSub');
+    if (title) title.textContent = curTab;
+    if (sub) sub.textContent = curTab === 'Tickets'
+      ? (BOOT.tickets.length + ' showing')
+      : (availCount(curTab) + ' available');
+  }
+
+  /* cart line shape:
+     concession: {key, kind:'concession', id, name, option, price, qty}
+     ticket:     {key, kind:'ticket', showtimeId, age:'Adult'|'Child', title, when, price, qty} */
   var cart = [];
-  var activeTab = BOOT.showtimes.length ? 'Tickets' : (BOOT.concessions[0] ? BOOT.concessions[0].name : 'Tickets');
-  var method = 'card';
-  var pin = '';
+  var curTab = BOOT.hasTickets ? 'Tickets' : (firstCategory() || 'Tickets');
+
+  function firstCategory() {
+    for (var i = 0; i < BOOT.products.length; i++) { return BOOT.products[i].cat; }
+    return null;
+  }
+  function money(n) { return '$' + (Math.round(n * 100) / 100).toFixed(2); }
+  function esc(s) {
+    return String(s == null ? '' : s)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  }
+  function statusOf(p) {
+    if (p.stock <= 0) return 'out';
+    if (p.reorder != null && p.stock <= p.reorder) return 'low';
+    return 'ok';
+  }
+  /* Thumb with graceful fallback: a fallback icon sits behind the image; if the
+     image 404s the onerror handler hides it, revealing the icon. */
+  function makeThumb(image, iconSvg) {
+    if (!image) return '<div class="thumb">' + iconSvg + '</div>';
+    return '<div class="thumb">' + iconSvg +
+      '<img src="' + esc(image) + '" alt="" style="position:absolute;inset:0" ' +
+      'onerror="this.style.display=\'none\'"></div>';
+  }
+
+  /* ---------------- left-rail categories ---------------- */
+  function buildCats() {
+    var wrap = document.getElementById('cats');
+    var tabs = [];
+    if (BOOT.hasTickets) tabs.push('Tickets');
+    var seen = {};
+    BOOT.products.forEach(function (p) {
+      if (!seen[p.cat]) { seen[p.cat] = true; tabs.push(p.cat); }
+    });
+    wrap.innerHTML = '';
+    tabs.forEach(function (t) {
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'cat' + (t === curTab ? ' on' : '');
+      b.setAttribute('data-tab', t);
+      b.innerHTML = '<span class="ci">' + catIcon(t) + '</span>' +
+        '<span class="cl">' + esc(t) + '</span>' +
+        '<span class="cb">' + availCount(t) + '</span>';
+      wrap.appendChild(b);
+    });
+    wrap.addEventListener('click', function (e) {
+      var t = e.target.closest('.cat');
+      if (!t) return;
+      curTab = t.getAttribute('data-tab');
+      wrap.querySelectorAll('.cat').forEach(function (x) { x.classList.remove('on'); });
+      t.classList.add('on');
+      setCatHeader();
+      renderGrid();
+    });
+  }
+
+  /* ---------------- grid ---------------- */
+  function renderGrid() {
+    var g = document.getElementById('pgrid');
+    g.innerHTML = '';
+
+    if (curTab === 'Tickets') {
+      BOOT.tickets.forEach(function (t) {
+        var b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'card';
+        b.innerHTML =
+          '<div class="thumb">' + ICON_TICK +
+            (t.image ? '<img src="' + esc(t.image) + '" alt="" onerror="this.style.display=\'none\'">' : '') +
+            '<span class="badge ticket">Ticket</span>' +
+            '<div class="cardctl"><span class="step-add"><svg class="ico ico-sm" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></span></div>' +
+          '</div>' +
+          '<div class="body">' +
+            '<div class="nm">' + esc(t.title) + '</div>' +
+            (t.when ? '<div class="opt-flag">' + esc(t.when) + '</div>' : '') +
+            '<div class="row2"><span class="pr tnum">' + money(t.adult) + ' / ' + money(t.child) + '</span><span class="stock">Adult / Kids</span></div>' +
+          '</div>';
+        b.addEventListener('click', function () { openTicket(t); });
+        g.appendChild(b);
+      });
+      return;
+    }
+
+    BOOT.products.filter(function (p) { return p.cat === curTab; }).forEach(function (p) {
+      g.appendChild(buildConcessionCard(p));
+    });
+    refreshSteppers();
+  }
+
+  /* Build one concession card: a tappable picture/name/price region plus a
+     footer control. Plain items get an inline "− qty +" stepper; items with
+     options get a "+ Add" that opens the option picker (their per-option lines
+     are managed in the cart). The card is a <div> — the tap region and the
+     stepper buttons are siblings, never nested buttons. */
+  function buildConcessionCard(p) {
+    var st = statusOf(p);
+    var hasOpts = p.options && p.options.length;
+
+    var card = document.createElement('div');
+    card.className = 'card' + (st === 'out' ? ' out' : '');
+    card.setAttribute('data-pid', p.id);
+    card.setAttribute('data-stock', p.stock);
+
+    // Tap region is a DIV (role=button) so the overlay control buttons can live
+    // inside the thumb without nesting a <button> inside a <button>.
+    var tap = document.createElement('div');
+    tap.className = 'card-tap';
+    if (st !== 'out') {
+      tap.setAttribute('role', 'button');
+      tap.setAttribute('tabindex', '0');
+    }
+    var stockTxt = st === 'out' ? 'Sold out' : (p.stock + ' left');
+    var stockCls = st === 'low' ? ' low' : (st === 'out' ? ' out' : '');
+    tap.innerHTML =
+      '<div class="thumb">' + ICON_BOX +
+        (p.image ? '<img src="' + esc(p.image) + '" alt="" onerror="this.style.display=\'none\'">' : '') +
+        '<span class="badge ' + st + '">' + BADGE[st] + '</span>' +
+        '<span class="qchip" style="display:none">0</span>' +
+      '</div>' +
+      '<div class="body">' +
+        '<div class="nm">' + esc(p.name) + '</div>' +
+        (hasOpts
+          ? '<div class="opt-flag"><svg class="ico ico-sm" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>choose option</div>'
+          : '') +
+        '<div class="row2"><span class="pr tnum">' + money(p.price) + '</span>' +
+        '<span class="stock' + stockCls + '">' + stockTxt + '</span></div>' +
+      '</div>';
+    if (st !== 'out') {
+      tap.addEventListener('click', function () { tapConcession(p); });
+      tap.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); tapConcession(p); }
+      });
+    }
+    card.appendChild(tap);
+
+    // Control overlay on the thumb's bottom-right.
+    if (st !== 'out') {
+      var ctl = document.createElement('div');
+      ctl.className = 'cardctl';
+      if (hasOpts) {
+        var addb = document.createElement('button');
+        addb.type = 'button';
+        addb.className = 'step-add';
+        addb.innerHTML = '<svg class="ico ico-sm" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg> Add';
+        addb.addEventListener('click', function (e) { e.stopPropagation(); openOptions(p); });
+        ctl.appendChild(addb);
+      } else {
+        var stepper = document.createElement('div');
+        stepper.className = 'stepper';
+        var minus = document.createElement('button');
+        minus.type = 'button';
+        minus.className = 'step minus';
+        minus.innerHTML = '<svg class="ico" viewBox="0 0 24 24"><path d="M5 12h14"/></svg>';
+        minus.addEventListener('click', function (e) { e.stopPropagation(); decConcession(p.id); });
+        var num = document.createElement('span');
+        num.className = 'stepn tnum';
+        num.textContent = '0';
+        var plus = document.createElement('button');
+        plus.type = 'button';
+        plus.className = 'step plus';
+        plus.innerHTML = '<svg class="ico" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>';
+        plus.addEventListener('click', function (e) { e.stopPropagation(); addConcession(p, null, true); });
+        stepper.appendChild(minus);
+        stepper.appendChild(num);
+        stepper.appendChild(plus);
+        ctl.appendChild(stepper);
+      }
+      tap.querySelector('.thumb').appendChild(ctl);
+    }
+    return card;
+  }
+
+  /* Sync every visible card's stepper/chip to the cart (source of truth) and
+     cap "+" at available stock. Targeted DOM updates only — never a full grid
+     re-render — so the touchscreen's scroll position is preserved mid-order. */
+  function refreshSteppers() {
+    var cards = document.querySelectorAll('#pgrid .card[data-pid]');
+    for (var i = 0; i < cards.length; i++) {
+      var card = cards[i];
+      var pid = parseInt(card.getAttribute('data-pid'), 10);
+      var stock = parseInt(card.getAttribute('data-stock'), 10);
+      var n = concQtyInCart(pid);
+      var atMax = !isNaN(stock) && stock > 0 && n >= stock;
+
+      card.classList.toggle('inCart', n > 0);
+      var chip = card.querySelector('.qchip');
+      if (chip) { chip.textContent = n; chip.style.display = n > 0 ? '' : 'none'; }
+      var num = card.querySelector('.stepn');
+      if (num) num.textContent = n;
+      var minus = card.querySelector('.step.minus');
+      if (minus) minus.disabled = n <= 0;
+      var plus = card.querySelector('.step.plus');
+      if (plus) plus.disabled = atMax;
+      var addb = card.querySelector('.step-add');
+      if (addb && !card.classList.contains('out')) addb.disabled = atMax;
+    }
+  }
+
+  /* ---------------- add to cart ---------------- */
+  function tapConcession(p) {
+    if (p.options && p.options.length) { openOptions(p); return; }
+    addConcession(p, null);
+  }
+  /* Total quantity of a concession in the cart, summed across all its options.
+     Drives the on-card stepper number / chip and the stock cap. */
+  function concQtyInCart(id) {
+    var n = 0;
+    for (var i = 0; i < cart.length; i++) {
+      if (cart[i].kind === 'concession' && cart[i].id === id) n += cart[i].qty;
+    }
+    return n;
+  }
+  function addConcession(p, option, silent) {
+    if (p.stock > 0 && concQtyInCart(p.id) >= p.stock) {
+      toast('Only ' + p.stock + ' in stock', true);
+      return;
+    }
+    var key = 'c:' + p.id + '|' + (option || '');
+    var line = findKey(key);
+    if (line) line.qty++;
+    else cart.push({ key: key, kind: 'concession', id: p.id, name: p.name, option: option, price: p.price, qty: 1 });
+    renderCart();
+    if (!silent) toast((option ? p.name + ' (' + option + ')' : p.name) + ' added');
+  }
+  /* Remove one unit of a no-option concession straight from its card. (Option
+     items hold separate lines per option, so their card has no minus — removal
+     happens in the cart where the specific option is visible.) */
+  function decConcession(id) {
+    var line = findKey('c:' + id + '|');
+    if (!line) return;
+    line.qty--;
+    if (line.qty <= 0) removeLine(line);
+    renderCart();
+  }
+  function addTicket(t, age) {
+    var price = age === 'Child' ? t.child : t.adult;
+    var key = 't:' + t.showtime_id + '|' + age;
+    var line = findKey(key);
+    if (line) line.qty++;
+    else cart.push({
+      key: key, kind: 'ticket', showtimeId: t.showtime_id, age: age,
+      title: t.title, when: t.when, price: price, qty: 1
+    });
+    renderCart();
+    toast(age + ' ticket — ' + t.title + ' added');
+  }
+  function findKey(key) {
+    for (var i = 0; i < cart.length; i++) { if (cart[i].key === key) return cart[i]; }
+    return null;
+  }
+
+  /* ---------------- overlay (concession options + ticket age) ---------------- */
+  var overlay = document.getElementById('overlay');
+  function openOptions(p) {
+    document.getElementById('optPoster').classList.remove('show');
+    document.getElementById('optTitle').textContent = p.name;
+    document.getElementById('optSub').textContent = 'Pick one — it adds to the order instantly.';
+    var og = document.getElementById('optGrid');
+    og.innerHTML = '';
+    p.options.forEach(function (o) {
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'optbtn';
+      b.textContent = o;
+      b.addEventListener('click', function () { addConcession(p, o); closeOverlay(); });
+      og.appendChild(b);
+    });
+    overlay.classList.add('show');
+  }
+  function openTicket(t) {
+    var poster = document.getElementById('optPoster');
+    if (t.image) { poster.style.backgroundImage = "url('" + t.image + "')"; poster.classList.add('show'); }
+    else { poster.classList.remove('show'); }
+    document.getElementById('optTitle').textContent = t.title;
+    document.getElementById('optSub').textContent = (t.when ? t.when + ' · ' : '') + 'Choose ticket type.';
+    var og = document.getElementById('optGrid');
+    og.innerHTML = '';
+    [['Adult', t.adult], ['Child', t.child]].forEach(function (pair) {
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'optbtn';
+      b.innerHTML = '<span>' + pair[0] + '</span><span class="op-pr tnum">' + money(pair[1]) + '</span>';
+      b.addEventListener('click', function () { addTicket(t, pair[0]); closeOverlay(); });
+      og.appendChild(b);
+    });
+    overlay.classList.add('show');
+  }
+  function closeOverlay() { overlay.classList.remove('show'); }
+  document.getElementById('optCancel').addEventListener('click', closeOverlay);
+  overlay.addEventListener('click', function (e) { if (e.target === overlay) closeOverlay(); });
+
+  /* ---------------- cart render ---------------- */
+  function cartCount() { return cart.reduce(function (a, l) { return a + l.qty; }, 0); }
+  function cartTotal() { return cart.reduce(function (a, l) { return a + l.qty * l.price; }, 0); }
+
+  function lineLabel(l) {
+    if (l.kind === 'ticket') return 'Ticket: ' + l.title + ' (' + l.age + ')';
+    return l.name;
+  }
+  function lineSub(l) {
+    if (l.kind === 'ticket') return l.when || '';
+    return l.option || '';
+  }
+  /* Look up a line's image from BOOT for the cart thumbnail (render-time only —
+     the cart line shape sent to checkout is unchanged). */
+  function lineImage(l) {
+    var i;
+    if (l.kind === 'ticket') {
+      for (i = 0; i < BOOT.tickets.length; i++) {
+        if (BOOT.tickets[i].showtime_id === l.showtimeId) return BOOT.tickets[i].image || '';
+      }
+      return '';
+    }
+    for (i = 0; i < BOOT.products.length; i++) {
+      if (BOOT.products[i].id === l.id) return BOOT.products[i].image || '';
+    }
+    return '';
+  }
+
+  function renderCart() {
+    var box = document.getElementById('clines');
+    var n = cartCount();
+    document.getElementById('ccount').textContent = n + (n === 1 ? ' item' : ' items');
+    document.getElementById('subtot').textContent = money(cartTotal());
+    document.getElementById('goPay').disabled = n === 0;
+    refreshSteppers();
+
+    if (!cart.length) {
+      box.innerHTML = '<div class="cempty"><svg class="ico" viewBox="0 0 24 24"><circle cx="9" cy="20" r="1.5"/><circle cx="18" cy="20" r="1.5"/><path d="M2 3h2l2.5 13h11l2-9H6"/></svg><div style="font-weight:800;color:var(--c-text-2)">No items yet</div></div>';
+      return;
+    }
+    box.innerHTML = '';
+    cart.forEach(function (l) {
+      var sub = lineSub(l);
+      var img = lineImage(l);
+      var row = document.createElement('div');
+      row.className = 'cline';
+      row.innerHTML =
+        '<span class="cth"' + (img ? ' style="background-image:url(\'' + img + '\')"' : '') + '></span>' +
+        '<div><div class="nm">' + esc(lineLabel(l)) + '</div>' +
+        (sub ? '<div class="op">' + esc(sub) + '</div>' : '') +
+        '<div class="qty">' +
+        '<button type="button" class="qbtn" data-a="dec"><svg class="ico ico-sm" viewBox="0 0 24 24"><path d="M5 12h14"/></svg></button>' +
+        '<span class="qn tnum">' + l.qty + '</span>' +
+        '<button type="button" class="qbtn" data-a="inc"><svg class="ico ico-sm" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button>' +
+        '</div></div>' +
+        '<div style="display:flex;flex-direction:column;align-items:flex-end;justify-content:space-between">' +
+        '<span class="lp tnum">' + money(l.qty * l.price) + '</span>' +
+        '<button type="button" class="rm" data-a="rm"><svg class="ico ico-sm" viewBox="0 0 24 24"><path d="M4 7h16M9 7V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2m2 0v12a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V7"/></svg></button>' +
+        '</div>';
+      row.querySelectorAll('[data-a]').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          var a = btn.getAttribute('data-a');
+          if (a === 'inc') l.qty++;
+          else if (a === 'dec') { l.qty--; if (l.qty <= 0) removeLine(l); }
+          else if (a === 'rm') removeLine(l);
+          renderCart();
+        });
+      });
+      box.appendChild(row);
+    });
+  }
+  function removeLine(l) {
+    cart = cart.filter(function (x) { return x.key !== l.key; });
+  }
+
+  document.getElementById('clearBtn').addEventListener('click', function () {
+    if (!cart.length) return;
+    if (window.confirm('Clear the whole order?')) { cart = []; renderCart(); toast('Cart cleared'); }
+  });
+
+  /* ---------------- payment summary ---------------- */
+  function fillPay() {
+    var tot = cartTotal();
+    document.getElementById('payTotal').textContent = money(tot);
+    document.getElementById('cashDue').textContent = money(tot);
+    document.getElementById('cardTotal').textContent = money(tot);
+    cashTot = tot;
+    var s = document.getElementById('paySummary');
+    s.innerHTML = '';
+    cart.forEach(function (l) {
+      var sub = lineSub(l);
+      var r = document.createElement('div');
+      r.className = 'row';
+      r.innerHTML = '<div><div class="nm">' + esc(lineLabel(l)) + (l.qty > 1 ? ' &times;' + l.qty : '') + '</div>' +
+        (sub ? '<div class="op">' + esc(sub) + '</div>' : '') + '</div>' +
+        '<div class="lp tnum">' + money(l.qty * l.price) + '</div>';
+      s.appendChild(r);
+    });
+  }
+
+  /* ---------------- cash keypad (no PIN — see api/kiosk-checkout.php) ---------------- */
+  var cashStr = '', cashTot = 0;
+  function cashValue() { var v = parseFloat(cashStr || '0'); return isNaN(v) ? 0 : v; }
+  function renderCash() {
+    var v = cashValue();
+    document.getElementById('cashEntry').textContent = money(v);
+    var ce = document.getElementById('cashChange');
+    var ok = v >= cashTot && cashTot > 0;
+    if (v > cashTot && cashTot > 0) {
+      ce.style.display = 'inline-block';
+      document.getElementById('changeAmt').textContent = money(v - cashTot);
+    } else {
+      ce.style.display = 'none';
+    }
+    document.getElementById('confirmCash').disabled = !ok;
+  }
+  document.getElementById('cashpad').addEventListener('click', function (e) {
+    var k = e.target.closest('.key'); if (!k) return;
+    var t = k.textContent;
+    if (t === '⌫') cashStr = cashStr.slice(0, -1);
+    else if (t === '.') { if (cashStr.indexOf('.') < 0) cashStr += (cashStr === '' ? '0.' : '.'); }
+    else {
+      // limit to 2 decimal places
+      var dot = cashStr.indexOf('.');
+      if (dot >= 0 && cashStr.length - dot > 2) return;
+      cashStr += t;
+    }
+    renderCash();
+  });
+  document.getElementById('quickcash').addEventListener('click', function (e) {
+    var b = e.target.closest('button'); if (!b) return;
+    var a = b.getAttribute('data-amt');
+    cashStr = (a === 'exact' ? cashTot : parseFloat(a)).toFixed(2);
+    renderCash();
+  });
+
+  /* ---------------- checkout ----------------
+     No PosAuth session and no CSRF here (kiosk-checkout.php checks neither —
+     see that file's comments) — unlike POS, which is always behind a signed-in
+     operator. */
+  var submitting = false;
+  function buildPayload(method, cashReceived) {
+    return {
+      method: method,
+      cash_received: cashReceived,
+      items: cart.map(function (l) {
+        if (l.kind === 'ticket') {
+          return { kind: 'ticket', showtime_id: l.showtimeId, age: l.age, qty: l.qty };
+        }
+        return { kind: 'concession', id: l.id, option: l.option || null, qty: l.qty };
+      })
+    };
+  }
+
+  function doCheckout(method, cashReceived, onError) {
+    if (submitting || !cart.length) return;
+    submitting = true;
+
+    fetch('../api/kiosk-checkout.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(buildPayload(method, cashReceived))
+    })
+      .then(function (r) { return r.json().then(function (j) { return { status: r.status, body: j }; }); })
+      .then(function (res) {
+        submitting = false;
+        if (res.body && res.body.ok) {
+          completeOrder(res.body, method, cashReceived);
+        } else {
+          var msg = (res.body && res.body.error) ? res.body.error : 'Checkout failed. Please try again.';
+          toast(msg, true);
+          if (res.status === 409) { go('order'); }
+          if (onError) onError(msg);
+        }
+      })
+      .catch(function () {
+        submitting = false;
+        var msg = 'Network error. Please try again.';
+        toast(msg, true);
+        if (onError) onError(msg);
+      });
+  }
+
+  /* The kiosk's "done" screen shows the customer their ticket QR codes (they
+     have to show one at the door) and a concession pickup note, instead of
+     POS's staff-only "Check In Now?" button — there's no staff standing here
+     to tap it. kiosk-checkout.php's response shape carries what's needed:
+     items[] (for the concession note) and ticket_tokens[] as full objects
+     (ticket_qr, movie_title, when, ticket_type, seq, seq_total). */
+  function completeOrder(body, method, cashReceived) {
+    document.getElementById('doneRef').textContent = body.daily_order_number
+      ? ('#' + body.daily_order_number)
+      : (body.transaction_ref || '—');
+    document.getElementById('donePaid').textContent = money(body.total != null ? body.total : cartTotal());
+    var chg = '';
+    if (method === 'cash' && cashReceived != null) {
+      var change = cashReceived - (body.total != null ? body.total : cartTotal());
+      if (change > 0) chg = 'Change due: ' + money(change);
+    }
+    document.getElementById('doneChange').textContent = chg;
+
+    var items = Array.isArray(body.items) ? body.items : [];
+    var confirmNote = document.getElementById('confirmNote');
+    confirmNote.classList.toggle('hidden', !items.some(function (item) { return item.item_type === 'concession'; }));
+
+    renderConfirmationTickets(Array.isArray(body.ticket_tokens) ? body.ticket_tokens : []);
+
+    cart = [];
+    renderCart();
+    go('done');
+  }
+
+  function renderConfirmationTickets(tokens) {
+    var wrap = document.getElementById('confirmTickets');
+    wrap.innerHTML = '';
+    if (!tokens.length) return;
+    var header = document.createElement('div');
+    header.className = 'confirmation-ticket-header';
+    header.textContent = 'Your Tickets — show these at the door';
+    wrap.appendChild(header);
+    tokens.forEach(function (token) {
+      var card = document.createElement('article');
+      card.className = 'ticket-card';
+      card.innerHTML = '<div class="ticket-qr"><img src="' + esc(token.ticket_qr) + '" alt="Ticket QR code"></div>' +
+        '<div class="ticket-meta"><div class="ticket-type">' + esc(token.ticket_type + ' Ticket') + '</div>' +
+        '<div class="ticket-film">' + esc(token.movie_title) + '</div>' +
+        '<div class="ticket-when">' + esc(token.when) + '</div>' +
+        '<div class="ticket-seq">Ticket ' + esc(String(token.seq)) + ' of ' + esc(String(token.seq_total)) + '</div></div>';
+      wrap.appendChild(card);
+    });
+  }
+
+  document.getElementById('confirmCash').addEventListener('click', function () {
+    var v = cashValue();
+    if (v < cashTot) { toast('Cash received is less than total due.', true); return; }
+    this.disabled = true;
+    var self = this;
+    doCheckout('cash', v, function () { self.disabled = false; });
+  });
+  document.getElementById('confirmCard').addEventListener('click', function () {
+    this.disabled = true;
+    var self = this;
+    doCheckout('card', null, function () { self.disabled = false; });
+  });
+
+  /* ---------------- screen routing ----------------
+     Same screens/ids as POS (order/pay/cash/card/done) plus the kiosk-only
+     welcome-screen. The 60s idle timer and 15s post-order timer are kiosk-only
+     (POS has no equivalent — an operator is always signed in). */
   var idleTimer = null;
   var confirmationTimer = null;
 
-  var screens = {
-    welcome: document.getElementById('welcome-screen'),
-    menu: document.getElementById('menu-screen'),
-    cart: document.getElementById('cart-screen'),
-    payment: document.getElementById('payment-screen'),
-    confirmation: document.getElementById('confirmation-screen'),
-  };
-
-  var els = {
-    tabs: document.getElementById('category-tabs'),
-    grid: document.getElementById('menu-grid'),
-    summary: document.getElementById('menu-summary'),
-    cartItems: document.getElementById('cart-items'),
-    cartTotal: document.getElementById('cart-total'),
-    paymentMethods: document.getElementById('payment-methods'),
-    cardPanel: document.getElementById('card-panel'),
-    cashPanel: document.getElementById('cash-panel'),
-    pinDisplay: document.getElementById('pin-display'),
-    pinPad: document.getElementById('pin-pad'),
-    cashConfirm: document.getElementById('cash-confirm'),
-    paymentSummary: document.getElementById('payment-summary'),
-    confirmSubtitle: document.getElementById('confirm-subtitle'),
-    confirmRef: document.getElementById('confirm-ref'),
-    confirmNote: document.getElementById('confirm-note'),
-    confirmItems: document.getElementById('confirm-items'),
-    confirmTickets: document.getElementById('confirm-tickets'),
-  };
-
-  function formatMoney(amount) {
-    return '$' + amount.toFixed(2);
-  }
-
-  function clamp(value, min, max) {
-    return value < min ? min : value > max ? max : value;
-  }
-
-  function go(screenId) {
-    Object.keys(screens).forEach(function (key) {
-      screens[key].classList.toggle('show', key === screenId);
-    });
-    if (screenId === 'menu') {
-      renderTabs();
-      renderGrid();
-      renderMenuSummary();
-    }
-    if (screenId === 'cart') {
-      renderCart();
-    }
-    if (screenId === 'payment') {
-      renderPayment();
-    }
-    if (screenId === 'confirmation') {
-      startConfirmationTimer();
-    } else {
-      clearConfirmationTimer();
-    }
+  function go(id) {
+    document.querySelectorAll('.screen').forEach(function (s) { s.classList.toggle('show', s.id === id); });
+    if (id === 'pay' || id === 'cash' || id === 'card') fillPay();
+    if (id === 'cash') { cashStr = ''; renderCash(); }
+    if (id === 'card') { document.getElementById('confirmCard').disabled = false; }
+    if (id === 'done') { startConfirmationTimer(); } else { clearConfirmationTimer(); }
+    window.scrollTo(0, 0);
     resetIdleTimer();
   }
 
   function resetIdleTimer() {
     clearTimeout(idleTimer);
     idleTimer = setTimeout(function () {
-      go('welcome');
+      go(WELCOME_ID);
       cart = [];
-      pin = '';
       renderCart();
     }, 60000);
   }
@@ -81,9 +625,8 @@
   function startConfirmationTimer() {
     clearConfirmationTimer();
     confirmationTimer = setTimeout(function () {
-      go('welcome');
+      go(WELCOME_ID);
       cart = [];
-      pin = '';
       renderCart();
     }, 15000);
   }
@@ -95,410 +638,38 @@
     }
   }
 
-  function renderTabs() {
-    els.tabs.innerHTML = '';
-    var tabs = [];
-    if (BOOT.showtimes.length) tabs.push('Tickets');
-    BOOT.concessions.forEach(function (category) {
-      if (!tabs.includes(category.name)) {
-        tabs.push(category.name);
-      }
-    });
-
-    tabs.forEach(function (tab) {
-      var button = document.createElement('button');
-      button.type = 'button';
-      button.className = 'tab' + (tab === activeTab ? ' active' : '');
-      button.textContent = tab;
-      button.addEventListener('click', function () {
-        activeTab = tab;
-        renderTabs();
-        renderGrid();
-      });
-      els.tabs.appendChild(button);
-    });
-  }
-
-  function renderGrid() {
-    els.grid.innerHTML = '';
-
-    if (activeTab === 'Tickets') {
-      if (!BOOT.showtimes.length) {
-        els.grid.innerHTML = '<div class="empty-state">No tickets are available at the moment.</div>';
-        return;
-      }
-      BOOT.showtimes.forEach(function (showtime) {
-        var card = document.createElement('article');
-        card.className = 'item-card';
-        card.innerHTML = '<div class="item-art" style="background-image:url(' + encodeURI(showtime.image || '../assets/images/logo.webp') + ')"></div>' +
-          '<div class="item-body"><div class="item-title">' + escapeText(showtime.title) + '</div>' +
-          '<div class="item-meta">' + escapeText(showtime.when) + '</div>' +
-          '<div class="item-qty">Available: ' + showtime.available + '</div>' +
-          '<div class="ticket-prices"><button type="button" class="ticket-action" data-age="Adult">Adult ' + formatMoney(showtime.adult) + '</button><button type="button" class="ticket-action" data-age="Child">Child ' + formatMoney(showtime.child) + '</button></div></div>';
-        card.querySelectorAll('.ticket-action').forEach(function (button) {
-          button.addEventListener('click', function () {
-            addTicket(showtime, button.getAttribute('data-age'));
-          });
-        });
-        els.grid.appendChild(card);
-      });
-      return;
-    }
-
-    var category = BOOT.concessions.find(function (cat) { return cat.name === activeTab; });
-    if (!category || !category.items.length) {
-      els.grid.innerHTML = '<div class="empty-state">No items are available in this category.</div>';
-      return;
-    }
-
-    category.items.forEach(function (item) {
-      var card = document.createElement('article');
-      card.className = 'item-card';
-      card.innerHTML = '<div class="item-art" style="background-image:url(' + encodeURI(item.image || '../assets/images/logo.webp') + ')"></div>' +
-        '<div class="item-body"><div class="item-title">' + escapeText(item.name) + '</div>' +
-        '<div class="item-meta">' + escapeText(item.description || 'Concession') + '</div>' +
-        '<div class="item-bottom"><span>' + formatMoney(item.price) + '</span><span>Stock: ' + item.stock + '</span></div></div>';
-      var action = document.createElement('div');
-      action.className = 'item-actions';
-      if (item.options && item.options.length) {
-        item.options.forEach(function (opt) {
-          var button = document.createElement('button');
-          button.type = 'button';
-          button.className = 'option-btn';
-          button.textContent = opt;
-          button.addEventListener('click', function () { addConcession(item, opt); });
-          action.appendChild(button);
-        });
-      } else {
-        var add = document.createElement('button');
-        add.type = 'button';
-        add.className = 'btn btn-add';
-        add.textContent = 'Add';
-        add.addEventListener('click', function () { addConcession(item, null); });
-        action.appendChild(add);
-      }
-      card.appendChild(action);
-      els.grid.appendChild(card);
-    });
-  }
-
-  function escapeText(value) {
-    return String(value || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-  }
-
-  function addConcession(item, option) {
-    if (lineQuantity('concession', item.id, option) >= item.stock) {
-      showToast('Only ' + item.stock + ' available.');
-      return;
-    }
-    var key = 'c:' + item.id + '|' + (option || '');
-    var line = findLine(key);
-    if (line) {
-      line.qty += 1;
-    } else {
-      cart.push({
-        key: key,
-        kind: 'concession',
-        id: item.id,
-        name: item.name,
-        option: option,
-        price: item.price,
-        qty: 1,
-      });
-    }
-    renderMenuSummary();
-    showToast(item.name + (option ? ' (' + option + ')' : '') + ' added');
-  }
-
-  function addTicket(showtime, age) {
-    var key = 't:' + showtime.showtime_id + '|' + age;
-    var line = findLine(key);
-    if (line) {
-      if (line.qty < showtime.available) {
-        line.qty += 1;
-      } else {
-        showToast('No more seats available for this showtime.');
-      }
-    } else {
-      if (showtime.available < 1) {
-        showToast('This showtime is sold out.');
-        return;
-      }
-      cart.push({
-        key: key,
-        kind: 'ticket',
-        showtimeId: showtime.showtime_id,
-        age: age,
-        title: showtime.title,
-        when: showtime.when,
-        price: age === 'Child' ? showtime.child : showtime.adult,
-        qty: 1,
-      });
-    }
-    renderMenuSummary();
-    showToast(age + ' ticket added');
-  }
-
-  function findLine(key) {
-    return cart.find(function (line) { return line.key === key; });
-  }
-
-  function lineQuantity(kind, id, option) {
-    return cart.reduce(function (total, line) {
-      if (kind === 'ticket') {
-        return total + (line.kind === 'ticket' && line.showtimeId === id ? line.qty : 0);
-      }
-      return total + (line.kind === 'concession' && line.id === id && line.option === option ? line.qty : 0);
-    }, 0);
-  }
-
-  function renderMenuSummary() {
-    var total = cart.reduce(function (sum, line) { return sum + line.price * line.qty; }, 0);
-    var count = cart.reduce(function (sum, line) { return sum + line.qty; }, 0);
-    els.summary.textContent = count ? count + ' items • ' + formatMoney(total) : 'Tap items to add them to your order.';
-  }
-
-  function renderCart() {
-    els.cartItems.innerHTML = '';
-    var total = 0;
-    if (!cart.length) {
-      els.cartItems.innerHTML = '<div class="empty-state">Your cart is empty. Add tickets or concessions to continue.</div>';
-      els.cartTotal.textContent = '$0.00';
-      return;
-    }
-    cart.forEach(function (line) {
-      total += line.qty * line.price;
-      var row = document.createElement('div');
-      row.className = 'cart-line';
-      row.innerHTML = '<div class="cart-line-main"><div class="cart-line-title">' + escapeText(lineLabel(line)) + '</div>' +
-        '<div class="cart-line-meta">' + escapeText(lineMeta(line)) + '</div></div>' +
-        '<div class="cart-line-controls"><button type="button" class="qty-btn" data-action="dec">-</button>' +
-        '<span class="qty-value">' + line.qty + '</span>' +
-        '<button type="button" class="qty-btn" data-action="inc">+</button>' +
-        '<button type="button" class="rm-btn" data-action="rm">Remove</button></div>' +
-        '<div class="cart-line-price">' + formatMoney(line.qty * line.price) + '</div>';
-      row.querySelectorAll('[data-action]').forEach(function (button) {
-        button.addEventListener('click', function () {
-          var action = button.getAttribute('data-action');
-          if (action === 'inc') { line.qty += 1; }
-          else if (action === 'dec') { line.qty -= 1; if (line.qty <= 0) removeLine(line); }
-          else if (action === 'rm') { removeLine(line); }
-          renderCart();
-          renderMenuSummary();
-        });
-      });
-      els.cartItems.appendChild(row);
-    });
-    els.cartTotal.textContent = formatMoney(total);
-  }
-
-  function removeLine(line) {
-    cart = cart.filter(function (item) { return item.key !== line.key; });
-  }
-
-  function lineLabel(line) {
-    if (line.kind === 'ticket') {
-      return line.title + ' (' + line.age + ')';
-    }
-    return line.name;
-  }
-
-  function lineMeta(line) {
-    if (line.kind === 'ticket') {
-      return line.when || 'Ticket';
-    }
-    return line.option ? line.option : 'Concession';
-  }
-
-  function renderPayment() {
-    method = 'card';
-    updatePaymentMethod();
-    renderPaymentSummary();
-    buildPinPad();
-  }
-
-  function updatePaymentMethod() {
-    els.paymentMethods.querySelectorAll('.payment-option').forEach(function (button) {
-      button.classList.toggle('active', button.getAttribute('data-method') === method);
-    });
-    els.cardPanel.classList.toggle('hidden', method !== 'card');
-    els.cashPanel.classList.toggle('hidden', method !== 'cash');
-    updatePinDisplay();
-  }
-
-  function renderPaymentSummary() {
-    var total = cart.reduce(function (sum, line) { return sum + line.price * line.qty; }, 0);
-    var html = '<div class="payment-summary-title">Order total</div>' +
-      '<div class="payment-summary-total">' + formatMoney(total) + '</div>';
-    cart.forEach(function (line) {
-      html += '<div class="payment-summary-line"><span>' + escapeText(lineLabel(line)) + ' ×' + line.qty + '</span><span>' + formatMoney(line.price * line.qty) + '</span></div>';
-    });
-    els.paymentSummary.innerHTML = html;
-  }
-
-  function buildPinPad() {
-    els.pinPad.innerHTML = '';
-    ['1','2','3','4','5','6','7','8','9','⌫','0'].forEach(function (key) {
-      var button = document.createElement('button');
-      button.type = 'button';
-      button.className = 'pin-key';
-      button.textContent = key;
-      button.addEventListener('click', function () {
-        if (key === '⌫') {
-          pin = pin.slice(0, -1);
-        } else if (pin.length < 6) {
-          pin += key;
-        }
-        updatePinDisplay();
-      });
-      els.pinPad.appendChild(button);
-    });
-    document.getElementById('pin-clear').addEventListener('click', function () {
-      pin = '';
-      updatePinDisplay();
-    });
-  }
-
-  function updatePinDisplay() {
-    var dots = pin.split('').map(function () { return '•'; }).join('');
-    els.pinDisplay.textContent = dots || '••••';
-    var total = cart.reduce(function (sum, line) { return sum + line.price * line.qty; }, 0);
-    els.cashConfirm.disabled = (method !== 'cash') || total <= 0 || pin.length < 4;
-    els.cashConfirm.classList.toggle('disabled', els.cashConfirm.disabled);
-  }
-
-  function showToast(message) {
-    var toast = document.querySelector('.kiosk-toast');
-    if (!toast) {
-      toast = document.createElement('div');
-      toast.className = 'kiosk-toast';
-      document.body.appendChild(toast);
-    }
-    toast.textContent = message;
-    toast.classList.add('show');
-    setTimeout(function () { toast.classList.remove('show'); }, 2500);
-  }
-
-  function doCheckout() {
-    if (!cart.length) {
-      showToast('Your cart is empty.');
-      return;
-    }
-    var items = cart.map(function (line) {
-      if (line.kind === 'ticket') {
-        return { kind: 'ticket', showtime_id: line.showtimeId, age: line.age, qty: line.qty };
-      }
-      return { kind: 'concession', id: line.id, option: line.option, qty: line.qty };
-    });
-    var payload = { method: method, items: items };
-    if (method === 'cash') payload.pin = pin;
-    fetch('../api/kiosk-checkout.php', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
-    })
-      .then(function (response) {
-        return response.json().then(function (data) { return { status: response.status, body: data }; });
-      })
-      .then(function (result) {
-        if (result.body && result.body.ok) {
-          showConfirmation(result.body);
-          cart = [];
-          renderMenuSummary();
-        } else {
-          var msg = (result.body && result.body.error) ? result.body.error : 'Checkout failed. Please try again.';
-          showToast(msg);
-          if (result.status === 401 && method === 'cash') {
-            pin = '';
-            updatePinDisplay();
-          }
-          if (result.status === 409) {
-            go('cart');
-            renderCart();
-          }
-        }
-      })
-      .catch(function () {
-        showToast('Network error. Please try again.');
-      });
-  }
-
-  function showConfirmation(body) {
-    els.confirmRef.textContent = body.daily_order_number
-      ? ('#' + body.daily_order_number)
-      : (body.transaction_ref || '—');
-    els.confirmNote.classList.toggle('hidden', !body.items.some(function (item) { return item.item_type === 'concession'; }));
-    els.confirmSubtitle.textContent = body.items.some(function (item) { return item.item_type === 'ticket'; })
-      ? 'Show each QR code at the door.'
-      : 'Collect your concessions at the counter.';
-    renderConfirmationItems(body.items);
-    renderConfirmationTickets(body.ticket_tokens || []);
-    go('confirmation');
-  }
-
-  function renderConfirmationItems(items) {
-    els.confirmItems.innerHTML = '';
-    if (!items.length) return;
-    var list = document.createElement('div');
-    list.className = 'confirmation-list';
-    items.forEach(function (item) {
-      if (item.item_type === 'ticket') return;
-      var row = document.createElement('div');
-      row.className = 'confirmation-line';
-      row.innerHTML = '<span>' + escapeText(item.item_name) + (item.selected_option ? ' (' + escapeText(item.selected_option) + ')' : '') + ' ×' + item.quantity + '</span>';
-      list.appendChild(row);
-    });
-    if (list.children.length) {
-      var heading = document.createElement('h3');
-      heading.textContent = 'Concession order';
-      els.confirmItems.appendChild(heading);
-      els.confirmItems.appendChild(list);
-    }
-  }
-
-  function renderConfirmationTickets(tokens) {
-    els.confirmTickets.innerHTML = '';
-    if (!tokens.length) return;
-    var header = document.createElement('div');
-    header.className = 'confirmation-ticket-header';
-    header.textContent = 'Your Tickets';
-    els.confirmTickets.appendChild(header);
-    tokens.forEach(function (token) {
-      var card = document.createElement('article');
-      card.className = 'ticket-card';
-      card.innerHTML = '<div class="ticket-qr"><img src="' + escapeText(token.ticket_qr) + '" alt="Ticket QR code"></div>' +
-        '<div class="ticket-meta"><div class="ticket-type">' + escapeText(token.ticket_type + ' Ticket') + '</div>' +
-        '<div class="ticket-film">' + escapeText(token.movie_title) + '</div>' +
-        '<div class="ticket-when">' + escapeText(token.when) + '</div>' +
-        '<div class="ticket-seq">Ticket ' + escapeText(String(token.seq)) + ' of ' + escapeText(String(token.seq_total)) + '</div></div>';
-      els.confirmTickets.appendChild(card);
-    });
-  }
-
-  document.getElementById('menu-cart-btn').addEventListener('click', function () { go('cart'); });
-  document.getElementById('menu-go-cart').addEventListener('click', function () { go('cart'); });
-  document.getElementById('cart-add-more').addEventListener('click', function () { go('menu'); });
-  document.getElementById('cart-start-over').addEventListener('click', function () { cart = []; renderCart(); renderMenuSummary(); go('menu'); });
-  document.getElementById('cart-checkout').addEventListener('click', function () { if (!cart.length) return; go('payment'); });
-  document.getElementById('payment-back').addEventListener('click', function () { go('cart'); });
-  document.getElementById('cash-confirm').addEventListener('click', function () { doCheckout(); });
-  document.getElementById('payment-methods').addEventListener('click', function (event) {
-    var button = event.target.closest('.payment-option');
-    if (!button) return;
-    method = button.getAttribute('data-method');
-    updatePaymentMethod();
+  document.getElementById('goPay').addEventListener('click', function () { if (cart.length) go('pay'); });
+  document.getElementById('newOrderBtn').addEventListener('click', function () { go(WELCOME_ID); cart = []; renderCart(); });
+  document.addEventListener('click', function (e) {
+    var t = e.target.closest('[data-go]');
+    if (!t) return;
+    go(t.getAttribute('data-go'));
   });
-  document.getElementById('done-button').addEventListener('click', function () { go('welcome'); cart = []; renderMenuSummary(); });
-  document.body.addEventListener('click', function (event) {
-    if (screens.welcome.classList.contains('show')) {
-      go('menu');
-    }
+
+  // "Tap anywhere to begin" — a tap anywhere on the welcome screen enters the
+  // order screen. Guarded so taps elsewhere (already past welcome) don't re-fire.
+  document.body.addEventListener('click', function () {
+    var welcome = document.getElementById(WELCOME_ID);
+    if (welcome && welcome.classList.contains('show')) go('order');
   });
   document.addEventListener('click', resetIdleTimer);
   document.addEventListener('keydown', resetIdleTimer);
 
-  renderTabs();
+  /* ---------------- toast ---------------- */
+  var toastT;
+  function toast(msg, err) {
+    var t = document.getElementById('toast');
+    document.getElementById('toastMsg').textContent = msg;
+    t.classList.toggle('err', !!err);
+    t.classList.add('show');
+    clearTimeout(toastT);
+    toastT = setTimeout(function () { t.classList.remove('show'); }, 2400);
+  }
+
+  /* ---------------- init ---------------- */
+  buildCats();
+  setCatHeader();
   renderGrid();
-  renderMenuSummary();
+  renderCart();
   resetIdleTimer();
 })();

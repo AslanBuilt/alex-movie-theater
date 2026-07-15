@@ -3,7 +3,6 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/../config/config.php';
 require_once INCLUDES_PATH . '/Database.php';
-require_once INCLUDES_PATH . '/PosAuth.php';
 require_once INCLUDES_PATH . '/RateLimiter.php';
 require_once INCLUDES_PATH . '/helpers.php';
 require_once INCLUDES_PATH . '/TicketTokenRepo.php';
@@ -46,17 +45,10 @@ try {
     kioskFail(503, 'The kiosk is temporarily unavailable. Please try again.');
 }
 
-if ($method === 'cash') {
-    $pin = trim((string)($data['pin'] ?? ''));
-    if ($pin === '') {
-        kioskFail(401, 'PIN is required for cash checkout.');
-    }
-    $auth = new PosAuth($db);
-    $pinResult = $auth->verifyPinOnly($pin);
-    if (!$pinResult['ok']) {
-        kioskFail($pinResult['locked'] ? 423 : 401, $pinResult['error']);
-    }
-}
+// Cash checkout needs no PIN / staff sign-off here — this is an unattended
+// self-service kiosk, not the employee POS (which stays behind PosAuth in
+// api/pos-checkout.php). The customer tenders cash at the counter separately;
+// this just records the sale.
 
 $concLines   = [];
 $concQtyById = [];
