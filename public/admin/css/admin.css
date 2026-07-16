@@ -682,7 +682,9 @@ h3 { font-size: 1.2rem; }
 }
 
 .filter-bar select {
-    width: 100%;
+    width: auto;
+    min-width: 160px;
+    max-width: 220px;
     background: var(--bg-card);
     border: 1px solid var(--border);
     color: var(--text-primary);
@@ -697,6 +699,29 @@ h3 { font-size: 1.2rem; }
     outline: none;
     border-color: var(--crimson);
     box-shadow: 0 0 0 3px rgba(139, 29, 51, 0.25);
+}
+
+.filter-bar input[type="text"],
+.filter-bar input[type="search"] {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    color: var(--text-primary);
+    padding: 0.6rem 0.75rem;
+    border-radius: 4px;
+    font-family: var(--font-body);
+    font-size: 0.95rem;
+}
+
+.filter-bar input[type="text"]:focus,
+.filter-bar input[type="search"]:focus {
+    outline: none;
+    border-color: var(--crimson);
+    box-shadow: 0 0 0 3px rgba(139, 29, 51, 0.25);
+}
+
+.filter-bar input[type="text"]::placeholder,
+.filter-bar input[type="search"]::placeholder {
+    color: var(--text-muted);
 }
 
 /* ---------- Pagination ---------- */
