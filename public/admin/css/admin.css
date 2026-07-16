@@ -721,7 +721,7 @@ h3 { font-size: 1.2rem; }
 
 .filter-bar input[type="text"]::placeholder,
 .filter-bar input[type="search"]::placeholder {
-    color: var(--text-muted);
+    color: rgba(255, 255, 255, 0.45);
 }
 
 /* ---------- Pagination ---------- */
