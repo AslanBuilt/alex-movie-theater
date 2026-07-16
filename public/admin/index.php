@@ -88,13 +88,6 @@ $chartData = [
     </div>
 </div>
 
-<?php if (!file_exists(__DIR__ . '/../config/sendgrid.php')) : ?>
-<div class="alert alert-info" role="alert">
-    <strong>Email not configured.</strong> Order confirmation emails are falling back to PHP mail() and may land in spam.
-    Add <code>SENDGRID_API_KEY</code> and <code>MAIL_FROM</code> to GitHub Actions secrets to enable SendGrid.
-</div>
-<?php endif; ?>
-
 <div class="stats-grid">
     <div class="stat-card">
         <div class="stat-number"><?= e((string)$totalMovies) ?></div>
