@@ -681,6 +681,24 @@ h3 { font-size: 1.2rem; }
     flex: 1;
 }
 
+.filter-bar select {
+    width: 100%;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    color: var(--text-primary);
+    padding: 0.6rem 0.75rem;
+    border-radius: 4px;
+    font-family: var(--font-body);
+    font-size: 0.95rem;
+    cursor: pointer;
+}
+
+.filter-bar select:focus {
+    outline: none;
+    border-color: var(--crimson);
+    box-shadow: 0 0 0 3px rgba(139, 29, 51, 0.25);
+}
+
 /* ---------- Pagination ---------- */
 
 .pagination {
