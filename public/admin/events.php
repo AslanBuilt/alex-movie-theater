@@ -62,7 +62,7 @@ function admin_event_badge(string $status): string
     switch ($status) {
         case 'upcoming': return 'badge badge-success';
         case 'past':     return 'badge badge-muted';
-        case 'tba':      return 'badge badge-warning';
+        case 'tba':      return 'badge badge-muted';
     }
     return 'badge';
 }
