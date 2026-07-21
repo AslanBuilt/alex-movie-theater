@@ -546,5 +546,21 @@ if (!tableExists($conn, 'daily_order_counters')) {
     $log[] = 'skip daily_order_counters (exists)';
 }
 
+// ═══════════════════════════════════════════════════════════════════════════
+// Per-showtime screen assignment — a movie can run on both screens with
+// different showtime blocks; each showtime now records which screen it's on
+// ═══════════════════════════════════════════════════════════════════════════
+
+if (tableExists($conn, 'showtimes') && !columnExists($conn, 'showtimes', 'screen')) {
+    runQ($conn,
+        "ALTER TABLE `showtimes`
+         ADD COLUMN `screen` ENUM('large','small','both') NOT NULL DEFAULT 'both' AFTER `sort_order`",
+        'showtimes.screen'
+    );
+    $log[] = 'added showtimes.screen';
+} else {
+    $log[] = 'skip showtimes.screen (exists)';
+}
+
 $conn->close();
 echo json_encode(['status' => 'success', 'log' => $log]);
