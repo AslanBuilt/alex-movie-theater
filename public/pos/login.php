@@ -116,7 +116,7 @@ $csrf = $auth->generateCsrfToken();
                 <button type="button" class="pinkey fn" data-k="del" aria-label="Delete">&#9003;</button>
             </div>
 
-            <button type="submit" class="btn btn-primary pin-submit">Sign in</button>
+            <button type="button" id="pinSubmit" class="btn btn-primary pin-submit">Sign in</button>
             <div class="pin-hint">PIN unlocks the register</div>
         </form>
     </div>
@@ -149,8 +149,13 @@ $csrf = $auth->generateCsrfToken();
     render();
   });
 
-  form.addEventListener('submit', function (e) {
-    if (pin.length < 4) { e.preventDefault(); }
+  // Submit via form.submit() directly rather than a type="submit" button —
+  // a native submit fires a cancelable 'submit' event that some browser
+  // extensions (password managers, security tools) silently intercept and
+  // block with no visible error. Calling submit() imperatively bypasses
+  // that event entirely, matching the physical-Enter-key path below.
+  document.getElementById('pinSubmit').addEventListener('click', function () {
+    if (pin.length >= 4) form.submit();
   });
 
   // Physical-keyboard support (desktop): digits append, Backspace deletes,
