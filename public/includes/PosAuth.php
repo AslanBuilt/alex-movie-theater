@@ -70,7 +70,11 @@ final class PosAuth
         session_name('ALEX_POS_SESS');
         session_start();
 
-        if ($isAdmin) {
+        // pos_logged_out suppresses admin passthrough after an explicit POS
+        // logout — otherwise an admin who clicks Log out is instantly
+        // re-admitted on the very next request, since the admin session
+        // itself was never touched. Cleared on the next successful PIN login.
+        if ($isAdmin && empty($_SESSION['pos_logged_out'])) {
             $_SESSION['pos_admin_present'] = true;
             $_SESSION['pos_admin_name']    = $adminName;
         } else {
@@ -149,6 +153,7 @@ final class PosAuth
             // Success. Reset the failure counter and stamp the login.
             $this->resetAttempts((int)$emp['id']);
             session_regenerate_id(true);
+            unset($_SESSION['pos_logged_out']);
             $_SESSION['pos_employee_id']   = (int)$emp['id'];
             $_SESSION['pos_employee_name'] = (string)$emp['name'];
             $_SESSION['pos_login_time']    = time();
@@ -246,14 +251,23 @@ final class PosAuth
         }
     }
 
-    /** Clear only the employee identity (full logout). */
+    /**
+     * Full POS logout: clears the employee identity, drops any admin
+     * passthrough for this request, and sets a flag so bootstrap() won't
+     * silently re-grant admin passthrough on the next request. The admin
+     * session itself (ALEX_ADMIN_SESS) is untouched — an admin who logs out
+     * of the POS stays logged into /admin.
+     */
     public function logout(): void
     {
         unset(
             $_SESSION['pos_employee_id'],
             $_SESSION['pos_employee_name'],
-            $_SESSION['pos_login_time']
+            $_SESSION['pos_login_time'],
+            $_SESSION['pos_admin_present'],
+            $_SESSION['pos_admin_name']
         );
+        $_SESSION['pos_logged_out'] = true;
     }
 
     public function generateCsrfToken(): string
