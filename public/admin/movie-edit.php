@@ -27,7 +27,22 @@ $submittedBlocks = [];
 
 $allowedScreens  = ['large', 'small', 'either'];
 $allowedStatuses = ['now_showing', 'coming_soon', 'archived'];
+// showtimes.screen has its own enum (large/small/both) — distinct from
+// movies.screen (large/small/either). "Both" describes one showtime
+// playing on both screens at once; "either" describes a movie whose
+// showtimes are split across screens via separate blocks below.
+$allowedShowtimeScreens = ['large', 'small', 'both'];
 const MOVIE_EDIT_DOW = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+/** Sensible starting screen for a freshly-added showtime block. */
+function movie_edit_default_block_screen(string $movieScreen): string
+{
+    return match ($movieScreen) {
+        'large' => 'large',
+        'small' => 'small',
+        default => 'both', // 'either' (or anything unexpected) — admin picks per block
+    };
+}
 
 /**
  * Renders one showtime-block <div>, matching the markup/classes JS's
@@ -35,17 +50,31 @@ const MOVIE_EDIT_DOW = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
  * already-submitted values — used to redisplay blocks after a validation
  * error round-trip.
  *
- * @param array{days?:int[],start_time?:string,tickets?:int,date_from?:string,date_to?:string} $values
+ * @param array{days?:int[],start_time?:string,tickets?:int,date_from?:string,date_to?:string,screen?:string} $values
  */
-function movie_edit_render_showtime_block(int $index, array $values): void
+function movie_edit_render_showtime_block(int $index, array $values, string $movieScreen): void
 {
     $days      = array_map('intval', (array)($values['days'] ?? []));
     $startTime = (string)($values['start_time'] ?? '');
     $tickets   = (int)($values['tickets'] ?? 50);
     $dateFrom  = (string)($values['date_from'] ?? '');
     $dateTo    = (string)($values['date_to'] ?? '');
+    $screen    = (string)($values['screen'] ?? movie_edit_default_block_screen($movieScreen));
     ?>
     <div class="showtime-block" data-index="<?= $index ?>" style="border:1px solid var(--border); border-radius:6px; padding:1rem; margin-bottom:1rem;">
+        <?php if ($movieScreen === 'either') : ?>
+            <div class="form-group">
+                <label>Screen</label>
+                <select name="showtime_blocks[<?= $index ?>][screen]" class="st-screen">
+                    <option value="large" <?= $screen === 'large' ? 'selected' : '' ?>>Large Screen</option>
+                    <option value="small" <?= $screen === 'small' ? 'selected' : '' ?>>Small Screen</option>
+                    <option value="both" <?= $screen === 'both' ? 'selected' : '' ?>>Both Screens</option>
+                </select>
+                <small class="form-help">This movie plays on both screens — pick which screen this block of showtimes is for.</small>
+            </div>
+        <?php else : ?>
+            <input type="hidden" name="showtime_blocks[<?= $index ?>][screen]" value="<?= e($screen) ?>">
+        <?php endif; ?>
         <div class="form-group">
             <label>Days of the week</label>
             <div style="display:flex; gap:1rem; flex-wrap:wrap;">
@@ -321,6 +350,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $dateFrom  = trim((string)($block['date_from'] ?? ''));
                     $dateTo    = trim((string)($block['date_to'] ?? ''));
                     $tickets   = max(0, (int)($block['tickets'] ?? 50));
+                    $blockScreen = (string)($block['screen'] ?? '');
+                    if (!in_array($blockScreen, $allowedShowtimeScreens, true)) {
+                        $blockScreen = movie_edit_default_block_screen($old['screen']);
+                    }
 
                     $blockIsEmpty = empty($days) && $startTime === '' && $dateFrom === '' && $dateTo === '';
                     if ($blockIsEmpty) {
@@ -336,6 +369,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         'tickets'    => $tickets,
                         'date_from'  => $dateFrom,
                         'date_to'    => $dateTo,
+                        'screen'     => $blockScreen,
                     ];
 
                     if (empty($days)) {
@@ -369,6 +403,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             'label'   => (new DateTime($d))->format('D, M j') . ' ' . $timeDisplay,
                             'times'   => $timeDisplay,
                             'tickets' => $tickets,
+                            'screen'  => $blockScreen,
                         ];
                     }
                 }
@@ -444,9 +479,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         if (!empty($showtimeRows)) {
                             $insShow = $db->prepare(
                                 'INSERT INTO showtimes
-                                    (movie_id, label, times, showtime_date, showtime_time, available_tickets, tickets_sold, is_active, sort_order)
+                                    (movie_id, label, times, showtime_date, showtime_time, available_tickets, tickets_sold, is_active, sort_order, screen)
                                  VALUES
-                                    (:movie_id, :label, :times, :date, :time, :avail, 0, 1, 0)'
+                                    (:movie_id, :label, :times, :date, :time, :avail, 0, 1, 0, :screen)'
                             );
                             foreach ($showtimeRows as $st) {
                                 $insShow->execute([
@@ -456,6 +491,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                     ':date'     => $st['date'],
                                     ':time'     => $st['time'],
                                     ':avail'    => $st['tickets'],
+                                    ':screen'   => $st['screen'],
                                 ]);
                             }
                         }
@@ -600,13 +636,26 @@ $csrf = $auth->generateCsrfToken();
         <p class="form-help" style="margin-top:0;">Add one or more repeating schedules and they'll be created together with this movie.</p>
 
         <div id="showtime-blocks" data-initial-count="<?= count($submittedBlocks) ?>">
-            <?php foreach ($submittedBlocks as $idx => $vals) : movie_edit_render_showtime_block($idx, $vals); endforeach; ?>
+            <?php foreach ($submittedBlocks as $idx => $vals) : movie_edit_render_showtime_block($idx, $vals, $old['screen']); endforeach; ?>
         </div>
 
         <button type="button" class="btn btn-outline btn-sm" id="add-showtime-block">+ Add showtimes</button>
 
         <template id="showtime-block-template">
             <div class="showtime-block" data-index="__INDEX__" style="border:1px solid var(--border); border-radius:6px; padding:1rem; margin-bottom:1rem;">
+                <?php if ($old['screen'] === 'either') : ?>
+                    <div class="form-group">
+                        <label>Screen</label>
+                        <select name="showtime_blocks[__INDEX__][screen]" class="st-screen">
+                            <option value="large">Large Screen</option>
+                            <option value="small">Small Screen</option>
+                            <option value="both" selected>Both Screens</option>
+                        </select>
+                        <small class="form-help">This movie plays on both screens — pick which screen this block of showtimes is for.</small>
+                    </div>
+                <?php else : ?>
+                    <input type="hidden" name="showtime_blocks[__INDEX__][screen]" value="<?= e(movie_edit_default_block_screen($old['screen'])) ?>">
+                <?php endif; ?>
                 <div class="form-group">
                     <label>Days of the week</label>
                     <div style="display:flex; gap:1rem; flex-wrap:wrap;">
