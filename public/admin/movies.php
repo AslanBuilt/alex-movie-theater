@@ -166,7 +166,7 @@ $canArrange = $totalPages <= 1 && $q === '' && $status === '';
                 <td class="actions">
                     <a class="btn btn-outline btn-sm" href="movie-edit.php?id=<?= (int)$row['id'] ?>">Edit</a>
                     <button type="button" class="btn btn-danger btn-sm"
-                            onclick="confirmDelete(<?= (int)$row['id'] ?>, <?= json_encode((string)$row['title']) ?>, 'movie-delete.php')">
+                            onclick="confirmDelete(<?= (int)$row['id'] ?>, <?= e(json_encode((string)$row['title'])) ?>, 'movie-delete.php')">
                         Delete
                     </button>
                 </td>
