@@ -563,7 +563,7 @@ $csrf = $auth->generateCsrfToken();
         <div class="form-group">
             <label for="screen">Screen</label>
             <select name="screen" id="screen">
-                <?php foreach ($allowedScreens as $val) : ?>
+                <?php foreach (array_diff($allowedScreens, ['either']) as $val) : ?>
                     <option value="<?= e($val) ?>" <?= $old['screen'] === $val ? 'selected' : '' ?>><?= e(ucfirst($val)) ?></option>
                 <?php endforeach; ?>
             </select>
