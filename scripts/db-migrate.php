@@ -562,5 +562,20 @@ if (tableExists($conn, 'showtimes') && !columnExists($conn, 'showtimes', 'screen
     $log[] = 'skip showtimes.screen (exists)';
 }
 
+// ═══════════════════════════════════════════════════════════════════════════
+// Movie-level screen dropdown: add 'both', keep legacy 'either' rows intact
+// ═══════════════════════════════════════════════════════════════════════════
+
+if (tableExists($conn, 'movies') && !enumHasValue($conn, 'movies', 'screen', 'both')) {
+    runQ($conn,
+        "ALTER TABLE `movies`
+         MODIFY COLUMN `screen` ENUM('large','small','either','both') NOT NULL DEFAULT 'large'",
+        'movies.screen +both'
+    );
+    $log[] = "added 'both' to movies.screen enum";
+} else {
+    $log[] = "skip movies.screen 'both' (exists)";
+}
+
 $conn->close();
 echo json_encode(['status' => 'success', 'log' => $log]);

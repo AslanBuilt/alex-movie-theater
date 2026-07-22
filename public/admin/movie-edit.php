@@ -25,13 +25,12 @@ $errors = [];
 // silently dropping it when an unrelated field (e.g. title) fails validation.
 $submittedBlocks = [];
 
-$allowedScreens  = ['large', 'small', 'either'];
+$allowedScreens  = ['large', 'small', 'both'];
 $allowedStatuses = ['now_showing', 'coming_soon', 'archived'];
-// showtimes.screen has its own enum (large/small/both) — distinct from
-// movies.screen (large/small/either). "Both" describes one showtime
-// playing on both screens at once; "either" describes a movie whose
-// showtimes are split across screens via separate blocks below.
-$allowedShowtimeScreens = ['large', 'small', 'both'];
+// showtimes.screen (large/small only) is distinct from movies.screen
+// (large/small/both). A movie marked "both" plays on both screens; the
+// admin picks which physical screen each quick-add block below uses.
+$allowedShowtimeScreens = ['large', 'small'];
 const MOVIE_EDIT_DOW = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
 /** Sensible starting screen for a freshly-added showtime block. */
@@ -40,7 +39,7 @@ function movie_edit_default_block_screen(string $movieScreen): string
     return match ($movieScreen) {
         'large' => 'large',
         'small' => 'small',
-        default => 'both', // 'either' (or anything unexpected) — admin picks per block
+        default => 'large', // 'both'/'either' (or anything unexpected) — admin picks per block
     };
 }
 
@@ -62,13 +61,12 @@ function movie_edit_render_showtime_block(int $index, array $values, string $mov
     $screen    = (string)($values['screen'] ?? movie_edit_default_block_screen($movieScreen));
     ?>
     <div class="showtime-block" data-index="<?= $index ?>" style="border:1px solid var(--border); border-radius:6px; padding:1rem; margin-bottom:1rem;">
-        <?php if ($movieScreen === 'either') : ?>
+        <?php if ($movieScreen === 'either' || $movieScreen === 'both') : ?>
             <div class="form-group">
                 <label>Screen</label>
                 <select name="showtime_blocks[<?= $index ?>][screen]" class="st-screen">
                     <option value="large" <?= $screen === 'large' ? 'selected' : '' ?>>Large Screen</option>
                     <option value="small" <?= $screen === 'small' ? 'selected' : '' ?>>Small Screen</option>
-                    <option value="both" <?= $screen === 'both' ? 'selected' : '' ?>>Both Screens</option>
                 </select>
                 <small class="form-help">This movie plays on both screens — pick which screen this block of showtimes is for.</small>
             </div>
@@ -563,9 +561,9 @@ $csrf = $auth->generateCsrfToken();
         <div class="form-group">
             <label for="screen">Screen</label>
             <select name="screen" id="screen">
-                <?php foreach (array_diff($allowedScreens, ['either']) as $val) : ?>
-                    <option value="<?= e($val) ?>" <?= $old['screen'] === $val ? 'selected' : '' ?>><?= e(ucfirst($val)) ?></option>
-                <?php endforeach; ?>
+                <option value="large" <?= $old['screen'] === 'large' ? 'selected' : '' ?>>Large</option>
+                <option value="small" <?= $old['screen'] === 'small' ? 'selected' : '' ?>>Small</option>
+                <option value="both" <?= ($old['screen'] === 'both' || $old['screen'] === 'either') ? 'selected' : '' ?>>Both</option>
             </select>
         </div>
         <div class="form-group">
@@ -643,13 +641,12 @@ $csrf = $auth->generateCsrfToken();
 
         <template id="showtime-block-template">
             <div class="showtime-block" data-index="__INDEX__" style="border:1px solid var(--border); border-radius:6px; padding:1rem; margin-bottom:1rem;">
-                <?php if ($old['screen'] === 'either') : ?>
+                <?php if ($old['screen'] === 'either' || $old['screen'] === 'both') : ?>
                     <div class="form-group">
                         <label>Screen</label>
                         <select name="showtime_blocks[__INDEX__][screen]" class="st-screen">
-                            <option value="large">Large Screen</option>
+                            <option value="large" selected>Large Screen</option>
                             <option value="small">Small Screen</option>
-                            <option value="both" selected>Both Screens</option>
                         </select>
                         <small class="form-help">This movie plays on both screens — pick which screen this block of showtimes is for.</small>
                     </div>

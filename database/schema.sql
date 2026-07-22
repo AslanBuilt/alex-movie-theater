@@ -20,7 +20,7 @@ CREATE TABLE `movies` (
     `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
     `title` VARCHAR(255) NOT NULL,
     `rating` VARCHAR(10) NOT NULL DEFAULT '',
-    `screen` ENUM('large', 'small', 'either') NOT NULL DEFAULT 'either',
+    `screen` ENUM('large', 'small', 'either', 'both') NOT NULL DEFAULT 'large',
     `duration_minutes` INT UNSIGNED NULL,
     `poster_path` VARCHAR(500) NOT NULL DEFAULT '',
     `description` TEXT NULL,
