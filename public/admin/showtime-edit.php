@@ -15,6 +15,7 @@ $old = [
     'available_tickets' => 50,
     'is_active'         => 1,
     'sort_order'        => 0,
+    'screen'            => 'large',
     // legacy fields kept for display
     'label'             => '',
     'times'             => '',
@@ -22,6 +23,7 @@ $old = [
 $errors  = [];
 $movies  = [];
 $isLegacy = false;
+$allowedScreens = ['large', 'small'];
 
 /** Where to send the admin back to — the month containing this showtime's date. */
 function showtime_return_url(string $date): string
@@ -61,6 +63,7 @@ if ($isEdit) {
         'available_tickets' => (int)($row['available_tickets'] ?? 50),
         'is_active'         => (int)($row['is_active'] ?? 1),
         'sort_order'        => (int)$row['sort_order'],
+        'screen'            => (string)($row['screen'] ?? 'large'),
         'label'             => (string)$row['label'],
         'times'             => (string)$row['times'],
     ];
@@ -79,12 +82,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $old['available_tickets'] = max(0, (int)($_POST['available_tickets'] ?? 50));
         $old['is_active']         = isset($_POST['is_active']) ? 1 : 0;
         $old['sort_order']        = (int)($_POST['sort_order'] ?? 0);
+        $old['screen']            = (string)($_POST['screen'] ?? 'large');
 
         if ($old['movie_id'] <= 0) $errors[] = 'Please select a movie.';
         if ($old['showtime_date'] === '') $errors[] = 'Date is required.';
         if ($old['showtime_time'] === '') $errors[] = 'Time is required.';
         if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $old['showtime_date'])) $errors[] = 'Invalid date format.';
         if (!preg_match('/^\d{2}:\d{2}$/', $old['showtime_time']))        $errors[] = 'Invalid time format.';
+        if (!in_array($old['screen'], $allowedScreens, true)) $errors[] = 'Invalid screen value.';
 
         if (empty($errors)) {
             $timeDisplay = date('g:i A', strtotime($old['showtime_time']));
@@ -95,7 +100,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $timeDisplay,
                     $old['available_tickets'],
                     (bool)$old['is_active'],
-                    $old['sort_order']
+                    $old['sort_order'],
+                    $old['screen']
                 );
                 if ($ok) {
                     $_SESSION['flash'] = ['type' => 'success', 'message' => 'Showtime updated.'];
@@ -109,7 +115,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $old['showtime_date'],
                     $timeDisplay,
                     $old['available_tickets'],
-                    $old['sort_order']
+                    $old['sort_order'],
+                    $old['screen']
                 );
                 if ($newId) {
                     $_SESSION['flash'] = ['type' => 'success', 'message' => 'Showtime created.'];
@@ -191,6 +198,13 @@ $csrf = $auth->generateCsrfToken();
       <label for="sort_order">Sort Order</label>
       <input type="number" name="sort_order" id="sort_order"
              step="1" value="<?= (int)$old['sort_order'] ?>">
+    </div>
+    <div class="form-group">
+      <label for="screen">Screen <span class="required">*</span></label>
+      <select name="screen" id="screen" required>
+        <option value="large" <?= $old['screen'] === 'large' ? 'selected' : '' ?>>Large Screen</option>
+        <option value="small" <?= $old['screen'] === 'small' ? 'selected' : '' ?>>Small Screen</option>
+      </select>
     </div>
   </div>
 

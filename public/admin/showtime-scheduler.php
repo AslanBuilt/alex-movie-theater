@@ -117,7 +117,9 @@ $old = [
     'date_start'        => '',
     'date_end'          => '',
     'available_tickets' => 50,
+    'screen'            => 'large',
 ];
+$allowedSchedScreens = ['large', 'small'];
 $errors    = [];
 $preview   = null; // ['dates' => [...], 'conflicts' => [...]] once previewed
 $createdN  = null;
@@ -134,6 +136,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && in_array($action, ['preview', 'crea
         $old['date_start']        = trim((string)($_POST['date_start'] ?? ''));
         $old['date_end']          = trim((string)($_POST['date_end'] ?? ''));
         $old['available_tickets'] = max(0, (int)($_POST['available_tickets'] ?? 50));
+        $old['screen']            = (string)($_POST['screen'] ?? 'large');
 
         if ($old['movie_id'] <= 0 || !isset($movieById[$old['movie_id']])) {
             $errors[] = 'Please select a movie.';
@@ -143,6 +146,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && in_array($action, ['preview', 'crea
         }
         if (!preg_match('/^\d{2}:\d{2}$/', $old['start_time'])) {
             $errors[] = 'Start time is required.';
+        }
+        if (!in_array($old['screen'], $allowedSchedScreens, true)) {
+            $errors[] = 'Invalid screen value.';
         }
         if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $old['date_start']) || !preg_match('/^\d{4}-\d{2}-\d{2}$/', $old['date_end'])) {
             $errors[] = 'A valid start and end date are required.';
@@ -173,9 +179,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && in_array($action, ['preview', 'crea
                         $db->beginTransaction();
                         $ins = $db->prepare(
                             'INSERT INTO showtimes
-                                (movie_id, label, times, showtime_date, showtime_time, available_tickets, tickets_sold, is_active, sort_order)
+                                (movie_id, label, times, showtime_date, showtime_time, available_tickets, tickets_sold, is_active, sort_order, screen)
                              VALUES
-                                (:movie_id, :label, :times, :date, :time, :avail, 0, 1, 0)'
+                                (:movie_id, :label, :times, :date, :time, :avail, 0, 1, 0, :screen)'
                         );
                         foreach ($dates as $d) {
                             $ins->execute([
@@ -185,6 +191,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && in_array($action, ['preview', 'crea
                                 ':date'     => $d,
                                 ':time'     => $old['start_time'],
                                 ':avail'    => $old['available_tickets'],
+                                ':screen'   => $old['screen'],
                             ]);
                         }
                         $db->commit();
@@ -276,6 +283,13 @@ $csrf = $auth->generateCsrfToken();
             <label for="available_tickets">Available tickets (each showtime)</label>
             <input type="number" name="available_tickets" id="available_tickets" min="0" value="<?= (int)$old['available_tickets'] ?>">
         </div>
+        <div class="form-group">
+            <label for="screen">Screen <span class="required">*</span></label>
+            <select name="screen" id="screen" required>
+                <option value="large" <?= $old['screen'] === 'large' ? 'selected' : '' ?>>Large Screen</option>
+                <option value="small" <?= $old['screen'] === 'small' ? 'selected' : '' ?>>Small Screen</option>
+            </select>
+        </div>
     </div>
 
     <div class="form-actions">
@@ -328,6 +342,7 @@ $csrf = $auth->generateCsrfToken();
         <input type="hidden" name="date_start" value="<?= e($old['date_start']) ?>">
         <input type="hidden" name="date_end" value="<?= e($old['date_end']) ?>">
         <input type="hidden" name="available_tickets" value="<?= (int)$old['available_tickets'] ?>">
+        <input type="hidden" name="screen" value="<?= e($old['screen']) ?>">
         <div class="form-actions">
             <button type="submit" class="btn btn-primary">Confirm and Save <?= count($preview['dates']) ?> Showtime(s)</button>
         </div>

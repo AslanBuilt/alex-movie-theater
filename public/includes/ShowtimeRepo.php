@@ -173,16 +173,17 @@ final class ShowtimeRepo
         string $date,
         string $time,
         int $availableTickets,
-        int $sortOrder = 0
+        int $sortOrder = 0,
+        string $screen = 'large'
     ): int {
         try {
             $pdo  = Database::getInstance();
             $label = (new \DateTime($date))->format('D, M j') . ' ' . $time;
             $stmt  = $pdo->prepare(
                 'INSERT INTO showtimes
-                    (movie_id, label, times, showtime_date, showtime_time, available_tickets, tickets_sold, is_active, sort_order)
+                    (movie_id, label, times, showtime_date, showtime_time, available_tickets, tickets_sold, is_active, sort_order, screen)
                  VALUES
-                    (:movie_id, :label, :times, :date, :time, :avail, 0, 1, :sort)'
+                    (:movie_id, :label, :times, :date, :time, :avail, 0, 1, :sort, :screen)'
             );
             $stmt->execute([
                 ':movie_id' => $movieId,
@@ -192,6 +193,7 @@ final class ShowtimeRepo
                 ':time'     => $time,
                 ':avail'    => $availableTickets,
                 ':sort'     => $sortOrder,
+                ':screen'   => $screen,
             ]);
             return (int)$pdo->lastInsertId();
         } catch (\Throwable $e) {
@@ -209,7 +211,8 @@ final class ShowtimeRepo
         string $time,
         int $availableTickets,
         bool $isActive,
-        int $sortOrder
+        int $sortOrder,
+        string $screen
     ): bool {
         try {
             $pdo   = Database::getInstance();
@@ -219,7 +222,7 @@ final class ShowtimeRepo
                  SET label = :label, times = :times,
                      showtime_date = :date, showtime_time = :time,
                      available_tickets = :avail, is_active = :active,
-                     sort_order = :sort
+                     sort_order = :sort, screen = :screen
                  WHERE id = :id'
             );
             return $stmt->execute([
@@ -230,6 +233,7 @@ final class ShowtimeRepo
                 ':avail'  => $availableTickets,
                 ':active' => $isActive ? 1 : 0,
                 ':sort'   => $sortOrder,
+                ':screen' => $screen,
                 ':id'     => $id,
             ]);
         } catch (\Throwable $e) {
