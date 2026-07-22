@@ -2531,6 +2531,7 @@ abbr.required {
 
 .time-btn {
     display: inline-flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
     padding: 0.65rem 1.25rem;
@@ -2546,6 +2547,16 @@ abbr.required {
     letter-spacing: 0.02em;
     min-width: 100px;
     text-align: center;
+}
+
+.showtime-screen-label {
+    display: block;
+    font-size: 11px;
+    font-weight: 500;
+    opacity: 0.75;
+    margin-top: 2px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
 }
 
 .time-btn:hover {

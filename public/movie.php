@@ -130,6 +130,7 @@ require __DIR__ . '/templates/header.php';
                   'id'        => (int)$s['id'],
                   'time'      => date('g:i A', strtotime($s['showtime_time'])),
                   'available' => max(0, (int)$s['available_tickets'] - (int)$s['tickets_sold']),
+                  'screen'    => (string)($s['screen'] ?? ''),
                 ], $slots))) ?>"
                 data-track="showtime-day"
                 data-track-label="<?= e($movie['title'] . ' — ' . $dateLabel) ?>"
@@ -283,6 +284,13 @@ require __DIR__ . '/templates/header.php';
 
   if (!dayTabs || !timeBtns) return;
 
+  function screenLabel(screen) {
+    if (screen === 'large') return 'Large Screen';
+    if (screen === 'small') return 'Small Screen';
+    if (screen === 'both')  return 'Both Screens';
+    return '';
+  }
+
   function renderSlots(slotsJson) {
     var slots = [];
     try { slots = JSON.parse(slotsJson); } catch(e) { return; }
@@ -290,13 +298,16 @@ require __DIR__ . '/templates/header.php';
       var avail = s.available;
       var soldOut = avail <= 0;
       var cls = 'time-btn' + (soldOut ? ' time-btn--sold-out' : '');
+      var label = screenLabel(s.screen);
       return '<button type="button" class="' + cls + '" ' +
              'data-showtime-id="' + s.id + '" ' +
              'data-time="' + s.time.replace(/"/g, '&quot;') + '" ' +
              'data-available="' + avail + '" ' +
              (soldOut ? 'disabled ' : '') +
              'data-track="showtime-click" data-track-label="' + s.time.replace(/"/g, '&quot;') + '">' +
-             s.time + (soldOut ? ' <small>(Sold Out)</small>' : '') + '</button>';
+             s.time + (soldOut ? ' <small>(Sold Out)</small>' : '') +
+             (label ? '<span class="showtime-screen-label">' + label + '</span>' : '') +
+             '</button>';
     }).join('');
   }
 
